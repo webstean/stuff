@@ -20,17 +20,17 @@ fi
 if [ -f /usr/bin/yum ] ; then  
     sudo yum -y update
     sudo yum -y upgrade
-    export INSTALL_CMD=yum install -y
+    export INSTALL_CMD=sudo yum install -y
 fi
 
 # Build System Support 
-sudo apt-get -y install build-essential git wget curl unzip dos2unix htop
+$INSTALL_CMD build-essential git wget curl unzip dos2unix htop
 
 # Python - just incase
-sudo apt-get -y install python
+$INSTALL_CMD python
 
 # Ensure git is install
-sudo apt-get -y install git
+$INSTALL_CMD git
 git config --global color.ui true
 git config --global user.name "Andrew Webster"
 git config --global user.email "webstean@gmail.com"
@@ -80,7 +80,7 @@ git pull https://github.com/RoliSoft/WSL-Distribution-Switcher ~/git/WSL-Distrib
 ~/git/WSL-Distribution-Switcher/get-prebuilt.py oraclelinux
 
 # Add SSL support for APT repositories (required for Docker)
-sudo apt-get -y install apt-transport-https ca-certificates curl software-properties-common
+$INSTALL_CMD apt-transport-https ca-certificates curl software-properties-common
 
 # Docker 
 # cleanup
@@ -90,7 +90,7 @@ curl -fsSL https://download.docker.com/linux/ubuntu/gpg > ~/aw.txt
 sudo apt-key add ~/aw.txt
 if [ -f /usr/bin/apt ] ; then
     # add apt repository for docker
-    sudo apt-get -y install software-properties-common
+    $INSTALL_CMD software-properties-common
     sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/$(lsb_release -is) $(lsb_release -cs) stable" 
 fi
 # install docker
@@ -100,16 +100,16 @@ if [[ $dbus_status = *"is not running"* ]]; then
           sudo service dbus --full-restart
 fi
 echo $dbus_status
-sudo apt-get -y install docker docker.io
+$INSTALL_CMD docker docker.io
 
 # Audio Support
-apt-get -y install libasound2-dev libasound2 libasound2-data module-init-tools libsndfile1-dev
+$INSTALL_CMD libasound2-dev libasound2 libasound2-data module-init-tools libsndfile1-dev
 sudo modprobe snd-dummy
 sudo modprobe snd-aloop
 # need more - to hear sound under WSL you need the pulse daemon running (on Windows)
 
 # Install Go Language Support
-sudo apt-get -y install curl
+$INSTALL_CMD curl
 cd ~
 curl -O https://storage.googleapis.com/golang/getgo/installer_linux
 chmod 700 installer_linux
@@ -147,8 +147,35 @@ rm instantclient-tools*.zip
 
 # Eg. $ sqlplus scott/tiger@//myhost.example.com:1521/myservice
 
+# Install Microsoft SQL Server 2019
+if [ -f /usr/bin/apt ] ; then
+    # prereq
+    $INSTALL_CMD libcurl3
+    #
+    curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+    curl https://packages.microsoft.com/config/ubuntu/16.04/prod.list | sudo tee /etc/apt/sources.list.d/msprod.list
+    sudo add-apt-repository "$(wget -qO- https://packages.microsoft.com/config/ubuntu/18.04/mssql-server-2019.list)"
+    sudo apt-get update
+    # Client
+    sudo ACCEPT_EULA=Y apt-get install -y msodbcsql mssql-tools unixodbc-dev
+    if [ -d /opt/mssql-tools/bin/ ] ; then  
+        echo "# Microsoft SQL Server Tools..." >> ~/.bashrc
+        echo 'export PATH="/opt/ssql-tools/bin:$PATH"' >> ~/.bashrc
+        # sqlcmd -S localhost -U SA -P '<YourPassword>'
+    fi
+    # Server (it's big)
+    # sudo ACCEPT_EULA=Y apt-get install -y mssql-server
+fi
+if [ -f /usr/bin/yum ] ; then
+    sudo curl -o /etc/yum.repos.d/mssql-server.repo https://packages.microsoft.com/config/rhel/8/mssql-server-2019.repo
+    $INSTALL_CMD mssql-server
+fi
 
-
+# run SQL Server setup - NEED TO CHECK OUT
+if [ -e /opt/mssql/bin/mssql-conf ] ; then
+    sudo /opt/mssql/bin/mssql-conf setup
+fi
+systemctl status mssql-server --no-pager
 
 # Install Go Package for Oracle DB connections
 # Needs Oracle instant client installed at run time
@@ -156,19 +183,19 @@ rm instantclient-tools*.zip
 go get github.com/mattn/go-oci8
 
 # Install Go Language Debugger (Delve)
-# need git installed first
+# go get needs git installed first
 go get github.com/go-delve/delve/cmd/dlv
 # should put in the right place as GOPATH should now be correct
 # sudo mv ~/go/bin/dlv /usr/local/go/bin
 # sudo cp -r ~/go/src /usr/local/go/src
 
 # Install Linux Debugger - gdb - VS Code needs delv for Go as the debugger
-sudo apt-get -y install gdb
+$INSTALL_CMD gdb
 
 # Install some Reference GIT Repos
 mkdir ~/git
 # An example of multi-repository C project
-sudo apt-get -y install pkg-config alsa-utils libasound2-dev
+$INSTALL_CMD pkg-config alsa-utils libasound2-dev
 git clone https://github.com/alfredh/baresip ~/git/baresip
 git clone https://github.com/creytiv/re ~/git/re
 git clone https://github.com/creytiv/rem  ~/git/rem
@@ -194,13 +221,6 @@ git clone https://github.com/Microsoft/vcpkg.git ~/git/vcpkg
 ~/git/vcpkg/vcpkg integrate install
 ~/git/vcpkg/vcpkg integrate bash
 exec $SHELL
-
-# DATABASE clients
-
-# Oracle
-
-# SQL Server
-
 
 # apt clean  up
 if [ -f /usr/bin/apt ] ; then
