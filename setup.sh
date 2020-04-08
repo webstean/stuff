@@ -23,13 +23,13 @@ if [ -f /usr/bin/yum ] ; then
     export INSTALL_CMD=sudo yum install -y
 fi
 
-# Build System Support 
-$INSTALL_CMD build-essential git wget curl unzip dos2unix htop
+# Develpoer Build System Support 
+$INSTALL_CMD build-essential git wget curl unzip dos2unix htop libcurl3
 
 # Python - just incase
 $INSTALL_CMD python
 
-# Ensure git is install
+# Ensure git is install and configure it 
 $INSTALL_CMD git
 git config --global color.ui true
 git config --global user.name "Andrew Webster"
@@ -92,23 +92,26 @@ if [ -f /usr/bin/apt ] ; then
     # add apt repository for docker
     $INSTALL_CMD software-properties-common
     sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/$(lsb_release -is) $(lsb_release -cs) stable" 
+    # got with stable
+    # sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/$(lsb_release -is) $(lsb_release -cs) edge"
+    # sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/$(lsb_release -is) $(lsb_release -cs) nightly"
 fi
 # install docker
 dbus_status=$(service dbus status)
-# satisfy the many applications which depend on dbus to function:
+# Ensure dbus is running:
 if [[ $dbus_status = *"is not running"* ]]; then
           sudo service dbus --full-restart
 fi
 echo $dbus_status
 $INSTALL_CMD docker docker.io
 
-# Audio Support
+# Linux (ALSA) Audio Support
 $INSTALL_CMD libasound2-dev libasound2 libasound2-data module-init-tools libsndfile1-dev
 sudo modprobe snd-dummy
 sudo modprobe snd-aloop
 # need more - to hear sound under WSL you need the pulse daemon running (on Windows)
 
-# Install Go Language Support
+# Install Go Language (golang) Support
 $INSTALL_CMD curl
 cd ~
 curl -O https://storage.googleapis.com/golang/getgo/installer_linux
@@ -123,7 +126,8 @@ exec $SHELL
 
 # Install Oracle Database Instant Client via permanent OTN link
 cd ~
-# Permanent Link (latst version) - Instant Client - Basic (x86 64 bit) - you need this before installing a anything else
+# Permanent Link (latest version) - Instant Client - Basic (x86 64 bit) - you need this for anything else to work
+# Note: there is no Instant Client for the ARM processor, Intel/AMD x86 only
 wget https://download.oracle.com/otn_software/linux/instantclient/instantclient-basic-linuxx64.zip
 unzip instantclient-basic*.zip
 rm instantclient-basic*.zip
@@ -132,7 +136,7 @@ export LD_LIBRARY_PATH=$1
 echo export LD_LIBRARY_PATH=$LD_LIBRARY_PATH/ >> ~/.bashrc
 echo export PATH="$LD_LIBRARY_PATH:\$PATH" >> ~/.bashrc
 
-# Permanent Link (latest version) - Instant Client - SQLplus (x86 64 bit) - addon (tiny)
+# Permanent Link (latest version) - Instant Client - SQLplus (x86 64 bit) - addon (tiny - why not)
 wget https://download.oracle.com/otn_software/linux/instantclient/instantclient-sqlplus-linuxx64.zip
 unzip instantclient-sqlplus*.zip
 
@@ -141,16 +145,18 @@ wget https://download.oracle.com/otn_software/linux/instantclient/instantclient-
 unzip instantclient-tools*.zip
 rm instantclient-tools*.zip
 
-# The Oracle oraenv script sets the ORACLE_HOME, ORACLE_BASE and LD_LIBRARY_PATH variables and updates the PATH variable for Oracle
-# BTW: The Instant Client only needs the LD_LIBRARY_PATH set 
+# With the normal Oracle Client, oraenv script sets the ORACLE_HOME, ORACLE_BASE and LD_LIBRARY_PATH variables and
+# updates the PATH variable for Oracle
+# But, with the Instant Client you only need the LD_LIBRARY_PATH set. And BTW: The Instant Client cannot be patched (reinstall a newer version)
 # Add LD_LIBRARY_PATH to the sudoers env_keep parameter so other accounts will work, like cron scripts or add to /etc/profile.d
 
 # Eg. $ sqlplus scott/tiger@//myhost.example.com:1521/myservice
 
-# Install Microsoft SQL Server 2019
+# Install Microsoft SQL Server 2019 Client and optionally Server
 if [ -f /usr/bin/apt ] ; then
     # prereq
     $INSTALL_CMD libcurl3
+    $INSTALL_CMD curl
     #
     curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
     curl https://packages.microsoft.com/config/ubuntu/16.04/prod.list | sudo tee /etc/apt/sources.list.d/msprod.list
@@ -165,17 +171,21 @@ if [ -f /usr/bin/apt ] ; then
     fi
     # Server (it's big)
     # sudo ACCEPT_EULA=Y apt-get install -y mssql-server
+    # FYI: SQL Server for Linux listens on TCP port for connections (by default port 1433)
+    systemctl status mssql-server --no-pager
 fi
+
 if [ -f /usr/bin/yum ] ; then
-    sudo curl -o /etc/yum.repos.d/mssql-server.repo https://packages.microsoft.com/config/rhel/8/mssql-server-2019.repo
+    # Damn Microsoft - the http is case senstive the repository is redhat instead Redhat that we get from lsb_release
+    sudo curl -o /etc/yum.repos.d/mssql-server.repo https://packages.microsoft.com/config/$(lsb_release -si)/$(lsb_release -sr)/mssql-server-2019.repo
     $INSTALL_CMD mssql-server
+    systemctl status mssql-server --no-pager
 fi
 
 # run SQL Server setup - NEED TO CHECK OUT
-if [ -e /opt/mssql/bin/mssql-conf ] ; then
+if [ -x /opt/mssql/bin/mssql-conf ] ; then
     sudo /opt/mssql/bin/mssql-conf setup
 fi
-systemctl status mssql-server --no-pager
 
 # Install Go Package for Oracle DB connections
 # Needs Oracle instant client installed at run time
