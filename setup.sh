@@ -26,14 +26,17 @@ git config --global user.name "Andrew Webster"
 git config --global user.email "webstean@gmail.com"
 cat /dev/zero | ssh-keygen -q -N "" -C "webstean@gmail.com"
 
+# SQL Lite
+sudo apt-get install sqlite3
+
 # Postgres
 sudo apt-get install postgresql postgresql-contrib
 # need to create user
 
 # Ruby on Rails
-apt-get install -y git-core zlib1g-dev build-essential libssl-dev libreadline-dev libyaml-dev 
-apt-get install -y libsqlite3-dev sqlite3 libxml2-dev libxslt1-dev libcurl4-openssl-dev 
-apt-get install -y software-properties-common libffi-dev nodejs yarn
+sudo apt-get install -y git-core zlib1g-dev build-essential libssl-dev libreadline-dev libyaml-dev 
+sudo apt-get install -y libsqlite3-dev sqlite3 libxml2-dev libxslt1-dev libcurl4-openssl-dev 
+sudo apt-get install -y software-properties-common libffi-dev nodejs yarn
 
 git clone https://github.com/rbenv/rbenv.git ~/.rbenv
 echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bashrc
@@ -86,7 +89,7 @@ sudo mv .go /usr/local/go
 # Install Go Language Debugger (Delve)
 go get github.com/go-delve/delve/cmd/dlv
 
-# Install some GIT Repos
+# Install some Reference GIT Repos
 mkdir ~/git
 # An example of multi-repository C project
 git clone https://github.com/alfredh/baresip ~/git/baresip
@@ -112,7 +115,7 @@ git clone https://github.com/Microsoft/vcpkg.git ~/git/vcpkg
 ~/git/vcpkg/vcpkg integrate install
 ~/git/vcpkg/vcpkg integrate bash
 
-# Install Debugger (C++) - gdb
+# Install Linux Debugger - gdb
 sudo apt-get -y install gdb
 
 # apt clean  up
