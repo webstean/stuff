@@ -30,7 +30,6 @@ cat /dev/zero | ssh-keygen -q -N "" -C "webstean@gmail.com"
 sudo apt-get install postgresql postgresql-contrib
 # need to create user
 
-
 # Ruby on Rails
 apt-get install -y git-core zlib1g-dev build-essential libssl-dev libreadline-dev libyaml-dev 
 apt-get install -y libsqlite3-dev sqlite3 libxml2-dev libxslt1-dev libcurl4-openssl-dev 
@@ -76,7 +75,7 @@ sudo apt-get install docker-ce
 apt-get -y install libasound2-dev libasound2 libasound2-data module-init-tools libsndfile1-dev
 sudo modprobe snd-dummy
 sudo modprobe snd-aloop
-# need more
+# need more - to hear sound under WSL you need the pulse daemon running (on Windows)
 
 # Install Go Language Support
 cd ~
@@ -84,6 +83,8 @@ curl -O https://storage.googleapis.com/golang/getgo/installer_linux
 chmod 700 installer_linux
 ./installer_linux
 sudo mv .go /usr/local/go
+# Install Go Language Debugger (Delve)
+go get github.com/go-delve/delve/cmd/dlv
 
 # Install some GIT Repos
 mkdir ~/git
@@ -91,44 +92,30 @@ mkdir ~/git
 git clone https://github.com/alfredh/baresip ~/git/baresip
 git clone https://github.com/creytiv/re ~/git/re
 git clone https://github.com/creytiv/rem  ~/git/rem
+# Install Libre
+cd ~/git/re && make && make install && ldconfig
+# Install Librem
+cd ~/git/rem && make && make install && ldconfig
+# Install baresip
+cd ~/git/baresip && make && make install && ldconfig
+# Test Baresip to initialize default config and Exit
+baresip -t -f $HOME/.baresip
+# Install Configuration from self
+git clone https://github.com/QXIP/baresip-docker.git ~/git/baresip-docker
+cp -R ~/git/baresip-docker $HOME/.baresip
+cp -R ~/git/baresip-docker/.asoundrc $HOME
 
+# Install vcpkg
+# Vcpkg helps you manage C and C++ libraries on Windows, Linux and MacOS
 git clone https://github.com/Microsoft/vcpkg.git ~/git/vcpkg
 ~/git/vcpkg/bootstrap-vcpkg.sh
 ~/git/vcpkg/vcpkg integrate install
 ~/git/vcpkg/vcpkg integrate bash
 
-# Install Debugger - gdb
+# Install Debugger (C++) - gdb
 sudo apt-get -y install gdb
 
-# Install Libre
-RUN cd $TMP && wget $WEB/$LIBRE.tar.gz && tar zxvf $LIBRE.tar.gz && cd $LIBRE && make && make install 
-
-# Install Librem
-RUN cd $TMP && wget $WEB/$LIBREM.tar.gz && tar zxvf $LIBREM.tar.gz && cd $LIBREM && make && make install 
-
-  # Install Baresip
-  # RUN cd $HOME && mkdir .baresip && chmod 775 .baresip
-  # RUN cd $TMP && wget $WEB/$BARESIP.tar.gz && tar zxvf $BARESIP.tar.gz
-  # RUN cd $TMP/$BARESIP && make && sudo make install
-  # RUN cd $TMP && rm -rf $BARESIP*
-
-# Install Baresip from GIT
-cd $TMP && git clone $BARESIPGIT baresip && cd baresip && make && make install 
-
-# Install Configuration from self
-cd $HOME && mkdir baresip && chmod 775 baresip \
-cd $TMP && git clone https://github.com/QXIP/baresip-docker.git \
-cp -R $TMP/baresip-docker/.baresip $HOME/ \
-cp $TMP/baresip-docker/.asoundrc $HOME/ \
-rm -rf $TMP/baresip-docker 
-
-# Updating shared libs
-ldconfig
-
-# Test Baresip to initialize default config and Exit
-baresip -t -f $HOME/.baresip
-
-# APT Clean up
+# apt clean  up
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Default Baresip run command arguments
