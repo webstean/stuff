@@ -5,19 +5,22 @@
 # for convenience
 # Edit /etc/sudoes and amend:-
 # Allow members of group sudo to execute any command
-# %sudo   ALL=(ALL:ALL) NOPASSWD:ALL
-# ALL ALL=(ALL) NOPASSWD:ALL
+echo %sudo   ALL=(ALL:ALL) NOPASSWD:ALL
+echo needs to be added to /etc/sudoers file to avoid the password prompts
 
-# Set software versions to install
-ENV WEB http://www.creytiv.com/pub
-ENV LIBRE re-0.4.17 
-ENV LIBREM rem-0.4.7 
-ENV BARESIP baresip-0.4.20
-ENV BARESIPGIT # https://github.com/alfredh/baresip.git
+# Update apt
+if [ -f /usr/bin/apt ] ; then
+    sudo apt-get update 
+    sudo apt-get -y upgrade
+    export INSTALL_CMD=sudo apt-get install -y
+fi
 
-# Update Apt
-sudo apt-get update 
-sudo apt-get -y upgrade
+# Update yum
+if [ -f /usr/bin/yum ] ; then  
+    sudo yum -y update
+    sudo yum -y upgrade
+    export INSTALL_CMD=yum install -y
+fi
 
 # Build System Support 
 sudo apt-get -y install build-essential git wget curl unzip dos2unix htop
@@ -32,14 +35,14 @@ git config --global user.name "Andrew Webster"
 git config --global user.email "webstean@gmail.com"
 cat /dev/zero | ssh-keygen -q -N "" -C "webstean@gmail.com"
 
-# SQL Lite
+# *DATABASE* SQL Lite
 sudo apt-get install sqlite3
 sqlite3 --version
 # sqlite3 is the cli
 # sudo apt-get install sqlitebrowser
-# needs XWindows
+# but it needs XWindows
 
-# Postgres
+# *DATABASE* Postgres
 sudo apt-get install -y postgresql postgresql-contrib
 # To start Postgress
 # sudo -u postgres pg_ctlcluster 11 main start
@@ -81,9 +84,11 @@ sudo apt-get purge docker lxc-docker docker-engine docker.io
 # add key
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg > ~/aw.txt
 sudo apt-key add ~/aw.txt
-# add repository
-sudo apt -y install software-properties-common
-sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu  $(lsb_release -cs)  stable" 
+if [ -f /usr/bin/apt ] ; then
+    # add apt repository for docker
+    sudo apt-get -y install software-properties-common
+    sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/$(lsb_release -is) $(lsb_release -cs) stable" 
+fi
 # install docker
 dbus_status=$(service dbus status)
 # satisfy the many applications which depend on dbus to function:
@@ -108,8 +113,11 @@ sudo mv .go /usr/local/go
 echo 'export PATH="/usr/local/go/bin:$PATH"' >> ~/.bashrc
 exec $SHELL
 
+# Install Linux Debugger - gdb - VS Code needs delv for Go as the debugger
+sudo apt-get -y install gdb
+
 # Install Go Language Debugger (Delve)
-# need git installed
+# need git installed first
 go get github.com/go-delve/delve/cmd/dlv
 sudo mv ~/go/bin/dlv /usr/local/go/bin
 sudo cp -r ~/go/src /usr/local/go/src
@@ -133,6 +141,8 @@ baresip -t -f $HOME/.baresip
 git clone https://github.com/QXIP/baresip-docker.git ~/git/baresip-docker
 cp -R ~/git/baresip-docker $HOME/.baresip
 cp -R ~/git/baresip-docker/.asoundrc $HOME
+# Run Baresip set the SIP account
+#CMD baresip -d -f $HOME/.baresip && sleep 2 && curl http://127.0.0.1:8000/raw/?Rsip:root:root@127.0.0.1 && sleep 5 && curl http://127.0.0.1:8000/raw/?dbaresip@conference.sip2sip.info && sleep 60 && curl http://127.0.0.1:8000/raw/?bq
 
 # Install vcpkg
 # vcpkg helps you manage C and C++ libraries on Windows, Linux and MacOS
@@ -140,13 +150,17 @@ git clone https://github.com/Microsoft/vcpkg.git ~/git/vcpkg
 ~/git/vcpkg/bootstrap-vcpkg.sh
 ~/git/vcpkg/vcpkg integrate install
 ~/git/vcpkg/vcpkg integrate bash
+exec $SHELL
 
-# Install Linux Debugger - gdb
-sudo apt-get -y install gdb
+# DATABASE clients
+
+# Oracle
+
+# SQL Server
+
 
 # apt clean  up
-RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+if [ -f /usr/bin/apt ] ; then
+    apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+fi
 
-# Default Baresip run command arguments
-CMD ["baresip", "-d","-f","/root/.baresip"]
-#CMD baresip -d -f $HOME/.baresip && sleep 2 && curl http://127.0.0.1:8000/raw/?Rsip:root:root@127.0.0.1 && sleep 5 && curl http://127.0.0.1:8000/raw/?dbaresip@conference.sip2sip.info && sleep 60 && curl http://127.0.0.1:8000/raw/?bq
