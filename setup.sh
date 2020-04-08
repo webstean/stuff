@@ -93,14 +93,14 @@ git clone https://github.com/alfredh/baresip ~/git/baresip
 git clone https://github.com/creytiv/re ~/git/re
 git clone https://github.com/creytiv/rem  ~/git/rem
 # Install Libre
-cd ~/git/re && make && make install && ldconfig
+cd ~/git/re && make && sudo make install && sudo ldconfig
 # Install Librem
-cd ~/git/rem && make && make install && ldconfig
+cd ~/git/rem && make && sudo make install && sudo ldconfig
 # Install baresip
-cd ~/git/baresip && make && make install && ldconfig
+cd ~/git/baresip && make && sudo make install && sudo ldconfig
 # Test Baresip to initialize default config and Exit
 baresip -t -f $HOME/.baresip
-# Install Configuration from self
+# Install Configuration from baresip-docker
 git clone https://github.com/QXIP/baresip-docker.git ~/git/baresip-docker
 cp -R ~/git/baresip-docker $HOME/.baresip
 cp -R ~/git/baresip-docker/.asoundrc $HOME
