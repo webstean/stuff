@@ -7,8 +7,9 @@
 # Allow members of group sudo to execute any command
 echo %sudo   ALL=(ALL:ALL) NOPASSWD:ALL
 echo needs to be added to /etc/sudoers file to avoid the password prompts
+echo '%sudo ALL=(ALL:ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo
 
-# Update apt
+:# Update apt
 if [ -f /usr/bin/apt ] ; then
     sudo apt-get update 
     sudo apt-get -y upgrade
@@ -38,6 +39,9 @@ cat /dev/zero | ssh-keygen -q -N "" -C "webstean@gmail.com"
 # *DATABASE* SQL Lite
 sudo apt-get install sqlite3
 sqlite3 --version
+# create database
+# sqlite test.db
+
 # sqlite3 is the cli
 # sudo apt-get install sqlitebrowser
 # but it needs XWindows
@@ -95,6 +99,7 @@ dbus_status=$(service dbus status)
 if [[ $dbus_status = *"is not running"* ]]; then
           sudo service dbus --full-restart
 fi
+echo $dbus_status
 sudo apt-get -y install docker docker.io
 
 # Audio Support
@@ -110,6 +115,7 @@ curl -O https://storage.googleapis.com/golang/getgo/installer_linux
 chmod 700 installer_linux
 ./installer_linux
 sudo mv .go /usr/local/go
+echo 'export GOPATH=/usr/local/go' >> ~/.bashrc
 echo 'export PATH="/usr/local/go/bin:$PATH"' >> ~/.bashrc
 exec $SHELL
 
@@ -119,8 +125,9 @@ sudo apt-get -y install gdb
 # Install Go Language Debugger (Delve)
 # need git installed first
 go get github.com/go-delve/delve/cmd/dlv
-sudo mv ~/go/bin/dlv /usr/local/go/bin
-sudo cp -r ~/go/src /usr/local/go/src
+# should put in the right place as GOPATH should now be correct
+# sudo mv ~/go/bin/dlv /usr/local/go/bin
+# sudo cp -r ~/go/src /usr/local/go/src
 
 # Install some Reference GIT Repos
 mkdir ~/git
