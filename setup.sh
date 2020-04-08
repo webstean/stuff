@@ -2,6 +2,12 @@
 
 # Setup Linux for Visual Studio Code
 
+# for convenience
+# Edit /etc/sudoes and amend:-
+# Allow members of group sudo to execute any command
+# %sudo   ALL=(ALL:ALL) NOPASSWD:ALL
+# ALL ALL=(ALL) NOPASSWD:ALL
+
 # Set software versions to install
 ENV WEB http://www.creytiv.com/pub
 ENV LIBRE re-0.4.17 
@@ -14,9 +20,9 @@ sudo apt-get update
 sudo apt-get -y upgrade
 
 # Build System Support 
-sudo apt-get -y install build-essential git wget curl unzip dos2unix
+sudo apt-get -y install build-essential git wget curl unzip dos2unix htop
 
-# Python
+# Python - just incase
 sudo apt-get -y install python
 
 # Ensure git is install
@@ -28,10 +34,15 @@ cat /dev/zero | ssh-keygen -q -N "" -C "webstean@gmail.com"
 
 # SQL Lite
 sudo apt-get install sqlite3
+sqlite3 --version
+# sqlite3 is the cli
+# sudo apt-get install sqlitebrowser
+# needs XWindows
 
 # Postgres
-sudo apt-get install postgresql postgresql-contrib
-# need to create user
+sudo apt-get install -y postgresql postgresql-contrib
+# To start Postgress
+# sudo -u postgres pg_ctlcluster 11 main start
 
 # Ruby on Rails
 sudo apt-get install -y git-core zlib1g-dev build-essential libssl-dev libreadline-dev libyaml-dev 
@@ -62,17 +73,24 @@ git pull https://github.com/RoliSoft/WSL-Distribution-Switcher ~/git/WSL-Distrib
 ~/git/WSL-Distribution-Switcher/get-prebuilt.py oraclelinux
 
 # Add SSL support for APT repositories (required for Docker)
-sudo apt-get install apt-transport-https ca-certificates curl software-properties-common
+sudo apt-get -y install apt-transport-https ca-certificates curl software-properties-common
 
 # Docker 
 # cleanup
 sudo apt-get purge docker lxc-docker docker-engine docker.io
 # add key
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add –
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg > ~/aw.txt
+sudo apt-key add ~/aw.txt
 # add repository
+sudo apt -y install software-properties-common
 sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu  $(lsb_release -cs)  stable" 
 # install docker
-sudo apt-get install docker-ce
+dbus_status=$(service dbus status)
+# satisfy the many applications which depend on dbus to function:
+if [[ $dbus_status = *"is not running"* ]]; then
+          sudo service dbus --full-restart
+fi
+sudo apt-get -y install docker docker.io
 
 # Audio Support
 apt-get -y install libasound2-dev libasound2 libasound2-data module-init-tools libsndfile1-dev
@@ -81,17 +99,25 @@ sudo modprobe snd-aloop
 # need more - to hear sound under WSL you need the pulse daemon running (on Windows)
 
 # Install Go Language Support
+sudo apt-get -y install curl
 cd ~
 curl -O https://storage.googleapis.com/golang/getgo/installer_linux
 chmod 700 installer_linux
 ./installer_linux
 sudo mv .go /usr/local/go
+echo 'export PATH="/usr/local/go/bin:$PATH"' >> ~/.bashrc
+exec $SHELL
+
 # Install Go Language Debugger (Delve)
+# need git installed
 go get github.com/go-delve/delve/cmd/dlv
+sudo mv ~/go/bin/dlv /usr/local/go/bin
+sudo cp -r ~/go/src /usr/local/go/src
 
 # Install some Reference GIT Repos
 mkdir ~/git
 # An example of multi-repository C project
+sudo apt-get -y install pkg-config alsa-utils libasound2-dev
 git clone https://github.com/alfredh/baresip ~/git/baresip
 git clone https://github.com/creytiv/re ~/git/re
 git clone https://github.com/creytiv/rem  ~/git/rem
@@ -109,7 +135,7 @@ cp -R ~/git/baresip-docker $HOME/.baresip
 cp -R ~/git/baresip-docker/.asoundrc $HOME
 
 # Install vcpkg
-# Vcpkg helps you manage C and C++ libraries on Windows, Linux and MacOS
+# vcpkg helps you manage C and C++ libraries on Windows, Linux and MacOS
 git clone https://github.com/Microsoft/vcpkg.git ~/git/vcpkg
 ~/git/vcpkg/bootstrap-vcpkg.sh
 ~/git/vcpkg/vcpkg integrate install
