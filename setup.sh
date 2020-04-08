@@ -115,12 +115,45 @@ curl -O https://storage.googleapis.com/golang/getgo/installer_linux
 chmod 700 installer_linux
 ./installer_linux
 sudo mv .go /usr/local/go
-echo 'export GOPATH=/usr/local/go' >> ~/.bashrc
+echo 'export GOHOME=$HOME/go '>> ~/.bashrc
+mkdir $HOME/go
+echo 'export GOROOT=/usr/local/go' >> ~/.bashrc
 echo 'export PATH="/usr/local/go/bin:$PATH"' >> ~/.bashrc
 exec $SHELL
 
-# Install Linux Debugger - gdb - VS Code needs delv for Go as the debugger
-sudo apt-get -y install gdb
+# Install Oracle Database Instant Client via permanent OTN link
+cd ~
+# Permanent Link (latst version) - Instant Client - Basic (x86 64 bit) - you need this before installing a anything else
+wget https://download.oracle.com/otn_software/linux/instantclient/instantclient-basic-linuxx64.zip
+unzip instantclient-basic*.zip
+rm instantclient-basic*.zip
+set -- $(pwd)/instantclient-basic*
+export LD_LIBRARY_PATH=$1
+echo export LD_LIBRARY_PATH=$LD_LIBRARY_PATH/ >> ~/.bashrc
+echo export PATH="$LD_LIBRARY_PATH:\$PATH" >> ~/.bashrc
+
+# Permanent Link (latest version) - Instant Client - SQLplus (x86 64 bit) - addon (tiny)
+wget https://download.oracle.com/otn_software/linux/instantclient/instantclient-sqlplus-linuxx64.zip
+unzip instantclient-sqlplus*.zip
+
+# Permanent Link (latest version) - Instant Client - Tools (x86 64 bit) - addons incl Data Pump
+wget https://download.oracle.com/otn_software/linux/instantclient/instantclient-tools-linuxx64.zip
+unzip instantclient-tools*.zip
+rm instantclient-tools*.zip
+
+# The Oracle oraenv script sets the ORACLE_HOME, ORACLE_BASE and LD_LIBRARY_PATH variables and updates the PATH variable for Oracle
+# BTW: The Instant Client only needs the LD_LIBRARY_PATH set 
+# Add LD_LIBRARY_PATH to the sudoers env_keep parameter so other accounts will work, like cron scripts or add to /etc/profile.d
+
+# Eg. $ sqlplus scott/tiger@//myhost.example.com:1521/myservice
+
+
+
+
+# Install Go Package for Oracle DB connections
+# Needs Oracle instant client installed at run time
+# 
+go get github.com/mattn/go-oci8
 
 # Install Go Language Debugger (Delve)
 # need git installed first
@@ -128,6 +161,9 @@ go get github.com/go-delve/delve/cmd/dlv
 # should put in the right place as GOPATH should now be correct
 # sudo mv ~/go/bin/dlv /usr/local/go/bin
 # sudo cp -r ~/go/src /usr/local/go/src
+
+# Install Linux Debugger - gdb - VS Code needs delv for Go as the debugger
+sudo apt-get -y install gdb
 
 # Install some Reference GIT Repos
 mkdir ~/git
