@@ -1,35 +1,48 @@
 #!/bin/bash
 
-# Setup Linux for Visual Studio Code
+# Setup Linux for Development with Visual Studio Code running remotely (on Windows or Mac or Linux)
+
+# Alpine apt - sometime sudo won't be there by default
+if [ -f /usr/bin/apk ] ; then  
+    apk add sudo
+fi
 
 # for convenience
 # Edit /etc/sudoes and amend:-
-# Allow members of group sudo to execute any command
 echo %sudo   ALL=(ALL:ALL) NOPASSWD:ALL
 echo needs to be added to /etc/sudoers file to avoid the password prompts
 echo '%sudo ALL=(ALL:ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo
 
-:# Update apt
+# Alphine
+if [ -f /usr/bin/apk ] ; then  
+    sudo apk update
+    sudo apk upgrade
+    sudo apk upgrade --available
+    export INSTALL_CMD=sudo apk add --force-broken-world
+fi
+
+# Debian, Ubuntu apt
 if [ -f /usr/bin/apt ] ; then
     sudo apt-get update 
     sudo apt-get -y upgrade
     export INSTALL_CMD=sudo apt-get install -y
 fi
 
-# Update yum
+# Centos, RedHat, OraclieLinux yum
 if [ -f /usr/bin/yum ] ; then  
     sudo yum -y update
     sudo yum -y upgrade
     export INSTALL_CMD=sudo yum install -y
 fi
 
-# Develpoer Build System Support 
+# Developer Build System Support 
+$INSTALL_CMD file touch
 $INSTALL_CMD build-essential git wget curl unzip dos2unix htop libcurl3
 
 # Python - just incase
 $INSTALL_CMD python
 
-# Ensure git is install and configure it 
+# Ensure git is install and then configure it 
 $INSTALL_CMD git
 git config --global color.ui true
 git config --global user.name "Andrew Webster"
@@ -37,7 +50,7 @@ git config --global user.email "webstean@gmail.com"
 cat /dev/zero | ssh-keygen -q -N "" -C "webstean@gmail.com"
 
 # *DATABASE* SQL Lite
-sudo apt-get install sqlite3
+$INSTALL_CMD sqlite3 libsqlite3-dev
 sqlite3 --version
 # create database
 # sqlite test.db
@@ -47,14 +60,14 @@ sqlite3 --version
 # but it needs XWindows
 
 # *DATABASE* Postgres
-sudo apt-get install -y postgresql postgresql-contrib
+$INSTALL_CMD postgresql postgresql-contrib
 # To start Postgress
 # sudo -u postgres pg_ctlcluster 11 main start
 
 # Ruby on Rails
-sudo apt-get install -y git-core zlib1g-dev build-essential libssl-dev libreadline-dev libyaml-dev 
-sudo apt-get install -y libsqlite3-dev sqlite3 libxml2-dev libxslt1-dev libcurl4-openssl-dev 
-sudo apt-get install -y software-properties-common libffi-dev nodejs yarn
+$INSTALL_CMD git-core zlib1g-dev build-essential libssl-dev libreadline-dev libyaml-dev 
+$INSTALL_CMD libsqlite3-dev sqlite3 libxml2-dev libxslt1-dev libcurl4-openssl-dev 
+$INSTALL_CMD software-properties-common libffi-dev nodejs yarn
 
 git clone https://github.com/rbenv/rbenv.git ~/.rbenv
 echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bashrc
@@ -204,7 +217,7 @@ $INSTALL_CMD gdb
 
 # Install some Reference GIT Repos
 mkdir ~/git
-# An example of multi-repository C project
+# An example of multi-repository C project that is updated regularly
 $INSTALL_CMD pkg-config alsa-utils libasound2-dev
 git clone https://github.com/alfredh/baresip ~/git/baresip
 git clone https://github.com/creytiv/re ~/git/re
@@ -231,6 +244,12 @@ git clone https://github.com/Microsoft/vcpkg.git ~/git/vcpkg
 ~/git/vcpkg/vcpkg integrate install
 ~/git/vcpkg/vcpkg integrate bash
 exec $SHELL
+
+# Install AWS CLI
+cd ~
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
 
 # apt clean  up
 if [ -f /usr/bin/apt ] ; then
