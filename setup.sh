@@ -2,7 +2,7 @@
 
 # Setup Linux for Development with Visual Studio Code running remotely (on Windows or Mac or Linux)
 
-# Alpine apt - sometime sudo won't be there by default
+# Alpine apt - sometimes sudo won't be there by default
 if [ -f /usr/bin/apk ] ; then  
     apk add sudo
 fi
@@ -124,19 +124,6 @@ sudo modprobe snd-dummy
 sudo modprobe snd-aloop
 # need more - to hear sound under WSL you need the pulse daemon running (on Windows)
 
-# Install Go Language (golang) Support
-$INSTALL_CMD curl
-cd ~
-curl -O https://storage.googleapis.com/golang/getgo/installer_linux
-chmod 700 installer_linux
-./installer_linux
-sudo mv .go /usr/local/go
-echo 'export GOHOME=$HOME/go '                  >  /etc/profile.d/golang.sh
-mkdir $HOME/go
-echo 'export GOROOT=/usr/local/go'              >> /etc/profile.d/golang.sh
-echo 'export PATH="/usr/local/go/bin:$PATH"'    >> /etc/profile.d/golang.sh
-exec $SHELL
-
 # Install Oracle Database Instant Client via permanent OTN link
 cd ~
 # Permanent Link (latest version) - Instant Client - Basic (x86 64 bit) - you need this for anything else to work
@@ -167,7 +154,7 @@ rm instantclient-tools*.zip
 
 # Eg. $ sqlplus scott/tiger@//myhost.example.com:1521/myservice
 
-# Install Microsoft SQL Server 2019 Client and optionally Server
+# Install Microsoft SQL Server 2019 Client and optionally SQL Server
 if [ -f /usr/bin/apt ] ; then
     # prereq
     $INSTALL_CMD libcurl3
@@ -181,7 +168,7 @@ if [ -f /usr/bin/apt ] ; then
     sudo ACCEPT_EULA=Y apt-get install -y msodbcsql mssql-tools unixodbc-dev
     # Server (it's big)
     # sudo ACCEPT_EULA=Y apt-get install -y mssql-server
-    # FYI: SQL Server for Linux listens on TCP port for connections (by default port 1433)
+    # FYI: SQL Server for Linux listens on TCP port for connections (by default port TCP 1433)
     systemctl status mssql-server --no-pager
 fi
 
@@ -201,6 +188,19 @@ fi
 if [ -x /opt/mssql/bin/mssql-conf ] ; then
     sudo /opt/mssql/bin/mssql-conf setup
 fi
+
+# Install Go Language (golang) Support
+$INSTALL_CMD curl
+cd ~
+curl -O https://storage.googleapis.com/golang/getgo/installer_linux
+chmod 700 installer_linux
+./installer_linux
+sudo mv .go /usr/local/go
+echo 'export GOHOME=$HOME/go '                  >  /etc/profile.d/golang.sh
+mkdir $HOME/go
+echo 'export GOROOT=/usr/local/go'              >> /etc/profile.d/golang.sh
+echo 'export PATH="/usr/local/go/bin:$PATH"'    >> /etc/profile.d/golang.sh
+exec $SHELL
 
 # Install Go Package for Oracle DB connections
 # Needs Oracle instant client installed at run time
