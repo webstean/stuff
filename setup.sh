@@ -70,12 +70,12 @@ $INSTALL_CMD libsqlite3-dev sqlite3 libxml2-dev libxslt1-dev libcurl4-openssl-de
 $INSTALL_CMD software-properties-common libffi-dev nodejs yarn
 
 git clone https://github.com/rbenv/rbenv.git ~/.rbenv
-echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bashrc
-echo 'eval "$(rbenv init -)"' >> ~/.bashrc
+echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >  /etc/profile.d/ruby.sh
+echo 'eval "$(rbenv init -)"' >> ~/.bashrc  >> /etc/profile.d/ruby.sh
 exec $SHELL
 
 git clone https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-build
-echo 'export PATH="$HOME/.rbenv/plugins/ruby-build/bin:$PATH"' >> ~/.bashrc
+echo 'export PATH="$HOME/.rbenv/plugins/ruby-build/bin:$PATH"' >> /etc/profile.d/ruby.sh
 exec $SHELL
 
 rbenv install 2.7.1
@@ -131,10 +131,10 @@ curl -O https://storage.googleapis.com/golang/getgo/installer_linux
 chmod 700 installer_linux
 ./installer_linux
 sudo mv .go /usr/local/go
-echo 'export GOHOME=$HOME/go '>> ~/.bashrc
+echo 'export GOHOME=$HOME/go '                  >  /etc/profile.d/golang.sh
 mkdir $HOME/go
-echo 'export GOROOT=/usr/local/go' >> ~/.bashrc
-echo 'export PATH="/usr/local/go/bin:$PATH"' >> ~/.bashrc
+echo 'export GOROOT=/usr/local/go'              >> /etc/profile.d/golang.sh
+echo 'export PATH="/usr/local/go/bin:$PATH"'    >> /etc/profile.d/golang.sh
 exec $SHELL
 
 # Install Oracle Database Instant Client via permanent OTN link
@@ -142,26 +142,28 @@ cd ~
 # Permanent Link (latest version) - Instant Client - Basic (x86 64 bit) - you need this for anything else to work
 # Note: there is no Instant Client for the ARM processor, Intel/AMD x86 only
 wget https://download.oracle.com/otn_software/linux/instantclient/instantclient-basic-linuxx64.zip
-unzip instantclient-basic*.zip
+sudo mkdir -p /opt/oracle
+sudo unzip instantclient-basic*.zip -d /opt/oracle
+sudo chmod 755 /opt/oracle
 rm instantclient-basic*.zip
-set -- $(pwd)/instantclient-basic*
+set -- /opt/oracle/instantclient-basic*
 export LD_LIBRARY_PATH=$1
-echo export LD_LIBRARY_PATH=$LD_LIBRARY_PATH/ >> ~/.bashrc
-echo export PATH="$LD_LIBRARY_PATH:\$PATH" >> ~/.bashrc
+echo export LD_LIBRARY_PATH=$LD_LIBRARY_PATH/ >  /etc/profile.d/oracle.sh
+echo export PATH="$LD_LIBRARY_PATH:\$PATH"    >> /etc/profile.d/oracle.sh
 
 # Permanent Link (latest version) - Instant Client - SQLplus (x86 64 bit) - addon (tiny - why not)
 wget https://download.oracle.com/otn_software/linux/instantclient/instantclient-sqlplus-linuxx64.zip
-unzip instantclient-sqlplus*.zip
+sudo unzip instantclient-sqlplus*.zip -d $LD_LIBRARY_PATH
+rm instantclient-sqlplus*.zip
 
 # Permanent Link (latest version) - Instant Client - Tools (x86 64 bit) - addons incl Data Pump
 wget https://download.oracle.com/otn_software/linux/instantclient/instantclient-tools-linuxx64.zip
-unzip instantclient-tools*.zip
+sudo unzip instantclient-tools*.zip -d $LD_LIBRARY_PATH
 rm instantclient-tools*.zip
 
 # With the normal Oracle Client, oraenv script sets the ORACLE_HOME, ORACLE_BASE and LD_LIBRARY_PATH variables and
 # updates the PATH variable for Oracle
 # But, with the Instant Client you only need the LD_LIBRARY_PATH set. And BTW: The Instant Client cannot be patched (reinstall a newer version)
-# Add LD_LIBRARY_PATH to the sudoers env_keep parameter so other accounts will work, like cron scripts or add to /etc/profile.d
 
 # Eg. $ sqlplus scott/tiger@//myhost.example.com:1521/myservice
 
@@ -177,11 +179,6 @@ if [ -f /usr/bin/apt ] ; then
     sudo apt-get update
     # Client
     sudo ACCEPT_EULA=Y apt-get install -y msodbcsql mssql-tools unixodbc-dev
-    if [ -d /opt/mssql-tools/bin/ ] ; then  
-        echo "# Microsoft SQL Server Tools..." >> ~/.bashrc
-        echo 'export PATH="/opt/ssql-tools/bin:$PATH"' >> ~/.bashrc
-        # sqlcmd -S localhost -U SA -P '<YourPassword>'
-    fi
     # Server (it's big)
     # sudo ACCEPT_EULA=Y apt-get install -y mssql-server
     # FYI: SQL Server for Linux listens on TCP port for connections (by default port 1433)
@@ -193,6 +190,11 @@ if [ -f /usr/bin/yum ] ; then
     sudo curl -o /etc/yum.repos.d/mssql-server.repo https://packages.microsoft.com/config/$(lsb_release -si)/$(lsb_release -sr)/mssql-server-2019.repo
     $INSTALL_CMD mssql-server
     systemctl status mssql-server --no-pager
+fi
+
+if [ -d /opt/mssql-tools/bin/ ] ; then  
+        echo 'export PATH="/opt/ssql-tools/bin:$PATH"' > /etc/profile.d/mssql.sh
+        # sqlcmd -S localhost -U SA -P '<YourPassword>'
 fi
 
 # run SQL Server setup - NEED TO CHECK OUT
@@ -256,3 +258,7 @@ if [ -f /usr/bin/apt ] ; then
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 fi
 
+# yum clean  up
+if [ -f /usr/bin/yum ] ; then
+    yum clean all && rm -rf /tmp/* /var/tmp/*
+fi
