@@ -208,7 +208,6 @@ exec $SHELL
 
 # Install Go Package for Oracle DB connections
 # Needs Oracle instant client installed at run time
-# 
 go get github.com/godror/godror
 
 # Install Go Language Debugger (Delve)
@@ -222,6 +221,9 @@ $INSTALL_CMD gdb
 mkdir ~/git
 # An example of multi-repository C project that is updated regularly
 $INSTALL_CMD pkg-config alsa-utils libasound2-dev
+# Gstreamer bits, so the baresip gstreamer module will be built
+$INSTALL_CMD gstreamer1.0-alsa gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-tools gstreamer1.0-x 
+$INSTALL_CMD libgstreamer-plugins-base1.0-0 libgstreamer-plugins-base1.0-dev libgstreamer1.0-0 libgstreamer1.0-dev
 git clone https://github.com/alfredh/baresip ~/git/baresip
 git clone https://github.com/creytiv/re ~/git/re
 git clone https://github.com/creytiv/rem  ~/git/rem
@@ -248,11 +250,22 @@ git clone https://github.com/Microsoft/vcpkg.git ~/git/vcpkg
 ~/git/vcpkg/vcpkg integrate bash
 exec $SHELL
 
+# Join an on-premise Active Directory domain
+# Ubuntu
+# sudo apt-get install krb5-user samba sssd sssd-tools libnss-sss libpam-sss ntp ntpdate realmd adcli
+# Centos/ReadHat/Oracle
+#sudo yum install -y realmd sssd krb5-workstation krb5-libs oddjob oddjob-mkhomedir samba-common-tools
+# ensure NTP is running and time is correct
+# Domain name needs to be upper case
+#AD_DOMAIN=AADDSCONTOSO.COM
+#AD_USER=webstean@$AD_DOMAIN
+#sudo realm discover $AD_DOMAIN && kinit contosoadmin@$AD_DOMAIN && sudo realm join --verbose $AD_DOMAIN -U '$AD_USER' --install=/
+
 # Install AWS CLI
 cd ~
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip
-sudo ./aws/install
+sudo ~/./aws/install
 
 # apt clean  up
 if [ -f /usr/bin/apt ] ; then
