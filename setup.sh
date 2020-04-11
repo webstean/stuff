@@ -2,15 +2,15 @@
 
 # Setup Linux for Development with Visual Studio Code running remotely (on Windows or Mac or Linux)
 
-# Alpine apt - sometimes sudo won't be there by default
+# Alpine apt - sometimes sudo won't be there by default om Alphine
 if [ -f /usr/bin/apk ] ; then  
     apk add sudo
 fi
 
 # for convenience
 # Edit /etc/sudoes and amend:-
-echo %sudo   ALL=(ALL:ALL) NOPASSWD:ALL
-echo needs to be added to /etc/sudoers file to avoid the password prompts
+echo '%sudo   ALL=(ALL:ALL) NOPASSWD:ALL'
+echo 'needs to be added to /etc/sudoers file to avoid the password prompts'
 echo '%sudo ALL=(ALL:ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo
 
 # Alphine
@@ -18,25 +18,25 @@ if [ -f /usr/bin/apk ] ; then
     sudo apk update
     sudo apk upgrade
     sudo apk upgrade --available
-    export INSTALL_CMD=sudo apk add --force-broken-world
+    export INSTALL_CMD="sudo apk add --force-broken-world"
 fi
 
 # Debian, Ubuntu apt
 if [ -f /usr/bin/apt ] ; then
     sudo apt-get update 
     sudo apt-get -y upgrade
-    export INSTALL_CMD=sudo apt-get install -y
+    export INSTALL_CMD="sudo apt-get install -y"
 fi
 
 # Centos, RedHat, OraclieLinux yum
 if [ -f /usr/bin/yum ] ; then  
     sudo yum -y update
     sudo yum -y upgrade
-    export INSTALL_CMD=sudo yum install -y
+    export INSTALL_CMD="sudo yum install -y"
 fi
 
 # Developer Build System Support 
-$INSTALL_CMD file touch
+$INSTALL_CMD file touch vim
 $INSTALL_CMD build-essential git wget curl unzip dos2unix htop libcurl3
 
 # Python - just incase
@@ -70,13 +70,13 @@ $INSTALL_CMD libsqlite3-dev sqlite3 libxml2-dev libxslt1-dev libcurl4-openssl-de
 $INSTALL_CMD software-properties-common libffi-dev nodejs yarn
 
 sudo git clone https://github.com/rbenv/rbenv.git /opt/rbenv
-echo export PATH="/opt/rbenv:\$PATH" >  /etc/profile.d/ruby.sh
-echo eval "$(rbenv init -)"          >> /etc/profile.d/ruby.sh
-exec $SHELL
+sudo sh -c 'echo export PATH=/opt/rbenv:\$PATH >  /etc/profile.d/ruby.sh'
+sudo sh -c 'echo eval "$(rbenv init -)"        >> /etc/profile.d/ruby.sh'
+exec "$SHELL"
 
 sudo git clone https://github.com/rbenv/ruby-build.git /opt/rbenv/plugins/ruby-build
-echo export PATH="/opt/rbenv/plugins/ruby-build/bin:\$PATH" >> /etc/profile.d/ruby.sh
-exec $SHELL
+sudo sh -c 'echo export PATH="/opt/rbenv/plugins/ruby-build/bin:\$PATH" >> /etc/profile.d/ruby.sh'
+exec "$SHELL"
 
 rbenv install 2.7.1
 rbenv global 2.7.1
@@ -84,13 +84,6 @@ ruby -v
 
 gem install bundler
 rbenv rehash
-
-# WSL Distribution Switcher
-# needs to run from Windows
-git pull https://github.com/RoliSoft/WSL-Distribution-Switcher ~/git/WSL-Distribution-Switcher
-~/git/WSL-Distribution-Switcher/get-prebuilt.py debian
-~/git/WSL-Distribution-Switcher/get-prebuilt.py alphine
-~/git/WSL-Distribution-Switcher/get-prebuilt.py oraclelinux
 
 # Add SSL support for APT repositories (required for Docker)
 $INSTALL_CMD apt-transport-https ca-certificates curl software-properties-common
@@ -139,8 +132,8 @@ set -- /opt/oracle/instantclient*
 export LD_LIBRARY_PATH=$1
 # export LD_LIBRARY_PATH=${1::-1} - remove last character
 echo $LD_LIBRARY_PATH
-echo export LD_LIBRARY_PATH=$LD_LIBRARY_PATH  >  /etc/profile.d/oracle.sh
-echo export PATH="$LD_LIBRARY_PATH:\$PATH"    >> /etc/profile.d/oracle.sh
+sudo sh -c 'echo export LD_LIBRARY_PATH=$LD_LIBRARY_PATH  >  /etc/profile.d/oracle.sh'
+sudo sh -c 'echo export PATH="$LD_LIBRARY_PATH:\$PATH"    >> /etc/profile.d/oracle.sh'
 
 # Permanent Link (latest version) - Instant Client - SQLplus (x86 64 bit) - addon (tiny - why not)
 wget https://download.oracle.com/otn_software/linux/instantclient/instantclient-sqlplus-linuxx64.zip
@@ -184,13 +177,13 @@ if [ -f /usr/bin/yum ] ; then
 fi
 
 if [ -d /opt/mssql-tools/bin/ ] ; then  
-        echo export PATH="/opt/ssql-tools/bin:$PATH"  > /etc/profile.d/mssql.sh
+        sudo sh -c 'echo export PATH="/opt/ssql-tools/bin:$PATH"  > /etc/profile.d/mssql.sh'
         # sqlcmd -S localhost -U SA -P '<YourPassword>'
 fi
 
 # run SQL Server setup - NEED TO CHECK OUT
 if [ -x /opt/mssql/bin/mssql-conf ] ; then
-    sudo /opt/mssql/bin/mssql-conf setup
+    /opt/mssql/bin/mssql-conf setup
 fi
 
 # Install Go Language (golang) Support
@@ -200,11 +193,11 @@ curl -O https://storage.googleapis.com/golang/getgo/installer_linux
 chmod 700 installer_linux
 ./installer_linux
 sudo mv .go /usr/local/go
-echo export GOHOME=\$HOME/go                  >  /etc/profile.d/golang.sh
+sudo sh -c 'echo export GOHOME=\$HOME/go                  >  /etc/profile.d/golang.sh'
 mkdir $HOME/go
-echo export GOROOT=/usr/local/go              >> /etc/profile.d/golang.sh
-echo export PATH="/usr/local/go/bin:\$PATH"   >> /etc/profile.d/golang.sh
-exec $SHELL
+sudo sh -c 'echo export GOROOT=/usr/local/go              >> /etc/profile.d/golang.sh'
+sudo sh -c 'echo export PATH="/usr/local/go/bin:\$PATH"   >> /etc/profile.d/golang.sh'
+exec "$SHELL"
 
 # Install Go Package for Oracle DB connections
 # Needs Oracle instant client installed at run time
