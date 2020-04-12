@@ -2,8 +2,13 @@
 
 # Setup Linux for Development with Visual Studio Code running remotely (on Windows or Mac or Linux)
 
+if [ -z "$SHELL" ]
+then
+    export SHELL=/bin/sh
+fi
+
 # Alpine apt - sometimes sudo won't be there by default om Alphine
-if [ -f /usr/bin/apk ] ; then  
+if [ -f /sbin/apk ] ; then  
     apk add sudo
 fi
 
@@ -14,11 +19,11 @@ echo 'needs to be added to /etc/sudoers file to avoid the password prompts'
 echo '%sudo ALL=(ALL:ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo
 
 # Alphine
-if [ -f /usr/bin/apk ] ; then  
+if [ -f /sbin/apk ] ; then  
     sudo apk update
     sudo apk upgrade
     sudo apk upgrade --available
-    export INSTALL_CMD="sudo apk add --force-broken-world"
+    export INSTALL_CMD="sudo apk add --no-cache --force-broken-world"
 fi
 
 # Debian, Ubuntu apt
@@ -36,21 +41,29 @@ if [ -f /usr/bin/yum ] ; then
 fi
 
 # Developer Build System Support 
-$INSTALL_CMD file touch vim
+$INSTALL_CMD file touch vim tzdata
 $INSTALL_CMD build-essential git wget curl unzip dos2unix htop libcurl3
 
-# Python - just incase
+# Install Python
 $INSTALL_CMD python
+$INSTALL_CMD python-dev py-pip build-base 
 
 # Ensure git is install and then configure it 
 $INSTALL_CMD git
 git config --global color.ui true
 git config --global user.name "Andrew Webster"
 git config --global user.email "webstean@gmail.com"
+git config --list
+
+# Generate an SSH
+$INSTALL_CMD openssh-client
 cat /dev/zero | ssh-keygen -q -N "" -C "webstean@gmail.com"
 
 # *DATABASE* SQL Lite
 $INSTALL_CMD sqlite3 libsqlite3-dev
+if [ -f /sbin/apk ] ; then  
+    $INSTALL_CMD sqlite libsqlite-dev
+fi
 sqlite3 --version
 # create database
 # sqlite test.db
@@ -212,6 +225,7 @@ $INSTALL_CMD gdb
 
 # Install some Reference GIT Repos
 mkdir ~/git
+git clone https://github.com/oracle/docker-images ~/git/oracle-docker-images
 # An example of multi-repository C project that is updated regularly
 $INSTALL_CMD pkg-config alsa-utils libasound2-dev
 # Gstreamer bits, so the baresip gstreamer module will be built
@@ -268,4 +282,9 @@ fi
 # yum clean  up
 if [ -f /usr/bin/yum ] ; then
     yum clean all && rm -rf /tmp/* /var/tmp/*
+fi
+
+# yum clean  up
+if [ -f /sbin/apk ] ; then
+    apk cache clean
 fi
