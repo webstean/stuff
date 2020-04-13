@@ -1,13 +1,12 @@
 #!/bin/bash
 
-# Setup Linux for Development with Visual Studio Code running remotely (on Windows or Mac or Linux)
+# Setup WSL Linux for use Visual Studio Code (VS Code)
 
-if [ -z "$SHELL" ]
-then
+if [ -z "$SHELL" ] then
     export SHELL=/bin/sh
 fi
 
-# Alpine apt - sometimes sudo won't be there by default om Alphine
+# Alpine apt - sudo won't be there by default om Alpine
 if [ -f /sbin/apk ] ; then  
     apk add sudo
 fi
@@ -130,6 +129,9 @@ sudo modprobe snd-dummy
 sudo modprobe snd-aloop
 # need more - to hear sound under WSL you need the pulse daemon running (on Windows)
 
+# Dependencies for Oracle Client
+$INSTALL_CMD libaio
+
 # Install Oracle Database Instant Client via permanent OTN link
 cd ~
 # Permanent Link (latest version) - Instant Client - Basic (x86 64 bit) - you need this for anything else to work
@@ -163,6 +165,14 @@ sudo unzip instantclient-tools*.zip -d $LD_LIBRARY_PATH/..
 # But, with the Instant Client you only need the LD_LIBRARY_PATH set. And BTW: The Instant Client cannot be patched (reinstall a newer version)
 
 # Eg. $ sqlplus scott/tiger@//myhost.example.com:1521/myservice
+
+# Alpine Libraries for Oracle client
+if [ -f /sbin/apk ] ; then
+    # enable Edge repositories - hoepfully this will go away eventually
+    echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
+    apk update
+    $INSTALL_CMD libnsl libaio musl-dev autconfig
+fi
 
 # Install Microsoft SQL Server 2019 Client and optionally SQL Server
 if [ -f /usr/bin/apt ] ; then
