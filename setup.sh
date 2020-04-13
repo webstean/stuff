@@ -1,6 +1,16 @@
 #!/bin/bash
 
 # Setup WSL Linux for use Visual Studio Code (VS Code)
+# See: https://code.visualstudio.com/docs/remote/linux
+# for VS Code to work remotely on a MAC
+# See: https://support.apple.com/en-au/guide/mac-help/mchlp1066/mac
+
+# Supported Distributions
+# - Red Hat and deriatvies (Oracle & Centos)
+# - Debian 
+# - Ubuntu
+# - Raspbian (Raspberry Pi)
+# - Alpine - note, MS Code only has limited remoted support for Alpine
 
 if [ -z "$SHELL" ] then
     export SHELL=/bin/sh

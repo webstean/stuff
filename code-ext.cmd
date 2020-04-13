@@ -21,6 +21,7 @@ code --install-extension ms-vscode.Go
 code --install-extension ms-vscode.powershell
 code --install-extension redhat.java
 code --install-extension redhat.vscode-yaml
+code --install-extension ms-azuretools.vscode-docker
 
 
 
