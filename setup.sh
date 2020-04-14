@@ -5,7 +5,7 @@
 # for VS Code to work remotely on a MAC
 # See: https://support.apple.com/en-au/guide/mac-help/mchlp1066/mac
 
-# Supported Distributions
+# Supported Distributions (WSL and remote)
 # - Red Hat and deriatvies (Oracle & Centos)
 # - Debian 
 # - Ubuntu
@@ -27,7 +27,18 @@ echo '%sudo   ALL=(ALL:ALL) NOPASSWD:ALL'
 echo 'needs to be added to /etc/sudoers file to avoid the password prompts'
 echo '%sudo ALL=(ALL:ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo
 
-# Alphine
+# Proxy Support
+# Squid default port is 3128, but many setup the proxy on port 80,8000,8080
+# Unauthenticated
+# sudo sh -c 'echo # {HTTP,HTTPS,FTP}_PROXY=http://proxy.support.com:port   >  /etc/profile.d/proxy.sh'
+# 
+# Authenticated
+# sudo sh -c 'echo # {HTTP,HTTPS,FTP}_PROXY=http://proxy.support.com\\USERN\@ME:port   >  /etc/profile.d/proxy.sh'
+
+# No Proxy
+# sudo sh -c 'echo # NO_PROXY=localhost,127.0.0.1,::1,10.0.0.0/8 >> /etc/profile.d/proxy.sh'
+
+# Alpine
 if [ -f /sbin/apk ] ; then  
     sudo apk update
     sudo apk upgrade
@@ -50,8 +61,11 @@ if [ -f /usr/bin/yum ] ; then
 fi
 
 # Developer Build System Support 
-$INSTALL_CMD file touch vim tzdata
+$INSTALL_CMD vim tzdata openssh-server
 $INSTALL_CMD build-essential git wget curl unzip dos2unix htop libcurl3
+
+# Firewall Rules for SSH Server
+ufw allow ssh
 
 # Install Python
 $INSTALL_CMD python
@@ -140,7 +154,11 @@ sudo modprobe snd-aloop
 # need more - to hear sound under WSL you need the pulse daemon running (on Windows)
 
 # Dependencies for Oracle Client
-$INSTALL_CMD libaio
+$INSTALL_CMD libaio 
+
+# Alpine
+$INSTALL_CMD musl-dev libaio-dev libnsl-dev
+sudo ldconfig
 
 # Install Oracle Database Instant Client via permanent OTN link
 cd ~
@@ -168,7 +186,7 @@ sudo unzip instantclient-sqlplus*.zip -d $LD_LIBRARY_PATH/..
 # Permanent Link (latest version) - Instant Client - Tools (x86 64 bit) - addons incl Data Pump
 wget https://download.oracle.com/otn_software/linux/instantclient/instantclient-tools-linuxx64.zip
 sudo unzip instantclient-tools*.zip -d $LD_LIBRARY_PATH/..
-@ rm instantclient-tools*.zip
+# rm instantclient-tools*.zip
 
 # With the normal Oracle Client, oraenv script sets the ORACLE_HOME, ORACLE_BASE and LD_LIBRARY_PATH variables and
 # updates the PATH variable for Oracle
