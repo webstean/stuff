@@ -252,11 +252,17 @@ exec "$SHELL"
 
 # Install Go Package for Oracle DB connections
 # Needs Oracle instant client installed at run time
-go get github.com/godror/godror
+go get github.com/mattn/go-sqlite3
+sudo sh -c 'echo export CGO_ENABLED="1"                   >> /etc/profile.d/golang.sh'
 
 # Install Go Language Debugger (Delve)
 # go get needs git installed first
 go get github.com/go-delve/delve/cmd/dlv
+
+# Install Go Methods for SQL Lite
+go get github.com/mattn/go-sqlite3
+
+
 
 # Install Linux Debugger - gdb - VS Code needs delv for Go as the debugger
 $INSTALL_CMD gdb
