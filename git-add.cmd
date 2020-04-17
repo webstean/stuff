@@ -1,1 +1,2 @@
-git add -u
+@echo off
+git add -A
