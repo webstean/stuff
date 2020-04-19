@@ -146,6 +146,8 @@ if [[ $dbus_status = *"is not running"* ]]; then
 fi
 echo $dbus_status
 $INSTALL_CMD docker docker.io
+# Turn on Docker Build kit
+sudo sh -c 'echo export DOCKER_BUILDKIT="1" >> /etc/profile.d/ruby.sh'
 
 # Linux (ALSA) Audio Support
 $INSTALL_CMD libasound2-dev libasound2 libasound2-data module-init-tools libsndfile1-dev
