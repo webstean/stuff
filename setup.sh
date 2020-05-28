@@ -12,7 +12,7 @@
 # - Raspbian (Raspberry Pi)
 # - Alpine - note, MS Code only has limited remoted support for Alpine
 
-if [ -z "$SHELL" ] then
+if [ -z "$SHELL" ] ; then
     export SHELL=/bin/sh
 fi
 
@@ -105,21 +105,23 @@ $INSTALL_CMD git-core zlib1g-dev build-essential libssl-dev libreadline-dev liby
 $INSTALL_CMD libsqlite3-dev sqlite3 libxml2-dev libxslt1-dev libcurl4-openssl-dev 
 $INSTALL_CMD software-properties-common libffi-dev nodejs yarn
 
-sudo git clone https://github.com/rbenv/rbenv.git /opt/rbenv
-sudo sh -c 'echo export PATH=/opt/rbenv:\$PATH >  /etc/profile.d/ruby.sh'
-sudo sh -c 'echo eval "$(rbenv init -)"        >> /etc/profile.d/ruby.sh'
-exec "$SHELL"
+# sudo git clone https://github.com/rbenv/rbenv.git /opt/rbenv
+# sudo sh -c 'echo export PATH=/opt/rbenv:\$PATH >  /etc/profile.d/ruby.sh'
+# sudo sh -c 'echo eval "$(rbenv init -)"        >> /etc/profile.d/ruby.sh'
+# exec "$SHELL"
 
-sudo git clone https://github.com/rbenv/ruby-build.git /opt/rbenv/plugins/ruby-build
-sudo sh -c 'echo export PATH="/opt/rbenv/plugins/ruby-build/bin:\$PATH" >> /etc/profile.d/ruby.sh'
-exec "$SHELL"
+# sudo git clone https://github.com/rbenv/ruby-build.git /opt/rbenv/plugins/ruby-build
+# sudo sh -c 'echo export PATH="/opt/rbenv/plugins/ruby-build/bin:\$PATH" >> /etc/profile.d/ruby.sh'
+# exec "$SHELL"
 
-rbenv install 2.7.1
-rbenv global 2.7.1
-ruby -v
+# apt install rbenv
 
-gem install bundler
-rbenv rehash
+# rbenv install 2.7.1
+# rbenv global 2.7.1
+# ruby -v
+
+# gem install bundler
+# rbenv rehash
 
 # Add SSL support for APT repositories (required for Docker)
 $INSTALL_CMD apt-transport-https ca-certificates curl software-properties-common
@@ -156,29 +158,27 @@ sudo modprobe snd-aloop
 # need more - to hear sound under WSL you need the pulse daemon running (on Windows)
 
 # Dependencies for Oracle Client
-$INSTALL_CMD libaio 
+$INSTALL_CMD libaio unzip
 
 # Alpine
 $INSTALL_CMD musl-dev libaio-dev libnsl-dev
 sudo ldconfig
 
 # Install Oracle Database Instant Client via permanent OTN link
-cd ~
 # Permanent Link (latest version) - Instant Client - Basic (x86 64 bit) - you need this for anything else to work
 # Note: there is no Instant Client for the ARM processor, Intel/AMD x86 only
-wget https://download.oracle.com/otn_software/linux/instantclient/instantclient-basic-linuxx64.zip
+tmpdir=$(mktemp -d)
+wget https://download.oracle.com/otn_software/linux/instantclient/instantclient-basic-linuxx64.zip -nc -O $tmpdir
 sudo mkdir -p /opt/oracle
-sudo unzip instantclient-basic*.zip -d /opt/oracle
+sudo unzip $tmpdir/instantclient-basic*.zip -d /opt/oracle
 sudo chmod 755 /opt
 sudo chmod 755 /opt/oracle
 
 # rm instantclient-basic*.zip
 set -- /opt/oracle/instantclient*
 export LD_LIBRARY_PATH=$1
-# export LD_LIBRARY_PATH=${1::-1} - remove last character
-echo $LD_LIBRARY_PATH
-sudo sh -c 'echo export LD_LIBRARY_PATH=$LD_LIBRARY_PATH  >  /etc/profile.d/oracle.sh'
-sudo sh -c 'echo export PATH="$LD_LIBRARY_PATH:\$PATH"    >> /etc/profile.d/oracle.sh'
+sudo sh -c "echo export LD_LIBRARY_PATH=$1  >  /etc/profile.d/oracle.sh"
+sudo sh -c "echo export PATH= $1:'\$PATH'   >> /etc/profile.d/oracle.sh"
 
 # Permanent Link (latest version) - Instant Client - SQLplus (x86 64 bit) - addon (tiny - why not)
 wget https://download.oracle.com/otn_software/linux/instantclient/instantclient-sqlplus-linuxx64.zip
@@ -216,6 +216,7 @@ if [ -f /usr/bin/apt ] ; then
     sudo apt-get update
     # Client
     sudo ACCEPT_EULA=Y apt-get install -y msodbcsql mssql-tools unixodbc-dev
+    
     # Server (it's big)
     # sudo ACCEPT_EULA=Y apt-get install -y mssql-server
     # FYI: SQL Server for Linux listens on TCP port for connections (by default port TCP 1433)
@@ -263,8 +264,6 @@ go get github.com/go-delve/delve/cmd/dlv
 
 # Install Go Methods for SQL Lite
 go get github.com/mattn/go-sqlite3
-
-
 
 # Install Linux Debugger - gdb - VS Code needs delv for Go as the debugger
 $INSTALL_CMD gdb
@@ -319,6 +318,7 @@ cd ~
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip
 sudo ~/./aws/install
+/usr/local/bin/aws --version
 
 # apt clean  up
 if [ -f /usr/bin/apt ] ; then
