@@ -35,7 +35,7 @@ echo '%sudo ALL=(ALL:ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo
 # Authenticated
 # sudo sh -c 'echo # {HTTP,HTTPS,FTP}_PROXY=http://proxy.support.com\\USERN\@ME:port   >  /etc/profile.d/proxy.sh'
 
-# No Proxy
+# No Proxy - aka exceptions
 # sudo sh -c 'echo # NO_PROXY=localhost,127.0.0.1,::1,10.0.0.0/8 >> /etc/profile.d/proxy.sh'
 
 # Alpine
@@ -178,16 +178,16 @@ sudo chmod 755 /opt/oracle
 set -- /opt/oracle/instantclient*
 export LD_LIBRARY_PATH=$1
 sudo sh -c "echo export LD_LIBRARY_PATH=$1  >  /etc/profile.d/oracle.sh"
-sudo sh -c "echo export PATH= $1:'\$PATH'   >> /etc/profile.d/oracle.sh"
+sudo sh -c "echo export PATH=$1:'\$PATH'    >> /etc/profile.d/oracle.sh"
 
 # Permanent Link (latest version) - Instant Client - SQLplus (x86 64 bit) - addon (tiny - why not)
-wget https://download.oracle.com/otn_software/linux/instantclient/instantclient-sqlplus-linuxx64.zip
-sudo unzip instantclient-sqlplus*.zip -d $LD_LIBRARY_PATH/..
+wget https://download.oracle.com/otn_software/linux/instantclient/instantclient-sqlplus-linuxx64.zip -nc -O $tmpdir
+sudo unzip $tmpdir/instantclient-sqlplus*.zip -d $LD_LIBRARY_PATH/..
 # rm instantclient-sqlplus*.zip
 
 # Permanent Link (latest version) - Instant Client - Tools (x86 64 bit) - addons incl Data Pump
-wget https://download.oracle.com/otn_software/linux/instantclient/instantclient-tools-linuxx64.zip
-sudo unzip instantclient-tools*.zip -d $LD_LIBRARY_PATH/..
+wget https://download.oracle.com/otn_software/linux/instantclient/instantclient-tools-linuxx64.zip -nc -O $tmpdir
+sudo unzip $tmpdir/instantclient-tools*.zip -d $LD_LIBRARY_PATH/..
 # rm instantclient-tools*.zip
 
 # With the normal Oracle Client, oraenv script sets the ORACLE_HOME, ORACLE_BASE and LD_LIBRARY_PATH variables and
@@ -279,12 +279,14 @@ $INSTALL_CMD libgstreamer-plugins-base1.0-0 libgstreamer-plugins-base1.0-dev lib
 git clone https://github.com/alfredh/baresip ~/git/baresip
 git clone https://github.com/creytiv/re ~/git/re
 git clone https://github.com/creytiv/rem  ~/git/rem
-# Install Libre
+git clone https://github.com/openssl/openssl ~/git/openssl
+
+# Install & Build Libre
 cd ~/git/re && make && sudo make install && sudo ldconfig
-# Install Librem
+# Install & Build Librem
 cd ~/git/rem && make && sudo make install && sudo ldconfig
-# Install baresip
-cd ~/git/baresip && make && sudo make install && sudo ldconfig
+# Build baresip
+cd ~/git/baresip && make RELEASE=1 && sudo make RELEASE=1 install && sudo ldconfig
 # Test Baresip to initialize default config and Exit
 baresip -t -f $HOME/.baresip
 # Install Configuration from baresip-docker
