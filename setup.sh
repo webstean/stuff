@@ -28,6 +28,7 @@ echo 'needs to be added to /etc/sudoers file to avoid the password prompts'
 echo '%sudo ALL=(ALL:ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo
 
 # Proxy Support
+
 # Squid default port is 3128, but many setup the proxy on port 80,8000,8080
 # Unauthenticated
 # sudo sh -c 'echo # {HTTP,HTTPS,FTP}_PROXY=http://proxy.support.com:port   >  /etc/profile.d/proxy.sh'
@@ -65,12 +66,21 @@ $INSTALL_CMD vim tzdata openssh-server
 $INSTALL_CMD build-essential git wget curl unzip dos2unix htop libcurl3
 $INSTALL_CMD gdb
 
-# Firewall Rules for SSH Server
-ufw allow ssh
-
-# Install Python
-$INSTALL_CMD python
-$INSTALL_CMD python-dev py-pip build-base 
+# I would consider these packages essential or very nice to have. The GTK
+# version of Vim is to get +clipboard support, you'd still run terminal Vim.
+$INSTALL_CMD \
+  vim-gtk \
+  tmux \
+  git \
+  gpg \
+  curl \
+  rsync \
+  unzip \
+  htop \
+  shellcheck \
+  ripgrep \
+  pass \
+  python3-pip
 
 # Ensure git is install and then configure it 
 $INSTALL_CMD git
@@ -78,6 +88,72 @@ git config --global color.ui true
 git config --global user.name "Andrew Webster"
 git config --global user.email "webstean@gmail.com"
 git config --list
+
+# Install some Reference GIT Repos
+mkdir ~/git
+git clone https://github.com/oracle/docker-images ~/git/oracle-docker-images
+# An example of multi-repository C project that is updated regularly
+$INSTALL_CMD pkg-config alsa-utils libasound2-dev
+# Gstreamer bits, so the baresip gstreamer module will be built
+$INSTALL_CMD gstreamer1.0-alsa gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-tools gstreamer1.0-x 
+$INSTALL_CMD libgstreamer-plugins-base1.0-0 libgstreamer-plugins-base1.0-dev libgstreamer1.0-0 libgstreamer1.0-dev
+git clone https://github.com/alfredh/baresip ~/git/baresip
+git clone https://github.com/creytiv/re ~/git/re
+git clone https://github.com/creytiv/rem  ~/git/rem
+git clone https://github.com/openssl/openssl ~/git/openssl
+# Install & Build Libre
+cd ~/git/openssl && make && sudo make install && sudo ldconfig
+# Install & Build Libre
+cd ~/git/re && make && sudo make install && sudo ldconfig
+# Install & Build Librem
+cd ~/git/rem && make && sudo make install && sudo ldconfig
+# Build baresip
+cd ~/git/baresip && make RELEASE=1 && sudo make RELEASE=1 install && sudo ldconfig
+# Test Baresip to initialize default config and Exit
+baresip -t -f $HOME/.baresip
+# Install Configuration from baresip-docker
+git clone https://github.com/QXIP/baresip-docker.git ~/git/baresip-docker
+cp -R ~/git/baresip-docker $HOME/.baresip
+cp -R ~/git/baresip-docker/.asoundrc $HOME
+# Run Baresip set the SIP account
+#CMD baresip -d -f $HOME/.baresip && sleep 2 && curl http://127.0.0.1:8000/raw/?Rsip:root:root@127.0.0.1 && sleep 5 && curl http://127.0.0.1:8000/raw/?dbaresip@conference.sip2sip.info && sleep 60 && curl http://127.0.0.1:8000/raw/?bq
+
+# Install FZF (fuzzy finder on the terminal and used by a Vim plugin).
+git clone --depth 1 https://github.com/junegunn/fzf.git ~/git/fzf 
+~/git/fzf/install
+
+# Install ASDF (version manager which I use for non-Dockerized apps).
+git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.7.8
+
+# Install Node through ASDF.
+asdf plugin-add nodejs https://github.com/asdf-vm/asdf-nodejs.git
+bash ~/.asdf/plugins/nodejs/bin/import-release-team-keyring
+asdf install nodejs 12.17.0
+asdf global nodejs 12.17.0
+
+# Install system dependencies for Ruby.
+sudo apt-get install -y autoconf bison build-essential libssl-dev libyaml-dev \
+  libreadline6-dev zlib1g-dev libncurses5-dev libffi-dev libgdbm6 libgdbm-dev libdb-dev
+
+# Install Ruby through ASDF.
+asdf plugin-add ruby https://github.com/asdf-vm/asdf-ruby.git
+asdf install ruby 2.7.1
+asdf global ruby 2.7.1
+
+# Install Ansible.
+pip3 install --user ansible
+
+# Install Terraform.
+# curl "https://releases.hashicorp.com/terraform/0.12.26/terraform_0.12.26_linux_amd64.zip" -o "terraform.zip" \
+#  && unzip terraform.zip && chmod +x terraform \
+#  && sudo mv terraform ~/.local/bin && rm terraform.zip
+
+# Firewall Rules for SSH Server
+ufw allow ssh
+
+# Install Python
+$INSTALL_CMD python
+$INSTALL_CMD python-dev py-pip build-base 
 
 # Generate an SSH
 $INSTALL_CMD openssh-client
@@ -96,15 +172,10 @@ sqlite3 --version
 # sudo apt-get install sqlitebrowser
 # but it needs XWindows
 
-# *DATABASE* Postgres
-$INSTALL_CMD postgresql postgresql-contrib
-# To start Postgress
-# sudo -u postgres pg_ctlcluster 11 main start
-
 # Ruby on Rails
-$INSTALL_CMD git-core zlib1g-dev build-essential libssl-dev libreadline-dev libyaml-dev 
-$INSTALL_CMD libsqlite3-dev sqlite3 libxml2-dev libxslt1-dev libcurl4-openssl-dev 
-$INSTALL_CMD software-properties-common libffi-dev nodejs yarn
+#$INSTALL_CMD git-core zlib1g-dev build-essential libssl-dev libreadline-dev libyaml-dev 
+#$INSTALL_CMD libsqlite3-dev sqlite3 libxml2-dev libxslt1-dev libcurl4-openssl-dev 
+#$INSTALL_CMD software-properties-common libffi-dev nodejs yarn
 
 # sudo git clone https://github.com/rbenv/rbenv.git /opt/rbenv
 # sudo sh -c 'echo export PATH=/opt/rbenv:\$PATH >  /etc/profile.d/ruby.sh'
@@ -266,35 +337,6 @@ go get github.com/mattn/go-sqlite3
 # go get needs git installed first
 go get github.com/go-delve/delve/cmd/dlv
 
-# Install some Reference GIT Repos
-mkdir ~/git
-git clone https://github.com/oracle/docker-images ~/git/oracle-docker-images
-# An example of multi-repository C project that is updated regularly
-$INSTALL_CMD pkg-config alsa-utils libasound2-dev
-# Gstreamer bits, so the baresip gstreamer module will be built
-$INSTALL_CMD gstreamer1.0-alsa gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-tools gstreamer1.0-x 
-$INSTALL_CMD libgstreamer-plugins-base1.0-0 libgstreamer-plugins-base1.0-dev libgstreamer1.0-0 libgstreamer1.0-dev
-git clone https://github.com/alfredh/baresip ~/git/baresip
-git clone https://github.com/creytiv/re ~/git/re
-git clone https://github.com/creytiv/rem  ~/git/rem
-git clone https://github.com/openssl/openssl ~/git/openssl
-# Install & Build Libre
-cd ~/git/openssl && make && sudo make install && sudo ldconfig
-# Install & Build Libre
-cd ~/git/re && make && sudo make install && sudo ldconfig
-# Install & Build Librem
-cd ~/git/rem && make && sudo make install && sudo ldconfig
-# Build baresip
-cd ~/git/baresip && make RELEASE=1 && sudo make RELEASE=1 install && sudo ldconfig
-# Test Baresip to initialize default config and Exit
-baresip -t -f $HOME/.baresip
-# Install Configuration from baresip-docker
-git clone https://github.com/QXIP/baresip-docker.git ~/git/baresip-docker
-cp -R ~/git/baresip-docker $HOME/.baresip
-cp -R ~/git/baresip-docker/.asoundrc $HOME
-# Run Baresip set the SIP account
-#CMD baresip -d -f $HOME/.baresip && sleep 2 && curl http://127.0.0.1:8000/raw/?Rsip:root:root@127.0.0.1 && sleep 5 && curl http://127.0.0.1:8000/raw/?dbaresip@conference.sip2sip.info && sleep 60 && curl http://127.0.0.1:8000/raw/?bq
-
 # Install vcpkg
 # vcpkg helps you manage C and C++ libraries on Windows, Linux and MacOS
 #git clone https://github.com/Microsoft/vcpkg.git ~/git/vcpkg
@@ -345,7 +387,7 @@ sudo sh -c 'echo export HISTFILESIZE=50000                           >>  /etc/pr
 sudo sh -c 'echo export HISTSIZE=50000                               >>  /etc/profile.d/bash.sh'
 
 sudo sh -c 'echo # Add a timestamp to each command.                  >>  /etc/profile.d/bash.sh'
-sudo sh -c 'echo export HISTTIMEFORMAT="%Y/%m/%d %H:%M:%S:   "       >>  /etc/profile.d/bash.sh'
+sudo sh -c 'echo export HISTTIMEFORMAT="%Y/%m/%d %H:%M:%S:"          >>  /etc/profile.d/bash.sh'
 
 sudo sh -c 'echo # Duplicate lines and lines starting with a space are not put into the history. >>  /etc/profile.d/bash.sh'
 sudo sh -c 'echo export HISTCONTROL=ignoreboth                       >>  /etc/profile.d/bash.sh'
@@ -374,7 +416,7 @@ sudo sh -c 'echo esac                                                >>  /etc/pr
 # configure WSL
 sudo sh -c '[automount]             >   /etc/wsl.conf'
 sudo sh -c 'root = /                >>  /etc/wsl.conf'
-sudo sh -c 'options = "metadata"    >> /etc/wsl.conf'
+sudo sh -c 'options = "metadata"    >>  /etc/wsl.conf'
 
 # apt clean  up
 if [ -f /usr/bin/apt ] ; then
