@@ -123,7 +123,7 @@ git clone --depth 1 https://github.com/junegunn/fzf.git ~/git/fzf
 ~/git/fzf/install
 
 # Install ASDF (version manager which I use for non-Dockerized apps).
-git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.7.8
+git clone https://github.com/asdf-vm/asdf.git ~/.asdf ~/git/asdf --branch v0.7.8
 
 # Install Node through ASDF.
 asdf plugin-add nodejs https://github.com/asdf-vm/asdf-nodejs.git
