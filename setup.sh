@@ -35,34 +35,35 @@ echo '%sudo ALL=(ALL:ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo
 # Authenticated
 # sudo sh -c 'echo # {HTTP,HTTPS,FTP}_PROXY=http://proxy.support.com\\USERN\@ME:port   >  /etc/profile.d/proxy.sh'
 
-# No Proxy - aka exceptions
+# Proxy exceptions
 # sudo sh -c 'echo # NO_PROXY=localhost,127.0.0.1,::1,10.0.0.0/8 >> /etc/profile.d/proxy.sh'
 
 # Alpine
 if [ -f /sbin/apk ] ; then  
-    sudo apk update
-    sudo apk upgrade
-    sudo apk upgrade --available
-    export INSTALL_CMD="sudo apk add --no-cache --force-broken-world"
+#    sudo apk update
+#    sudo apk upgrade
+#    sudo apk upgrade --available
+     export INSTALL_CMD="sudo apk add --no-cache --force-broken-world"
 fi
 
 # Debian, Ubuntu apt
 if [ -f /usr/bin/apt ] ; then
-    sudo apt-get update 
-    sudo apt-get -y upgrade
+#    sudo apt-get update 
+#    sudo apt-get -y upgrade
     export INSTALL_CMD="sudo apt-get install -y"
 fi
 
 # Centos, RedHat, OraclieLinux yum
 if [ -f /usr/bin/yum ] ; then  
-    sudo yum -y update
-    sudo yum -y upgrade
+#    sudo yum -y update
+#    sudo yum -y upgrade
     export INSTALL_CMD="sudo yum install -y"
 fi
 
 # Developer Build System Support 
 $INSTALL_CMD vim tzdata openssh-server
 $INSTALL_CMD build-essential git wget curl unzip dos2unix htop libcurl3
+$INSTALL_CMD gdb
 
 # Firewall Rules for SSH Server
 ufw allow ssh
@@ -258,15 +259,12 @@ exec "$SHELL"
 go get github.com/mattn/go-sqlite3
 sudo sh -c 'echo export CGO_ENABLED="1"                   >> /etc/profile.d/golang.sh'
 
-# Install Go Language Debugger (Delve)
-# go get needs git installed first
-go get github.com/go-delve/delve/cmd/dlv
-
 # Install Go Methods for SQL Lite
 go get github.com/mattn/go-sqlite3
 
-# Install Linux Debugger - gdb - VS Code needs delv for Go as the debugger
-$INSTALL_CMD gdb
+# Install Linux Debugger - gdb - VS Code needs delv for Go as the debugger# Install Go Language Debugger (Delve)
+# go get needs git installed first
+go get github.com/go-delve/delve/cmd/dlv
 
 # Install some Reference GIT Repos
 mkdir ~/git
@@ -280,7 +278,8 @@ git clone https://github.com/alfredh/baresip ~/git/baresip
 git clone https://github.com/creytiv/re ~/git/re
 git clone https://github.com/creytiv/rem  ~/git/rem
 git clone https://github.com/openssl/openssl ~/git/openssl
-
+# Install & Build Libre
+cd ~/git/openssl && make && sudo make install && sudo ldconfig
 # Install & Build Libre
 cd ~/git/re && make && sudo make install && sudo ldconfig
 # Install & Build Librem
@@ -298,11 +297,11 @@ cp -R ~/git/baresip-docker/.asoundrc $HOME
 
 # Install vcpkg
 # vcpkg helps you manage C and C++ libraries on Windows, Linux and MacOS
-git clone https://github.com/Microsoft/vcpkg.git ~/git/vcpkg
-~/git/vcpkg/bootstrap-vcpkg.sh
-~/git/vcpkg/vcpkg integrate install
-~/git/vcpkg/vcpkg integrate bash
-exec $SHELL
+#git clone https://github.com/Microsoft/vcpkg.git ~/git/vcpkg
+#~/git/vcpkg/bootstrap-vcpkg.sh
+#~/git/vcpkg/vcpkg integrate install
+#~/git/vcpkg/vcpkg integrate bash
+#exec $SHELL
 
 # Join an on-premise Active Directory domain
 # Ubuntu
@@ -321,6 +320,61 @@ curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip
 unzip awscliv2.zip
 sudo ~/./aws/install
 /usr/local/bin/aws --version
+
+# WSL 2 DISPLAY variable
+if grep -q "microsoft" /proc/version &>/dev/null; then
+    # Requires: https://sourceforge.net/projects/vcxsrv/ (or alternative)
+    sudo sh -c 'echo export DISPLAY="$(/sbin/ip route | awk '/default/ { print \$3 }'):0" >  /etc/profile.d/display.sh'
+fi
+
+# WSL 1 DISPLAY variable
+if grep -qE "(Microsoft|WSL)" /proc/version &>/dev/null; then
+    if [ "$(umask)" = "0000" ]; then
+        umask 0022
+    fi
+
+    # Requires: https://sourceforge.net/projects/vcxsrv/ (or alternative)
+    sudo sh -c 'echo export DISPLAY=:0 >  /etc/profile.d/display.sh'
+fi
+
+sudo sh -c 'echo # Ensure $LINES and $COLUMNS always get updated.    >  /etc/profile.d/bash.sh'
+sudo sh -c 'echo shopt -s checkwinsize                               >>  /etc/profile.d/bash.sh'
+
+sudo sh -c 'echo # Limit number of lines and entries in the history. >>  /etc/profile.d/bash.sh'
+sudo sh -c 'echo export HISTFILESIZE=50000                           >>  /etc/profile.d/bash.sh'
+sudo sh -c 'echo export HISTSIZE=50000                               >>  /etc/profile.d/bash.sh'
+
+sudo sh -c 'echo # Add a timestamp to each command.                  >>  /etc/profile.d/bash.sh'
+sudo sh -c 'echo export HISTTIMEFORMAT="%Y/%m/%d %H:%M:%S:   "       >>  /etc/profile.d/bash.sh'
+
+sudo sh -c 'echo # Duplicate lines and lines starting with a space are not put into the history. >>  /etc/profile.d/bash.sh'
+sudo sh -c 'echo export HISTCONTROL=ignoreboth                       >>  /etc/profile.d/bash.sh'
+
+sudo sh -c 'echo # Append to the history file, dont overwrite it.    >>  /etc/profile.d/bash.sh'
+sudo sh -c 'echo shopt -s histappend                                 >>  /etc/profile.d/bash.sh'
+
+sudo sh -c 'echo # Ensure $LINES and $COLUMNS always get updated.    >>  /etc/profile.d/bash.sh'
+sudo sh -c 'echo shopt -s checkwinsize                               >>  /etc/profile.d/bash.sh'
+
+sudo sh -c 'echo # Enable bash completion.                           >>  /etc/profile.d/bash.sh'
+sudo sh -c 'echo [ -f /etc/bash_completion ] && . /etc/bash_completion   >>  /etc/profile.d/bash.sh'
+
+sudo sh -c 'echo # Improve output of less for binary files.          >> /etc/profile.d/bash.sh'
+sudo sh -c 'echo [ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"   >>  /etc/profile.d/bash.sh'
+
+sudo sh -c 'echo # If its an xterm compatible terminal, set the title to user@host: dir. >>  /etc/profile.d/xterm.sh'
+sudo sh -c 'echo case "$TERM" in                                     >>  /etc/profile.d/xterm.sh'
+sudo sh -c 'echo xterm*|rxvt*)                                       >>  /etc/profile.d/xterm.sh'
+sudo sh -c 'echo     PS1="\[\e]0;\u@\h: \w\a\]$PS1"                  >>  /etc/profile.d/xterm.sh'
+sudo sh -c 'echo     ;;                                              >>  /etc/profile.d/xterm.sh'
+sudo sh -c 'echo *)                                                  >>  /etc/profile.d/xterm.sh'
+sudo sh -c 'echo     ;;                                              >>  /etc/profile.d/xterm.sh'
+sudo sh -c 'echo esac                                                >>  /etc/profile.d/xterm.sh'
+
+# configure WSL
+sudo sh -c '[automount]             >   /etc/wsl.conf'
+sudo sh -c 'root = /                >>  /etc/wsl.conf'
+sudo sh -c 'options = "metadata"    >> /etc/wsl.conf'
 
 # apt clean  up
 if [ -f /usr/bin/apt ] ; then
