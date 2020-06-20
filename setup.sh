@@ -12,6 +12,8 @@
 # - Raspbian (Raspberry Pi)
 # - Alpine - note, MS Code only has limited remoted support for Alpine
 
+if [[ $(id -u) -ne 0 ]] ; then echo "Please run as root" ; exit 1 ; fi
+
 if [ -z "$SHELL" ] ; then
     export SHELL=/bin/sh
 fi
@@ -30,12 +32,14 @@ echo '%sudo ALL=(ALL:ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo
 # Proxy Support
 
 # Squid default port is 3128, but many setup the proxy on port 80,8000,8080
+# Authenticated
+# USERN=UserName
+# @ME=Password
+# sudo sh -c 'echo # {HTTP,HTTPS,FTP}_PROXY=http://proxy.support.com\\USERN\@ME:port   >  /etc/profile.d/proxy.sh'
+
 # Unauthenticated
 # sudo sh -c 'echo # {HTTP,HTTPS,FTP}_PROXY=http://proxy.support.com:port   >  /etc/profile.d/proxy.sh'
 # 
-# Authenticated
-# sudo sh -c 'echo # {HTTP,HTTPS,FTP}_PROXY=http://proxy.support.com\\USERN\@ME:port   >  /etc/profile.d/proxy.sh'
-
 # Proxy exceptions
 # sudo sh -c 'echo # NO_PROXY=localhost,127.0.0.1,::1,10.0.0.0/8 >> /etc/profile.d/proxy.sh'
 
@@ -45,6 +49,10 @@ git config --global color.ui true
 git config --global user.name "Andrew Webster"
 git config --global user.email "webstean@gmail.com"
 git config --list
+
+# Generate an SSH
+$INSTALL_CMD openssh-client
+cat /dev/zero | ssh-keygen -q -N "" -C "webstean@gmail.com"
 
 # Install some Reference GIT Repos
 mkdir ~/git
@@ -79,8 +87,8 @@ cp -R ~/git/baresip-docker/.asoundrc $HOME
 git clone --depth 1 https://github.com/junegunn/fzf.git ~/git/fzf 
 ~/git/fzf/install
 
-# Install ASDF (version manager which I use for non-Dockerized apps).
-git clone https://github.com/asdf-vm/asdf.git ~/.asdf ~/git/asdf --branch v0.7.8
+# Install ASDF (version manager for non-Dockerized apps).
+git clone https://github.com/asdf-vm/asdf.git ~/git/asdf --branch v0.7.8
 
 # Install Node through ASDF.
 asdf plugin-add nodejs https://github.com/asdf-vm/asdf-nodejs.git
@@ -112,22 +120,17 @@ ufw allow ssh
 $INSTALL_CMD python
 $INSTALL_CMD python-dev py-pip build-base 
 
-# Generate an SSH
-$INSTALL_CMD openssh-client
-cat /dev/zero | ssh-keygen -q -N "" -C "webstean@gmail.com"
-
 # *DATABASE* SQL Lite
 $INSTALL_CMD sqlite3 libsqlite3-dev
 if [ -f /sbin/apk ] ; then  
     $INSTALL_CMD sqlite libsqlite-dev
 fi
-sqlite3 --version
 # create database
 # sqlite test.db
 
-# sqlite3 is the cli
-# sudo apt-get install sqlitebrowser
-# but it needs XWindows
+# sqlite3 is the cli, sqlitebrowser is the GUI
+# but needs XWindows
+# $INSTALL_CMD sqlitebrowser
 
 # Ruby on Rails
 #$INSTALL_CMD git-core zlib1g-dev build-essential libssl-dev libreadline-dev libyaml-dev 
@@ -263,31 +266,6 @@ if [ -x /opt/mssql/bin/mssql-conf ] ; then
     /opt/mssql/bin/mssql-conf setup
 fi
 
-# Install Go Language (golang) Support
-$INSTALL_CMD curl
-cd ~
-curl -O https://storage.googleapis.com/golang/getgo/installer_linux
-chmod 700 installer_linux
-./installer_linux
-sudo mv .go /usr/local/go
-sudo sh -c 'echo export GOHOME=\$HOME/go                  >  /etc/profile.d/golang.sh'
-mkdir $HOME/go
-sudo sh -c 'echo export GOROOT=/usr/local/go              >> /etc/profile.d/golang.sh'
-sudo sh -c 'echo export PATH="/usr/local/go/bin:\$PATH"   >> /etc/profile.d/golang.sh'
-exec "$SHELL"
-
-# Install Go Package for Oracle DB connections
-# Needs Oracle instant client installed at run time
-go get github.com/mattn/go-sqlite3
-sudo sh -c 'echo export CGO_ENABLED="1"                   >> /etc/profile.d/golang.sh'
-
-# Install Go Methods for SQL Lite
-go get github.com/mattn/go-sqlite3
-
-# Install Linux Debugger - gdb - VS Code needs delv for Go as the debugger# Install Go Language Debugger (Delve)
-# go get needs git installed first
-go get github.com/go-delve/delve/cmd/dlv
-
 # Install vcpkg
 # vcpkg helps you manage C and C++ libraries on Windows, Linux and MacOS
 #git clone https://github.com/Microsoft/vcpkg.git ~/git/vcpkg
@@ -312,6 +290,13 @@ cd ~
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip
 sudo ~/./aws/install
+
+# Install AWS CLI
+curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+
+# go get -u -d github.com/Azure/azure-sdk-for-go/...
+
+
 
 # WSL 1
 if grep -qE "(Microsoft|WSL)" /proc/version &>/dev/null; then

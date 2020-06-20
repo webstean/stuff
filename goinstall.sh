@@ -2,9 +2,16 @@
 set -e
 
 VERSION="1.14"
+GOROOT="/usr/local/go"
+# GOPATH="/usr/local/go"
+GOPATH="$HOME/go"
 
-[ -z "$GOROOT" ] && GOROOT="$HOME/.go"
-[ -z "$GOPATH" ] && GOPATH="$HOME/go"
+if [ ! -z "$1" ]; then
+    echo "Unrecognized option: $1"
+    exit 1
+fi
+
+if [[ $(id -u) -ne 0 ]] ; then echo "Please run as root" ; exit 1 ; fi
 
 OS="$(uname -s)"
 ARCH="$(uname -m)"
@@ -50,19 +57,7 @@ fi
 
 if [ "$1" == "--remove" ]; then
     rm -rf "$GOROOT"
-    if [ "$OS" == "Darwin" ]; then
-        sed -i "" '/# GoLang/d' "$HOME/.${shell_profile}"
-        sed -i "" '/export GOROOT/d' "$HOME/.${shell_profile}"
-        sed -i "" '/$GOROOT\/bin/d' "$HOME/.${shell_profile}"
-        sed -i "" '/export GOPATH/d' "$HOME/.${shell_profile}"
-        sed -i "" '/$GOPATH\/bin/d' "$HOME/.${shell_profile}"
-    else
-        sed -i '/# GoLang/d' "$HOME/.${shell_profile}"
-        sed -i '/export GOROOT/d' "$HOME/.${shell_profile}"
-        sed -i '/$GOROOT\/bin/d' "$HOME/.${shell_profile}"
-        sed -i '/export GOPATH/d' "$HOME/.${shell_profile}"
-        sed -i '/$GOPATH\/bin/d' "$HOME/.${shell_profile}"
-    fi
+    rm -rf /etc/profile.d/golang.sh
     echo "Go removed."
     exit 0
 elif [ "$1" == "--help" ]; then
@@ -81,6 +76,7 @@ fi
 
 if [ -d "$GOROOT" ]; then
     echo "The Go install directory ($GOROOT) already exists. Exiting."
+    echo "Use $0 --remove\tto remove currently installed version"
     exit 1
 fi
 
@@ -102,17 +98,38 @@ fi
 echo "Extracting File..."
 mkdir -p "$GOROOT"
 tar -C "$GOROOT" --strip-components=1 -xzf "$TEMP_DIRECTORY/go.tar.gz"
-touch "$HOME/.${shell_profile}"
+GOPATH="$HOME/go"
 {
     echo '# GoLang'
-    echo "export GOROOT=${GOROOT}"
-    echo 'export PATH=$GOROOT/bin:$PATH'
-    echo "export GOPATH=$GOPATH"
-    echo 'export PATH=$GOPATH/bin:$PATH'
-} >> "$HOME/.${shell_profile}"
+    echo export GOROOT=${GOROOT}
+    echo export PATH=${GOROOT}/bin:${PATH}
+    echo "if [ -d \${HOME}/go ] ; then"
+    echo '  export GOPATH=${HOME}/go'
+    echo '  export PATH=${GOPATH}/bin:${PATH}'
+    echo 'fi'
+} > '/etc/profile.d/golang.sh'
 
 mkdir -p $GOPATH/{src,pkg,bin}
 echo -e "\nGo $VERSION was installed into $GOROOT.\nMake sure to relogin into your shell or run:"
 echo -e "\n\tsource $HOME/.${shell_profile}\n\nto update your environment variables."
 echo "Tip: Opening a new terminal window usually just works. :)"
 rm -f "$TEMP_DIRECTORY/go.tar.gz"
+
+# Install Go Package for Oracle DB connections
+# Needs Oracle instant client installed at run time
+echo Installing Godror (Oracle Client) into $GOPATH....
+go get github.com/godror/godror
+
+# Install Go Methods for SQL Lite
+echo Installing SQL Lite Client into $GOPATH....
+go get github.com/mattn/go-sqlite3
+
+# Install Go Methods for Azure
+echo Installing Azure SDK for into $GOPATH....
+go get -u -d github.com/Azure/azure-sdk-for-go/...
+
+# Install Linux Debugger - gdb - VS Code needs delv for Go as the debugger# Install Go Language Debugger (Delve)
+# go get needs git installed first
+echo Installing Go Debugger Dlv into $GOPATH....
+go get github.com/go-delve/delve/cmd/dlv
+

@@ -39,6 +39,7 @@ fi
 
 # AWS
 if which aws; then
+    echo "aws Client installed"
     aws --version
 else
     echo "aws *Not Installed*"
@@ -46,7 +47,7 @@ fi
 
 # Terraform
 if which terraform; then
-    echo "terraform *Not Installed*"
+    echo "terraform is installed"
     terraform --version
 else    
     echo "terraform *Not Installed*"
@@ -62,8 +63,17 @@ else
 fi
 
 if which sqlplus; then
+    echo "Oracle Database Client is installed"
     sqlplus -v
 else
     echo "Oracle Database Client *Not Installed*"
 fi
-     
+
+if which sqlite3; then
+    echo "Sqlite3 is installed"
+    sqlite3 --version
+else
+    echo "Sqlite3  *Not Installed*"
+fi
+sqlite3 --version
+

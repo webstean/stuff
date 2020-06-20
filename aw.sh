@@ -1,6 +1,61 @@
 #!/bin/bash
 # Install some Reference GIT Repos
 
+# Install FZF (fuzzy finder on the terminal and used by a Vim plugin).
+# git clone --depth 1 https://github.com/junegunn/fzf.git ~/git/fzf
+# ~/git/fzf/install --all
+
+# Install ASDF (version manager for non-Dockerized apps).
+git clone https://github.com/asdf-vm/asdf.git ~/git/asdf --branch v0.7.8
+
+# Install Certificates
+~/git/asdf/bin/asdf plugin-add nodejs https://github.com/asdf-vm/asdf-nodejs.git
+
+# Install Node through ASDF.
+bash ~/.asdf/plugins/nodejs/bin/import-release-team-keyring
+asdf install nodejs 12.17.0
+asdf global nodejs 12.17.0
+
+exit 0
+
+# Install system dependencies for Ruby.
+sudo apt-get install -y autoconf bison build-essential libssl-dev libyaml-dev \
+  libreadline6-dev zlib1g-dev libncurses5-dev libffi-dev libgdbm6 libgdbm-dev libdb-dev
+
+# Install Ruby through ASDF.
+asdf plugin-add ruby https://github.com/asdf-vm/asdf-ruby.git
+asdf install ruby 2.7.1
+asdf global ruby 2.7.1
+
+# Install Ansible.
+pip3 install --user ansible
+
+# Install Terraform.
+# curl "https://releases.hashicorp.com/terraform/0.12.26/terraform_0.12.26_linux_amd64.zip" -o "terraform.zip" \
+#  && unzip terraform.zip && chmod +x terraform \
+#  && sudo mv terraform ~/.local/bin && rm terraform.zip
+
+# Firewall Rules for SSH Server
+ufw allow ssh
+
+# Install Python
+$INSTALL_CMD python
+$INSTALL_CMD python-dev py-pip build-base 
+
+# *DATABASE* SQL Lite
+$INSTALL_CMD sqlite3 libsqlite3-dev
+if [ -f /sbin/apk ] ; then  
+    $INSTALL_CMD sqlite libsqlite-dev
+fi
+# create database
+# sqlite test.db
+
+# sqlite3 is the cli, sqlitebrowser is the GUI
+# but needs XWindows
+# $INSTALL_CMD sqlitebrowser
+
+exit 0
+
 # Alpine
 if [ -f /sbin/apk ] ; then  
 #    sudo apk update
