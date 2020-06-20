@@ -39,49 +39,6 @@ echo '%sudo ALL=(ALL:ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo
 # Proxy exceptions
 # sudo sh -c 'echo # NO_PROXY=localhost,127.0.0.1,::1,10.0.0.0/8 >> /etc/profile.d/proxy.sh'
 
-# Alpine
-if [ -f /sbin/apk ] ; then  
-#    sudo apk update
-#    sudo apk upgrade
-#    sudo apk upgrade --available
-     export INSTALL_CMD="sudo apk add --no-cache --force-broken-world"
-fi
-
-# Debian, Ubuntu apt
-if [ -f /usr/bin/apt ] ; then
-#    sudo apt-get update 
-#    sudo apt-get -y upgrade
-    export INSTALL_CMD="sudo apt-get install -y"
-fi
-
-# Centos, RedHat, OraclieLinux yum
-if [ -f /usr/bin/yum ] ; then  
-#    sudo yum -y update
-#    sudo yum -y upgrade
-    export INSTALL_CMD="sudo yum install -y"
-fi
-
-# Developer Build System Support 
-$INSTALL_CMD vim tzdata openssh-server
-$INSTALL_CMD build-essential git wget curl unzip dos2unix htop libcurl3
-$INSTALL_CMD gdb
-
-# I would consider these packages essential or very nice to have. The GTK
-# version of Vim is to get +clipboard support, you'd still run terminal Vim.
-$INSTALL_CMD \
-  vim-gtk \
-  tmux \
-  git \
-  gpg \
-  curl \
-  rsync \
-  unzip \
-  htop \
-  shellcheck \
-  ripgrep \
-  pass \
-  python3-pip
-
 # Ensure git is install and then configure it 
 $INSTALL_CMD git
 git config --global color.ui true
@@ -223,12 +180,6 @@ $INSTALL_CMD docker docker.io
 # Turn on Docker Build kit
 sudo sh -c 'echo export DOCKER_BUILDKIT="1" >> /etc/profile.d/ruby.sh'
 
-# Linux (ALSA) Audio Support
-$INSTALL_CMD libasound2-dev libasound2 libasound2-data module-init-tools libsndfile1-dev
-sudo modprobe snd-dummy
-sudo modprobe snd-aloop
-# need more - to hear sound under WSL you need the pulse daemon running (on Windows)
-
 # Dependencies for Oracle Client
 $INSTALL_CMD libaio unzip
 
@@ -276,7 +227,7 @@ if [ -f /sbin/apk ] ; then
     $INSTALL_CMD libnsl libaio musl-dev autconfig
 fi
 
-# Install Microsoft SQL Server 2019 Client and optionally SQL Server
+# Install Microsoft SQL Server Client
 if [ -f /usr/bin/apt ] ; then
     # prereq
     $INSTALL_CMD libcurl3
@@ -292,7 +243,7 @@ if [ -f /usr/bin/apt ] ; then
     # Server (it's big)
     # sudo ACCEPT_EULA=Y apt-get install -y mssql-server
     # FYI: SQL Server for Linux listens on TCP port for connections (by default port TCP 1433)
-    systemctl status mssql-server --no-pager
+    # systemctl status mssql-server --no-pager
 fi
 
 if [ -f /usr/bin/yum ] ; then
@@ -361,23 +312,25 @@ cd ~
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip
 sudo ~/./aws/install
-/usr/local/bin/aws --version
 
-# WSL 2 DISPLAY variable
-if grep -q "microsoft" /proc/version &>/dev/null; then
-    # Requires: https://sourceforge.net/projects/vcxsrv/ (or alternative)
-    sudo sh -c 'echo export DISPLAY="$(/sbin/ip route | awk '/default/ { print \$3 }'):0" >  /etc/profile.d/display.sh'
-fi
-
-# WSL 1 DISPLAY variable
+# WSL 1
 if grep -qE "(Microsoft|WSL)" /proc/version &>/dev/null; then
     if [ "$(umask)" = "0000" ]; then
         umask 0022
     fi
-
-    # Requires: https://sourceforge.net/projects/vcxsrv/ (or alternative)
-    sudo sh -c 'echo export DISPLAY=:0 >  /etc/profile.d/display.sh'
+sudo bash -c 'cat << EOF > /etc/profile.d/display.sh
+export DISPLAY=:0
+EOF'
 fi
+
+# WSL 2
+if grep -q "microsoft" /proc/version &>/dev/null; then
+    # Requires: https://sourceforge.net/projects/vcxsrv/ (or alternative)
+sudo bash -c 'cat << EOF > /etc/profile.d/display.sh
+export DISPLAY=\$(ip route list | sed -n -e "s/^default.*[[:space:]]\([[:digit:]]\+\.[[:digit:]]\+\.[[:digit:]]\+\.[[:digit:]]\+\).*/\1/p"):0
+EOF'
+fi
+
 
 sudo sh -c 'echo # Ensure $LINES and $COLUMNS always get updated.    >  /etc/profile.d/bash.sh'
 sudo sh -c 'echo shopt -s checkwinsize                               >>  /etc/profile.d/bash.sh'
