@@ -6,11 +6,6 @@ GOROOT="/usr/local/go"
 # GOPATH="/usr/local/go"
 GOPATH="$HOME/go"
 
-if [ ! -z "$1" ]; then
-    echo "Unrecognized option: $1"
-    exit 1
-fi
-
 if [[ $(id -u) -ne 0 ]] ; then echo "Please run as root" ; exit 1 ; fi
 
 OS="$(uname -s)"
@@ -70,7 +65,7 @@ elif [ "$1" == "--version" ]; then
         VERSION=$2
     fi
 elif [ ! -z "$1" ]; then
-    echo "Unrecognized option: $1"
+    echo "Unrecognized aaa option: ($1)"
     exit 1
 fi
 
