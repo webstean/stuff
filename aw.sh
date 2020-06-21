@@ -1,12 +1,43 @@
 #!/bin/bash
 # Install some Reference GIT Repos
 
+# Install Microsoft SQL Server Client
+if [ -f /usr/bin/apt ] ; then
+    # Import the public repository GPG keys
+    curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+
+    # Register the Microsoft Ubuntu repository
+    echo sudo apt-add-repository https://packages.microsoft.com/ubuntu/$(lsb_release -sr)/prod
+
+    # Update the list of products
+    sudo apt-get update
+
+    # Install mssql-cli
+    sudo apt-get install mssql-cli
+
+    # Install missing dependencies
+    sudo apt-get install -f
+
+    # Cleanup
+    sudo apt autoremove -y
+fi
+
+exit 0
+
+
+sudo bash -c "echo '%sudo ALL=(ALL:ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo"
+
 # Install FZF (fuzzy finder on the terminal and used by a Vim plugin).
 # git clone --depth 1 https://github.com/junegunn/fzf.git ~/git/fzf
 # ~/git/fzf/install --all
 
 # Install ASDF (version manager for non-Dockerized apps).
 git clone https://github.com/asdf-vm/asdf.git ~/git/asdf --branch v0.7.8
+
+# Enable asdf to manage various programming runtime versions.
+#   Requires: https://asdf-vm.com/#/
+source "~/git/asdf/asdf.sh"
+
 
 # Install Certificates
 ~/git/asdf/bin/asdf plugin-add nodejs https://github.com/asdf-vm/asdf-nodejs.git

@@ -98,15 +98,14 @@ fi
 echo "Extracting File..."
 mkdir -p "$GOROOT"
 tar -C "$GOROOT" --strip-components=1 -xzf "$TEMP_DIRECTORY/go.tar.gz"
-GOPATH="$HOME/go"
 {
     echo '# GoLang'
     echo export GOROOT=${GOROOT}
     echo export PATH=${GOROOT}/bin:${PATH}
-    echo "if [ -d \${HOME}/go ] ; then"
-    echo '  export GOPATH=${HOME}/go'
-    echo '  export PATH=${GOPATH}/bin:${PATH}'
-    echo 'fi'
+    echo 'if [ -d \${HOME}/go ] ; then'
+    echo '    export GOPATH=${HOME}/go'
+    echo '    export PATH=${GOPATH}/bin:${PATH}'
+    echo fi
 } > '/etc/profile.d/golang.sh'
 
 mkdir -p $GOPATH/{src,pkg,bin}
@@ -117,19 +116,22 @@ rm -f "$TEMP_DIRECTORY/go.tar.gz"
 
 # Install Go Package for Oracle DB connections
 # Needs Oracle instant client installed at run time
-echo Installing Godror (Oracle Client) into $GOPATH....
-go get github.com/godror/godror
+echo "Installing Godror (Oracle Client) into ${GOPATH}..."
+${GOROOT}/bin/go get github.com/godror/godror
 
 # Install Go Methods for SQL Lite
-echo Installing SQL Lite Client into $GOPATH....
-go get github.com/mattn/go-sqlite3
+echo "Installing SQL Lite Client into ${GOPATH}..."
+${GOROOT}/bin/go get github.com/mattn/go-sqlite3
 
 # Install Go Methods for Azure
-echo Installing Azure SDK for into $GOPATH....
-go get -u -d github.com/Azure/azure-sdk-for-go/...
+echo "Installing Azure SDK for into ${GOPATH}..."
+${GOROOT}/bin/go get -u -d github.com/Azure/azure-sdk-for-go/...
 
 # Install Linux Debugger - gdb - VS Code needs delv for Go as the debugger# Install Go Language Debugger (Delve)
 # go get needs git installed first
-echo Installing Go Debugger Dlv into $GOPATH....
-go get github.com/go-delve/delve/cmd/dlv
+echo "Installing Go Debugger Dlv into ${GOPATH}..."
+${GOROOT}/bin/go get github.com/go-delve/delve/cmd/dlv
+
+echo "Installing Go Examples ${HOME}/go/src/github.com/inancgumus/learngo"
+${GOROOT}/bin/go get https://github.com/inancgumus/learngo
 

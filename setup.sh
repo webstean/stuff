@@ -23,11 +23,7 @@ if [ -f /sbin/apk ] ; then
     apk add sudo
 fi
 
-# for convenience
-# Edit /etc/sudoes and amend:-
-echo '%sudo   ALL=(ALL:ALL) NOPASSWD:ALL'
-echo 'needs to be added to /etc/sudoers file to avoid the password prompts'
-echo '%sudo ALL=(ALL:ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo
+sudo bash -c "echo '%sudo ALL=(ALL:ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo"
 
 # Proxy Support
 
@@ -96,14 +92,11 @@ bash ~/.asdf/plugins/nodejs/bin/import-release-team-keyring
 asdf install nodejs 12.17.0
 asdf global nodejs 12.17.0
 
-# Install system dependencies for Ruby.
-sudo apt-get install -y autoconf bison build-essential libssl-dev libyaml-dev \
-  libreadline6-dev zlib1g-dev libncurses5-dev libffi-dev libgdbm6 libgdbm-dev libdb-dev
-
 # Install Ruby through ASDF.
 asdf plugin-add ruby https://github.com/asdf-vm/asdf-ruby.git
 asdf install ruby 2.7.1
 asdf global ruby 2.7.1
+
 
 # Install Ansible.
 pip3 install --user ansible
@@ -155,10 +148,9 @@ fi
 # gem install bundler
 # rbenv rehash
 
+# Docker 
 # Add SSL support for APT repositories (required for Docker)
 $INSTALL_CMD apt-transport-https ca-certificates curl software-properties-common
-
-# Docker 
 # cleanup
 sudo apt-get purge docker lxc-docker docker-engine docker.io
 # add key
@@ -183,14 +175,13 @@ $INSTALL_CMD docker docker.io
 # Turn on Docker Build kit
 sudo sh -c 'echo export DOCKER_BUILDKIT="1" >> /etc/profile.d/ruby.sh'
 
-# Dependencies for Oracle Client
-$INSTALL_CMD libaio unzip
-
 # Alpine
 $INSTALL_CMD musl-dev libaio-dev libnsl-dev
 sudo ldconfig
 
 # Install Oracle Database Instant Client via permanent OTN link
+# Dependencies for Oracle Client
+$INSTALL_CMD libaio unzip
 # Permanent Link (latest version) - Instant Client - Basic (x86 64 bit) - you need this for anything else to work
 # Note: there is no Instant Client for the ARM processor, Intel/AMD x86 only
 tmpdir=$(mktemp -d)
@@ -232,47 +223,26 @@ fi
 
 # Install Microsoft SQL Server Client
 if [ -f /usr/bin/apt ] ; then
-    # prereq
-    $INSTALL_CMD libcurl3
-    $INSTALL_CMD curl
-    #
+    # Import the public repository GPG keys
     curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
-    curl https://packages.microsoft.com/config/ubuntu/16.04/prod.list | sudo tee /etc/apt/sources.list.d/msprod.list
-    sudo add-apt-repository "$(wget -qO- https://packages.microsoft.com/config/ubuntu/18.04/mssql-server-2019.list)"
-    sudo apt-get update
-    # Client
-    sudo ACCEPT_EULA=Y apt-get install -y msodbcsql mssql-tools unixodbc-dev
-    
-    # Server (it's big)
-    # sudo ACCEPT_EULA=Y apt-get install -y mssql-server
-    # FYI: SQL Server for Linux listens on TCP port for connections (by default port TCP 1433)
-    # systemctl status mssql-server --no-pager
-fi
 
-if [ -f /usr/bin/yum ] ; then
-    # Damn Microsoft - the http is case senstive the repository is redhat instead Redhat that we get from lsb_release
-    sudo curl -o /etc/yum.repos.d/mssql-server.repo https://packages.microsoft.com/config/$(lsb_release -si)/$(lsb_release -sr)/mssql-server-2019.repo
-    $INSTALL_CMD mssql-server
-    systemctl status mssql-server --no-pager
+    # Register the Microsoft Ubuntu repository
+    echo sudo apt-add-repository https://packages.microsoft.com/ubuntu/$(lsb_release -sr)/prod
+
+    # Update the list of products
+    sudo apt-get update
+
+    # Install mssql-cli
+    sudo apt-get install mssql-cli
+
+    # Install missing dependencies
+    sudo apt-get install -f
 fi
 
 if [ -d /opt/mssql-tools/bin/ ] ; then  
         sudo sh -c 'echo export PATH="/opt/ssql-tools/bin:$PATH"  > /etc/profile.d/mssql.sh'
         # sqlcmd -S localhost -U SA -P '<YourPassword>'
 fi
-
-# run SQL Server setup - NEED TO CHECK OUT
-if [ -x /opt/mssql/bin/mssql-conf ] ; then
-    /opt/mssql/bin/mssql-conf setup
-fi
-
-# Install vcpkg
-# vcpkg helps you manage C and C++ libraries on Windows, Linux and MacOS
-#git clone https://github.com/Microsoft/vcpkg.git ~/git/vcpkg
-#~/git/vcpkg/bootstrap-vcpkg.sh
-#~/git/vcpkg/vcpkg integrate install
-#~/git/vcpkg/vcpkg integrate bash
-#exec $SHELL
 
 # Join an on-premise Active Directory domain
 # Ubuntu
@@ -291,70 +261,58 @@ curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip
 unzip awscliv2.zip
 sudo ~/./aws/install
 
-# Install AWS CLI
+# Install Azure CLI
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 
-# go get -u -d github.com/Azure/azure-sdk-for-go/...
+# Azure Arc Agent - Download the installation package.
+# wget https://aka.ms/azcmagent -O ~/Install_linux_azcmagent.sh
 
+# Azure Arc Agent - Install the connected machine agent. 
+# bash ~/Install_linux_azcmagent.sh
 
+# azcmagent connect --resource-group "<resourceGroupName>" --tenant-id "<tenantID>" --location "<regionName>" --subscription-id "<subscriptionID>"
 
-# WSL 1
+sudo bash -c 'cat << EOF > /etc/profile.d/display.sh
+# WSL 1 - Easy 
 if grep -qE "(Microsoft|WSL)" /proc/version &>/dev/null; then
     if [ "$(umask)" = "0000" ]; then
         umask 0022
     fi
-sudo bash -c 'cat << EOF > /etc/profile.d/display.sh
-export DISPLAY=:0
-EOF'
+    export DISPLAY=:0
 fi
-
-# WSL 2
+# WSL 2 - Complicated during to Virtual Network
 if grep -q "microsoft" /proc/version &>/dev/null; then
     # Requires: https://sourceforge.net/projects/vcxsrv/ (or alternative)
-sudo bash -c 'cat << EOF > /etc/profile.d/display.sh
-export DISPLAY=\$(ip route list | sed -n -e "s/^default.*[[:space:]]\([[:digit:]]\+\.[[:digit:]]\+\.[[:digit:]]\+\.[[:digit:]]\+\).*/\1/p"):0
-EOF'
+    export DISPLAY=\$(ip route list | sed -n -e "s/^default.*[[:space:]]\([[:digit:]]\+\.[[:digit:]]\+\.[[:digit:]]\+\.[[:digit:]]\+\).*/\1/p"):0
 fi
+EOF'
 
+sudo sh -c 'echo "# Ensure \$LINES and \$COLUMNS always get updated."  >  /etc/profile.d/bash.sh'
+sudo sh -c 'echo shopt -s checkwinsize                                 >>  /etc/profile.d/bash.sh'
 
-sudo sh -c 'echo # Ensure $LINES and $COLUMNS always get updated.    >  /etc/profile.d/bash.sh'
-sudo sh -c 'echo shopt -s checkwinsize                               >>  /etc/profile.d/bash.sh'
+sudo sh -c 'echo "# Limit number of lines and entries in the history." >>  /etc/profile.d/bash.sh'
+sudo sh -c 'echo export HISTFILESIZE=50000                             >>  /etc/profile.d/bash.sh'
+sudo sh -c 'echo export HISTSIZE=50000                                 >>  /etc/profile.d/bash.sh'
 
-sudo sh -c 'echo # Limit number of lines and entries in the history. >>  /etc/profile.d/bash.sh'
-sudo sh -c 'echo export HISTFILESIZE=50000                           >>  /etc/profile.d/bash.sh'
-sudo sh -c 'echo export HISTSIZE=50000                               >>  /etc/profile.d/bash.sh'
+sudo sh -c 'echo "# Add a timestamp to each command."                  >>  /etc/profile.d/bash.sh'
+sudo sh -c 'echo export HISTTIMEFORMAT=\"%Y/%m/%d %H:%M:%S:\"          >>  /etc/profile.d/bash.sh'
 
-sudo sh -c 'echo # Add a timestamp to each command.                  >>  /etc/profile.d/bash.sh'
-sudo sh -c 'echo export HISTTIMEFORMAT="%Y/%m/%d %H:%M:%S:"          >>  /etc/profile.d/bash.sh'
+sudo sh -c 'echo "# Duplicate lines and lines starting with a space are not put into the history." >>  /etc/profile.d/bash.sh'
+sudo sh -c 'echo export HISTCONTROL=ignoreboth                         >>  /etc/profile.d/bash.sh'
 
-sudo sh -c 'echo # Duplicate lines and lines starting with a space are not put into the history. >>  /etc/profile.d/bash.sh'
-sudo sh -c 'echo export HISTCONTROL=ignoreboth                       >>  /etc/profile.d/bash.sh'
+sudo sh -c 'echo "# Append to the history file, dont overwrite it."    >>  /etc/profile.d/bash.sh'
+sudo sh -c 'echo shopt -s histappend                                   >>  /etc/profile.d/bash.sh'
 
-sudo sh -c 'echo # Append to the history file, dont overwrite it.    >>  /etc/profile.d/bash.sh'
-sudo sh -c 'echo shopt -s histappend                                 >>  /etc/profile.d/bash.sh'
+sudo sh -c 'echo "# Enable bash completion."                           >>  /etc/profile.d/bash.sh'
+sudo sh -c "echo [ -f /etc/bash_completion ] && . /etc/bash_completion >>  /etc/profile.d/bash.sh"
 
-sudo sh -c 'echo # Ensure $LINES and $COLUMNS always get updated.    >>  /etc/profile.d/bash.sh'
-sudo sh -c 'echo shopt -s checkwinsize                               >>  /etc/profile.d/bash.sh'
-
-sudo sh -c 'echo # Enable bash completion.                           >>  /etc/profile.d/bash.sh'
-sudo sh -c 'echo [ -f /etc/bash_completion ] && . /etc/bash_completion   >>  /etc/profile.d/bash.sh'
-
-sudo sh -c 'echo # Improve output of less for binary files.          >> /etc/profile.d/bash.sh'
+sudo sh -c 'echo "# Improve output of less for binary files."          >> /etc/profile.d/bash.sh'
 sudo sh -c 'echo [ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"   >>  /etc/profile.d/bash.sh'
 
-sudo sh -c 'echo # If its an xterm compatible terminal, set the title to user@host: dir. >>  /etc/profile.d/xterm.sh'
-sudo sh -c 'echo case "$TERM" in                                     >>  /etc/profile.d/xterm.sh'
-sudo sh -c 'echo xterm*|rxvt*)                                       >>  /etc/profile.d/xterm.sh'
-sudo sh -c 'echo     PS1="\[\e]0;\u@\h: \w\a\]$PS1"                  >>  /etc/profile.d/xterm.sh'
-sudo sh -c 'echo     ;;                                              >>  /etc/profile.d/xterm.sh'
-sudo sh -c 'echo *)                                                  >>  /etc/profile.d/xterm.sh'
-sudo sh -c 'echo     ;;                                              >>  /etc/profile.d/xterm.sh'
-sudo sh -c 'echo esac                                                >>  /etc/profile.d/xterm.sh'
-
 # configure WSL
-sudo sh -c '[automount]             >   /etc/wsl.conf'
-sudo sh -c 'root = /                >>  /etc/wsl.conf'
-sudo sh -c 'options = "metadata"    >>  /etc/wsl.conf'
+sudo sh -c 'echo [automount]             >   /etc/wsl.conf'
+sudo sh -c 'echo root = /                >>  /etc/wsl.conf'
+sudo sh -c 'echo options = "metadata"    >>  /etc/wsl.conf'
 
 # apt clean  up
 if [ -f /usr/bin/apt ] ; then
