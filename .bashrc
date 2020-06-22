@@ -1,6 +1,8 @@
 # ~/.bashrc: executed by bash(1) for non-login shells.
-# see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
-# for examples
+
+# ---------------------------------------------------
+# ** BASH SPECIFICS **
+# ---------------------------------------------------
 
 # If not running interactively, don't do anything
 case $- in
@@ -44,8 +46,8 @@ HISTFILESIZE=2000
 # Append the previous command to history each time a prompt is shown
 PROMPT_COMMAND="history -a; $PROMPT_COMMAND"
 
-# Old prompt
-# export PS1='\[\033[01;32m\]\u@localhost:\[\033[01;34m\] \w \$\[\033[00m\] '
+# Shell Prompt
+export PS1='\[\033[01;32m\]\u@`hostname`:\[\033[01;34m\] \w \$\[\033[00m\] '
 
 # check the window size after each command and, if necessary,
 # update the values of LINES and COLUMNS.
@@ -58,73 +60,14 @@ shopt -s checkwinsize
 # make less more friendly for non-text input files, see lesspipe(1)
 [ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
 
-# set variable identifying the chroot you work in (used in the prompt below)
-if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
-    debian_chroot=$(cat /etc/debian_chroot)
-fi
-
-# set a fancy prompt (non-color, unless we know we "want" color)
-case "$TERM" in
-    xterm-color|*-256color) color_prompt=yes;;
-esac
-
 # uncomment for a colored prompt, if the terminal has the capability; turned
 # off by default to not distract the user: the focus in a terminal window
 # should be on the output of commands, not on the prompt
 force_color_prompt=yes
 
-if [ -n "$force_color_prompt" ]; then
-    if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
-	# We have color support; assume it's compliant with Ecma-48
-	# (ISO/IEC-6429). (Lack of such support is extremely rare, and such
-	# a case would tend to support setf rather than setaf.)
-	color_prompt=yes
-    else
-	color_prompt=
-    fi
-fi
-
-if [ "$color_prompt" = yes ]; then
-    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
-else
-    PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
-fi
-unset color_prompt force_color_prompt
-
-# If this is an xterm set the title to user@host:dir
-case "$TERM" in
-xterm*|rxvt*)
-    PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
-    ;;
-*)
-    ;;
-esac
-
-# enable color support of ls and also add handy aliases
-if [ -x /usr/bin/dircolors ]; then
-    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
-    alias ls='ls --color=auto'
-    alias dir='dir --color=auto'
-    alias vdir='vdir --color=auto'
-
-    alias grep='grep --color=auto'
-    alias fgrep='fgrep --color=auto'
-    alias egrep='egrep --color=auto'
-fi
-
-# colored GCC warnings and errors
-export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
-
-# some more ls aliases
-alias ll='ls -alF'
-alias la='ls -A'
-alias l='ls -CF'
-
 # Add an "alert" alias for long running commands.  Use like so:
 #   sleep 10; alert
 alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
-
-# source /home/webstean/git/vcpkg/scripts/vcpkg_completion.bash
 
 #
 # Auto-launch ssh-agent
@@ -186,21 +129,6 @@ if [ -f ~/.bash_aliases ]; then
     . ~/.bash_aliases
 fi
 
-#
-# More Aliases
-#
-alias ..='cd ..'
-alias ...='cd ../..'
-alias ....='cd ../../..'
-alias cd..='cd ..'
-alias cp='cp -irv'
-alias du='du -h --max-depth=1'
-alias ll='ls -FGahl --show-control-chars --color=always'
-alias ls='ls -AF --show-control-chars --color=always'
-alias md='mkdir -p'
-alias mv='mv -iv'
-alias rm='rm -ir'
-
 # ---------------------------------------------------
 # .bash_profile for Oracle Grid and Database
 # ---------------------------------------------------
@@ -212,25 +140,17 @@ alias rm='rm -ir'
 # ---------------------------------------------------
 
 # Dont allow root - just exit quietly
-#if [ $user eq 'root' ] ; then
-#    exit
-#fi
+if [ $user eq 'root' ] ; then
+    exit
+fi
 
 # Get the aliases and functions
 if [ -f ~/.bashrc ] ; then
    . ~/.bashrc
 fi
 
-if [ -f /etc/tmgauto ] ; then
-   # DISPLAY, ORACLE_BASE, ORACLE_HOME, GRID_HOME
-   # may be set here
-   . /etc/tmgauto
-fi
-
-if [ -x /usr/bin/most ] ; then
-   export PAGER='most'
-else
-   export PAGER='less'
+if [ -x /usr/bin/vim ] ; then
+  alias vi='/usr/bin/vim'
 fi
 
 if [ -x /usr/bin/vim ] ; then
@@ -241,6 +161,40 @@ else
    export EDITOR='/bin/vi'
 fi
 
+if [ -x /usr/bin/most ] ; then
+   export PAGER='most'
+else
+   export PAGER='less'
+fi
+
+# ---------------------------------------------------
+# bash aliases
+# ---------------------------------------------------
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+alias cd..='cd ..'
+alias cp='cp -irv'
+alias du='du -h --max-depth=1'
+alias ll='ls -FGahl --show-control-chars --color=always'
+alias ls='ls -AF --show-control-chars --color=always'
+alias md='mkdir -p'
+alias mv='mv -iv'
+alias rm='rm -ir'
+# enable color support of ls and also add handy aliases
+if [ -x /usr/bin/dircolors ]; then
+    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+    alias ls='ls --color=auto'
+    alias dir='dir --color=auto'
+    alias vdir='vdir --color=auto'
+
+    alias grep='grep --color=auto'
+    alias fgrep='fgrep --color=auto'
+    alias egrep='egrep --color=auto'
+fi
+
+# colored GCC warnings and errors
+export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
 
 # ---------------------------------------------------
 # bash Settings
@@ -262,6 +216,10 @@ DISPLAY=192.168.168.129:0.0 ; export DISPLAY
 # ---------------------------------------------------
 # ** ORACLE DATABASE SPECIFICS **
 # ---------------------------------------------------
+# Avoid Oracle Clusterware errors
+if [ -t 0 ]; then
+   stty intr ^C
+fi
 
 # ---------------------------------------------------
 # ORACLE_BASE
@@ -287,7 +245,6 @@ if [ -z "${GRID_HOME}" ] ; then GRID_HOME=/u01/app/11.2.0/grid; export GRID_HOME
 # Database software.
 # ---------------------------------------------------
 if [ -z "${ORACLE_HOME}" ] ; then ORACLE_HOME=$ORACLE_BASE/product/11.2.0/dbhome_1; export ORACLE_HOME ; fi
-ORACLE_HOME=${GRID_HOME} ; export ORACLE_HOME
 
 # ---------------------------------------------------
 # ORACLE_SID
@@ -353,7 +310,7 @@ ORACLE_TERM=xterm; export ORACLE_TERM
 #         NLS_DATE_FORMAT = "MM/DD/YYYY"
 #
 # ---------------------------------------------------
-NLS_DATE_FORMAT="DD-MON-YYYY HH24:MI:SS"; export NLS_DATE_FORMAT
+export NLS_DATE_FORMAT='DD-MON-YYYY HH24:MI:SS'; export NLS_DATE_FORMAT 
 
 # ---------------------------------------------------
 # TNS_ADMIN
@@ -500,7 +457,6 @@ alias setsid='_oracle_setsid '
 alias setbase='_oracle_setbase '
 alias sethome='_oracle_sethome '
 alias settns='_oracle_settnsadmin '
-#alias sqlplus='rlwrap sqlplus'
 
 alias sysdba='sqlplus / as sysdba' # Full Admin
 alias sysoper='sqlplus / as sysoper' #Subset of admin
@@ -513,6 +469,10 @@ alias sysrac='sqlplus / as sysrac' # RAC Management
 alias cdo='cd \$ORACLE_HOME'
 alias cdb='cd \$ORACLE_BASE'
 
+alias asmcmd='asmcmd -p'
+alias rmanc='rman target sys/${ORACLE_SID} catalog rman/rman'
+alias oenv='env | grep ORACLE | sort'
+
 alias bdump='cd \$ORACLE_BASE/diag/rdbms/\$SDBNAME/\$ORACLE_SID/trace'
 alias udump='cd \$ORACLE_BASE/diag/rdbms/\$SDBNAME/\$ORACLE_SID/trace'
 alias alert='tail -f -n100 \$ORACLE_BASE/diag/rdbms/\$SDBNAME/\$ORACLE_SID/trace/alert_\$ORACLE_SID.log'
@@ -522,41 +482,15 @@ if [ -f /etc/bash_completion ]; then
     . /etc/bash_completion
 fi
 
-# Oracle Alias
-alias home='cd ~'
-alias asmcmd='asmcmd -p'
-alias rmanc='rman target sys/${ORACLE_SID} catalog rman/rman'
-alias oenv='env | grep ORACLE | sort'
-
-alias ll='ls -la'
-if [ -x /usr/bin/vim ] ; then
-  alias vi='/usr/bin/vim'
-fi
-
-# For Solaris - coreutils pkg add
-#pkgadd -n -d coreutils-8.11-sol10-sparc-local
-#pkgadd -n -d libgcc-3.4.6-sol10-sparc-local
-#pkgadd -n -d libintl-3.4.0-sol10-sparc-local
-#pkgadd -n -d libiconv-1.14-sol10-sparc-local
-if [ -e /usr/local/bin/ls ] ; then
-  alias ls='/usr/local/bin/ls --color=auto'
-fi
 alias colortest='echo -e "${CYAN}This is BASH ${RED}${BASH_VERSION%.*}${CYAN} - DISPLAY on ${RED}$DISPLAY${NC}\n"'
 
 # Skip
 alias rsh='ssh'
 alias rlogin='ssh'
 
-# Prevent Oracle Clusterware Installation errors
-# Oracle recommendation
-# This stop stty command upsetting ssh sessions between nodes
-if [ -t 0 ]; then
-   stty intr ^C
-fi
-
 export PS1=${DARKBLUE}$'\\n$ [ $LOGNAME@\h:$PWD [\\t] [`ohvers` SID:${ORACLE_SID:-"*no sid*"}] ]\\n$ '
 
-if [ ! -f $ORACLE_HOME\bin\sqlplus ] ; then
+if [ ! -f ${ORACLE_HOME}/bin/sqlplus ] ; then
   echo "Warning: ORACLE_HOME (${ORACLE_HOME})"
   echo "         appears to be invalid. Cannot find sqlplus!"
 fi
