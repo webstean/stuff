@@ -128,5 +128,5 @@ echo "Installing Go Debugger Dlv into ${GOPATH}..."
 ${GOROOT}/bin/go get github.com/go-delve/delve/cmd/dlv
 
 echo "Installing Go Examples ${HOME}/go/src/github.com/inancgumus/learngo"
-${GOROOT}/bin/go get https://github.com/inancgumus/learngo
+${GOROOT}/bin/go get github.com/inancgumus/learngo
 
