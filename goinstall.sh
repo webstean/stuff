@@ -113,10 +113,13 @@ rm -f "$TEMP_DIRECTORY/go.tar.gz"
 # Needs Oracle instant client installed at run time
 echo "Installing Godror (Oracle Client) into ${GOPATH}..."
 ${GOROOT}/bin/go get github.com/godror/godror
+${GOROOT}/bin/go install github.com/godror/godror
+
 
 # Install Go Methods for SQL Lite
 echo "Installing SQL Lite Client into ${GOPATH}..."
 ${GOROOT}/bin/go get github.com/mattn/go-sqlite3
+${GOROOT}/bin/go install github.com/mattn/go-sqlite3
 
 # Install Go Methods for Azure
 echo "Installing Azure SDK for into ${GOPATH}..."
