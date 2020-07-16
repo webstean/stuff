@@ -2,15 +2,15 @@ FROM golang:alpine as build-env
 
 WORKDIR /app
 
-ENV GIT_URL="https://github.com/webstean/momenton.git"
+ENV GIT_URL="https://github.com/webstean/stuff.git"
 ENV GO111MODULE=on
 
 RUN apk update && \
 	apk upgrade && \
 	apk --no-cache add git unzip ca-certificates
 
-RUN git clone ${GIT_URL} && export GIT_COMMIT="$(git rev-list -1 HEAD)"
+RUN cd /app && git clone ${GIT_URL} 
 
-RUN set && cd /app && go build -ldflags "-X main.GitCommit=$GIT_COMMIT" -o test2
+RUN cd /app/stuff/docker/gover && go build -ldflags "-X main.GitCommit=$GIT_COMMIT" -o test2
 
 
