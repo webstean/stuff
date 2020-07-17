@@ -58,14 +58,14 @@ $INSTALL_CMD pkg-config alsa-utils libasound2-dev
 # Gstreamer bits, so the baresip gstreamer module will be built
 $INSTALL_CMD gstreamer1.0-alsa gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-tools gstreamer1.0-x 
 $INSTALL_CMD libgstreamer-plugins-base1.0-0 libgstreamer-plugins-base1.0-dev libgstreamer1.0-0 libgstreamer1.0-dev
-git clone https://github.com/alfredh/baresip ~/git/baresip
-git clone https://github.com/creytiv/re ~/git/re
+git clone https://github.com/baresip/baresip ~/git/baresip
+git clone https://github.com/baresip/re ~/git/re
 git clone https://github.com/creytiv/rem  ~/git/rem
 git clone https://github.com/openssl/openssl ~/git/openssl
 # Install & Build Libre
 cd ~/git/openssl && make && sudo make install && sudo ldconfig
 # Install & Build Libre
-cd ~/git/re && make && sudo make install && sudo ldconfig
+cd ~/git/re && make RELEASE=1 && sudo make RELEASE=1 install && sudo ldconfig
 # Install & Build Librem
 cd ~/git/rem && make && sudo make install && sudo ldconfig
 # Build baresip
