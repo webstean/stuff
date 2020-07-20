@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"os/user"
 	"runtime"
 	"time"
 
@@ -154,6 +155,7 @@ func GetLocalIP() string {
 	return ""
 }
 
+// GetExternalIP Determine external IP Address
 func GetExternalIP() string {
 	var http = &http.Client{
 		Timeout: time.Second * 2,
@@ -166,7 +168,6 @@ func GetExternalIP() string {
 	content, _ := ioutil.ReadAll(resp.Body)
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(resp.Body)
-	//s := buf.String()
 	return string(content)
 }
 
@@ -251,11 +252,28 @@ func initialize() {
 	// Warning true adds overhead
 	log.SetReportCaller(false)
 
-	log.Info("Start Time: ", time.Now())
-	log.Info("Program   : ", path)
+	user, err := user.Current()
+	if err != nil {
+		log.Fatal("Cannot determine username!")
+	}
+
+	log.Info("Start Time  : ", time.Now())
+	log.Info("Program     : ", path)
+	log.Info("Running as  : ", user.Username+" ("+user.Uid+")")
+
+	if user.Username == "root" {
+		log.Warning("Running as root user!")
+	}
+
+	cwd, err := os.Getwd()
+	if err != nil {
+		log.Fatal("Cannot determine Current Wroking Directory")
+	}
+
+	log.Info("Running from: ", cwd)
 
 	args := os.Args[1:]
-	log.Info("Parameters: ", args)
+	log.Info("Parameters  : ", args)
 
 	log.Info("====PLATFORM INFO====")
 	log.Info("GOOS   = ", runtime.GOOS)
@@ -264,17 +282,17 @@ func initialize() {
 	log.Info("CPU Threads = ", runtime.NumCPU())
 	log.Info("====PLATFORM INFO====")
 
-	log.Info("====RUNTIME INFO====")
+	log.Info("====RUNTIME INFO=====")
 	log.Info("Process ID  = ", os.Getpid())
 	log.Info("User ID     = ", os.Getuid())
 	log.Info("Group ID    = ", os.Getgid())
-	log.Info("====RUNTIME INFO====")
-	log.Info("====NETWORK INFO====")
+	log.Info("====RUNTIME INFO=====")
+	log.Info("====NETWORK INFO=====")
 	log.Info("Hostname              = ", hostname)
 	log.Info("IP Address (Local)    = ", GetLocalIP())
 	// log.Info("Router Address        = ", GetLocalGateway())
 	log.Info("IP Address (External) = ", GetExternalIP())
-	log.Info("====NETWORK INFO====")
+	log.Info("====NETWORK INFO=====")
 
 	// GIT Info
 	log.Info("====GIT INFO===")
