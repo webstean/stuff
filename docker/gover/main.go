@@ -290,11 +290,10 @@ func initialize() {
 
 	// GIT Info
 	log.Info("====GIT INFO===")
-	log.Info("Repo Name            =", Repo)
-	log.Info("Repo HASH            =", Hash)
-	log.Info("Repo Version         =", Version)
-	log.Info("Repo Build Date      =", BuildData)
-)
+	log.Info("Repo Name            = ", Repo)
+	log.Info("Repo HASH            = ", Hash)
+	log.Info("Repo Version         = ", Version)
+	log.Info("Repo Build Date      = ", BuildDate)
 	log.Info("====GIT INFO===")
 
 	//testbytecount1()
