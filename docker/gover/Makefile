@@ -8,7 +8,7 @@ BINARY=gover
 # git commit -am "One more change after the tags"
 REPO=`git remote get-url --all origin`
 HASH=`git rev-parse HEAD`
-VERSION=`git describe --tags`
+VERSION=`git describe --tags --always --dirty --match=v* 2> /dev/null || echo v0`
 BUILDD=`git log -1 --format=%cd`
 
 # Ensure the following is setup in the main package
