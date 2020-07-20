@@ -16,9 +16,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// GitCommit - To be subsituted at compile time
-var GitCommit string
-
+// To be subsituted at compile time
 var (
 	Repo      string
 	Hash      string
