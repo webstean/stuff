@@ -29,3 +29,4 @@ __debug_bin
 
 # other binaries
 
+docker/gover/tcp-file-transfer
