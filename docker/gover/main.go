@@ -19,6 +19,13 @@ import (
 // GitCommit - To be subsituted at compile time
 var GitCommit string
 
+var (
+	Repo      string
+	Hash      string
+	Version   string
+	BuildDate string
+)
+
 // Httpport - String for ListenAndServer
 const Httpport string = ":3000"
 
@@ -41,8 +48,10 @@ type GlobalVersionType struct {
 type GlobalConfigurationType struct {
 	// List of Sources to be monitored - typically directories (also known as Inboxes)
 	Sources []string
+	// Recursive
+	SourcesRecursive []bool
 	// List of File Extensions that single the file is ready to be moved for each Source
-	SourceExtensions []string
+	SourceRegExps []string
 	// List of Destinations for File Transfers (also known as Outboxes)
 	Destinations []string
 	// Restrict the IP addresses that can connect to the Web Server
@@ -53,8 +62,8 @@ type GlobalConfigurationType struct {
 	EnableHTTPFILEListener bool
 }
 
-// GlobalConfigurationType - The Global Configuration
-type GlobalTelemtry struct {
+// GlobalTelemetry - The Global Configuration
+type GlobalTelemetry struct {
 	// Total Number of Files processed - since starting
 	TotalFilesProcessed int64
 	// Total Number of Files processed - last hour
@@ -66,7 +75,7 @@ type GlobalTelemtry struct {
 	// Total Number of Files processed - last hour
 }
 
-// ByteCountS Counts Bytes into human readable form (SI units - KB)
+// ByteCountSI Counts Bytes into human readable form (SI units - KB)
 func ByteCountSI(b int64) string {
 	const unit = 1000
 	if b < unit {
@@ -219,21 +228,6 @@ func initialize() {
 		log.Fatal("Cannot determine executable name!")
 	}
 
-	GlobalConfiguration := GlobalConfigurationType{
-		Sources:                []string{"/app1/inbox1", "/app1/inbox2"},
-		SourceExtensions:       []string{".OK", ".ok"},
-		Destinations:           []string{"/app1/outbox1", "/app1/outbox2"},
-		RestrictWebServer:      "string",
-		EnableNETFileListener:  true,
-		EnableHTTPFILEListener: false,
-	}
-	log.Info(GlobalConfiguration.Sources[0])
-	log.Info(GlobalConfiguration.Sources[1])
-	log.Info(GlobalConfiguration.SourceExtensions[0])
-	log.Info(GlobalConfiguration.SourceExtensions[1])
-	log.Info(GlobalConfiguration.Destinations[0])
-	log.Info(GlobalConfiguration.Destinations[1])
-
 	// Info - move to a dedicated spot later
 	hostname, err2 := os.Hostname()
 	if err2 != nil {
@@ -257,41 +251,41 @@ func initialize() {
 		log.Fatal("Cannot determine username!")
 	}
 
-	log.Info("Start Time  : ", time.Now())
-	log.Info("Program     : ", path)
-	log.Info("Running as  : ", user.Username+" ("+user.Uid+")")
+	log.Info("Start Time      : ", time.Now())
+	log.Info("Program         : ", path)
+	log.Info("Running as      : ", user.Username+" ("+user.Uid+")")
 
 	if user.Username == "root" {
-		log.Warning("Running as root user!")
+		log.Warning("Running as root user! - this is probably not a good idea")
 	}
 
 	cwd, err := os.Getwd()
 	if err != nil {
-		log.Fatal("Cannot determine Current Wroking Directory")
+		log.Fatal("Cannot determine Current Working Directory")
 	}
 
-	log.Info("Running from: ", cwd)
+	log.Info("Running from    : ", cwd)
 
 	args := os.Args[1:]
-	log.Info("Parameters  : ", args)
+	log.Info("Parameters      : ", args)
 
 	log.Info("====PLATFORM INFO====")
-	log.Info("GOOS   = ", runtime.GOOS)
-	log.Info("GOARCH = ", runtime.GOARCH)
-	log.Info("GOVER  = ", runtime.Version())
-	log.Info("CPU Threads = ", runtime.NumCPU())
+	log.Info("GOOS            = ", runtime.GOOS)
+	log.Info("GOARCH          = ", runtime.GOARCH)
+	log.Info("GOVER           = ", runtime.Version())
+	log.Info("Maximum Threads = ", runtime.NumCPU())
 	log.Info("====PLATFORM INFO====")
 
 	log.Info("====RUNTIME INFO=====")
-	log.Info("Process ID  = ", os.Getpid())
-	log.Info("User ID     = ", os.Getuid())
-	log.Info("Group ID    = ", os.Getgid())
+	log.Info("Process ID      = ", os.Getpid())
+	log.Info("User ID         = ", os.Getuid())
+	log.Info("Group ID        = ", os.Getgid())
 	log.Info("====RUNTIME INFO=====")
 	log.Info("====NETWORK INFO=====")
-	log.Info("Hostname              = ", hostname)
-	log.Info("IP Address (Local)    = ", GetLocalIP())
+	log.Info("Hostname             = ", hostname)
+	log.Info("IP Address (Local)   = ", GetLocalIP())
 	// log.Info("Router Address        = ", GetLocalGateway())
-	log.Info("IP Address (External) = ", GetExternalIP())
+	log.Info("IP Address (External)= ", GetExternalIP())
 	log.Info("====NETWORK INFO=====")
 
 	// GIT Info
@@ -305,7 +299,33 @@ func initialize() {
 }
 
 func main() {
+
 	initialize()
+
+	GlobalConfiguration := GlobalConfigurationType{
+		Sources:                []string{"/app1/inbox1", "/app1/inbox2"},
+		SourcesRecursive:       []bool{false, false},
+		SourceRegExps:          []string{"", "^..ok"},
+		Destinations:           []string{"/app1/outbox1", "/app1/outbox2"},
+		RestrictWebServer:      "string",
+		EnableNETFileListener:  true,
+		EnableHTTPFILEListener: false,
+	}
+
+	//log.Info("GlobalConfiguration.Sources[0] =", GlobalConfiguration.Sources[0])
+	//log.Info("GlobalConfiguration.Sources[1] =", GlobalConfiguration.Sources[1])
+	//log.Info("GlobalConfiguration.SourceRegExps[0] =", GlobalConfiguration.SourceRegExps[0])
+	//log.Info("GlobalConfiguration.SourceRegExps[1] =", GlobalConfiguration.SourceRegExps[1])
+	//log.Info("GlobalConfiguration.Destinations[0] =", GlobalConfiguration.Destinations[0])
+	//log.Info("GlobalConfiguration.Destinations[1] =", GlobalConfiguration.Destinations[1])
+
+	Watchdirectory(GlobalConfiguration.Sources[0],
+		GlobalConfiguration.SourcesRecursive[0],
+		GlobalConfiguration.SourceRegExps[0])
+
+	log.Info("Back from watchdirectory")
+
+	// does not return - unless an error
 	startwebserver()
 	log.Info("===EXITING==")
 }
