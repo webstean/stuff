@@ -9,7 +9,8 @@ BINARY=gover
 REPO=`git remote get-url --all origin`
 HASH=`git rev-parse HEAD`
 VERSION=`git describe --tags --always --dirty --match=v* 2> /dev/null || echo v0`
-BUILDD=`git log -1 --format=%cd`
+# BUILDD=`git log -1 --format=%cd`
+BUILDDATE=`date +%F\(%A\)`
 
 # Ensure the following is setup in the main Go package
 #var (
@@ -20,11 +21,11 @@ BUILDD=`git log -1 --format=%cd`
 #)
 
 # Setup the -ldflags option for go build here, interpolate the variable values
-LDFLAGS=-ldflags "-w -s -X main.Repo=${REPO} -X main.Hash=${HASH} -X main.Version=${VERSION}"
-
+LDFLAGS=-ldflags "-w -s -X main.Repo=${REPO} -X main.Hash=${HASH} -X main.Version=${VERSION} -X main.BuildDate=${BUILDDATE}"
 # Builds the project
 build:
 	go build ${LDFLAGS} -o ${BINARY}
+	echo ${BUILDDATE}
     
 # Installs our project: copies binaries
 install:

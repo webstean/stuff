@@ -292,6 +292,11 @@ func initialize() {
 	log.Info("Repo HASH            = ", Hash)
 	log.Info("Repo Version         = ", Version)
 	log.Info("Repo Build Date      = ", BuildDate)
+
+	// git clone $URL
+	// cd $PROJECT_NAME
+	// git reset --hard $SHA1
+
 	log.Info("====GIT INFO===")
 
 	//testbytecount1()
