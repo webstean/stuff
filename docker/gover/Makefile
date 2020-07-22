@@ -12,6 +12,13 @@ VERSION=`git describe --tags --always --dirty --match=v* 2> /dev/null || echo v0
 # BUILDD=`git log -1 --format=%cd`
 BUILDDATE=`date +%F\(%A\)`
 
+# Go Platforms
+PLATFORMS1=linux windows
+PLATFORM_ARCHITECTURES1=amd64
+
+PLATFORMS2=aix
+PLATFORM_ARCHITECTURES2=ppc64
+
 # Ensure the following is setup in the main Go package
 #var (
 # 	Repo		string
@@ -21,12 +28,20 @@ BUILDDATE=`date +%F\(%A\)`
 #)
 
 # Setup the -ldflags option for go build here, interpolate the variable values
-LDFLAGS=-ldflags "-w -s -X main.Repo=${REPO} -X main.Hash=${HASH} -X main.Version=${VERSION} -X main.BuildDate=${BUILDDATE}"
-# Builds the project
+LDFLAGS=-ldflags "-X main.Repo=${REPO} -X main.Hash=${HASH} -X main.Version=${VERSION} -X main.BuildDate=${BUILDDATE}"
+
+# Build the project - default architecture and platform
 build:
-	go build ${LDFLAGS} -o ${BINARY}
 	echo ${BUILDDATE}
-    
+	go build ${LDFLAGS} -o ${BINARY}
+
+build_all:
+	$(foreach GOOS, $(PLATFORMS1),\
+	$(foreach GOARCH, $(PLATFORM_ARCHITECTURES1), $(shell export GOOS=$(GOOS); export GOARCH=$(GOARCH); go build -v -o $(BINARY)-$(GOOS)-$(GOARCH))))
+
+	$(foreach GOOS, $(PLATFORMS2),\
+	$(foreach GOARCH, $(PLATFORM_ARCHITECTURES2), $(shell export GOOS=$(GOOS); export GOARCH=$(GOARCH); go build -v -o $(BINARY)-$(GOOS)-$(GOARCH))))
+	    
 # Installs our project: copies binaries
 install:
 	go install ${LDFLAGS}
@@ -34,5 +49,8 @@ install:
 # Cleans our project: deletes binaries
 clean:
 	if [ -f ${BINARY} ] ; then rm ${BINARY} ; fi
+	if [ -f ${BINARY}-* ] ; then rm ${BINARY}-* ; fi
 
-.PHONY: clean install
+.PHONY: check clean install build_all all
+
+

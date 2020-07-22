@@ -1,82 +1,150 @@
 package main
 
 import (
-	"regexp"
+	"os"
+	"path"
+	"path/filepath"
+	"strings"
 	"time"
 
-	"github.com/radovskyb/watcher"
+	"github.com/fsnotify/fsnotify"
 	log "github.com/sirupsen/logrus"
 )
 
+var (
+	// Dice demo
+	Dice = "🎲"
+	// Dart demo
+	Dart = "🎯"
+	//Ball demo
+	Ball = "🏀"
+)
+
+// GlobalTelemetryType - Type for telemetry data
+type GlobalTelemetryType struct {
+	// Total Number of Files processed - since starting
+	TotalFilesProcessed int64
+	// Total Number of Files processed sucessfully
+	TotalFilesSuccess int64
+	// Total Number of Files processed sucessfully
+	TotalFilesFailure int64
+}
+
+// GlobalTelemetry - telemetry data
+var GlobalTelemetry GlobalTelemetryType
+
+// ProcessFile aaaa
+func ProcessFile(fsnotifyfilename string, triggerext string, processext string) bool {
+
+	// Check that the fsnotifyfilename file exists
+	// Traps any buys or double notifications
+	_, err1 := os.Stat(fsnotifyfilename)
+	if os.IsNotExist(err1) {
+		log.Errorf("Event   : Triggered - but the specified file %s was not found", fsnotifyfilename)
+		return false
+	}
+
+	// Check that fsnotifyfilename is not a directory
+	fi, _ := os.Stat(fsnotifyfilename)
+	mode := fi.Mode()
+	if mode.IsDir() {
+		log.Infof("Skipping    : %s as it is a directory", fsnotifyfilename)
+		return false
+	}
+
+	// Strip out Extension from fsnotifyfilename
+	extension := path.Ext(fsnotifyfilename)
+	fsnotifyfilenamenoext := strings.TrimSuffix(fsnotifyfilename, extension)
+
+	// Create trigger and processing filenames
+	triggerfile := fsnotifyfilenamenoext + triggerext
+	processfile := fsnotifyfilenamenoext + processext
+
+	log.Infof("Trigger File: %s", triggerfile)
+	log.Infof("Process File: %s", processfile)
+	GlobalTelemetry.TotalFilesProcessed++
+
+	// Check if trigger file exists
+	_, err2 := os.Stat(triggerfile)
+	if os.IsNotExist(err2) {
+		log.Errorf("Not Found : trigger file %s was not found!", triggerfile)
+		GlobalTelemetry.TotalFilesFailure++
+		return false
+	}
+
+	// Check if process file exists
+	_, err3 := os.Stat(processfile)
+	if os.IsNotExist(err3) {
+		log.Errorf("Process File: %s not found!", processfile)
+		log.Warnf("Trigger File: %s deleted, as process file %s was not found!", triggerfile, processfile)
+		os.Remove(triggerfile)
+		GlobalTelemetry.TotalFilesFailure++
+		return false
+	}
+
+	// Time to process file - processfilename
+	GlobalTelemetry.TotalFilesSuccess++
+	return true
+}
+
 // Watchdirectory dirname: directory to be watched,
-// recursize (troe or false ) recurisovely sively gotrigger pattern (regexp) to firer event when file found
+// recursize (true or false ) recurisovely sively gotrigger pattern (regexp) to firer event when file found
 // found.
-func Watchdirectory(dirname string, recursive bool, triggerpattern string) {
-	w := watcher.New()
+func Watchdirectory(dirname string, triggerext string, processext string) {
+	watcher, err := fsnotify.NewWatcher()
 
-	// SetMaxEvents to 1 to allow at most 1 event's to be received
-	// on the Event channel per watching cycle.
-	//
-	// If SetMaxEvents is not set, the default is to send all events.
-	//w.SetMaxEvents(1)
+	if err != nil {
+		log.Fatalf("Failed to create watcher (fsnotify) with error: %s", err)
+	}
 
-	// Only notify rename and move events.
-	//w.FilterOps(watcher.Rename, watcher.Move)
+	// Make sure Water get closed after existing this function
+	defer watcher.Close()
 
-	// Only files that match the regular expression during file listings
-	// will be watched.
-	r := regexp.MustCompile(triggerpattern)
-	w.AddFilterHook(watcher.RegexFilterHook(r, false))
+	log.Infof("%s Watching for files in directory: %s", Dice, dirname)
 
-	log.Info("Watching for files in the director:", dirname)
-	log.Info("Recursively: ", recursive)
-	log.Info("that matches this regexp pattern: ", triggerpattern)
+	done := make(chan bool)
 
 	go func() {
 		for {
+			time.Sleep(3 * time.Second)
 			select {
-			case event := <-w.Event:
-				// fmt.Println(event) // Print the event's info.
-				log.Info("New File found: ", event.Path)
-			case err := <-w.Error:
-				log.Fatalln(err)
-			case <-w.Closed:
-				return
+			// slow thing down - 3 second wait
+			case event, ok := <-watcher.Events:
+				if !ok {
+					return
+				}
+				if event.Op&fsnotify.Write == fsnotify.Write {
+					ProcessFile(event.Name, triggerext, processext)
+				}
+			case err, ok := <-watcher.Errors:
+				if !ok {
+					return
+				}
+				log.Error("Watcher (fsnotify) Event Error:", err)
 			}
 		}
 	}()
 
-	// Watch passed folder for changes.
-	if recursive {
-		if err := w.AddRecursive(dirname); err != nil {
-			log.Fatalln(err)
-		}
-	} else {
-		if err := w.Add(dirname); err != nil {
-			log.Fatalln("Failed to add watch directory", err)
-		}
+	// Watch the passed folder for changes.
+	if err := watcher.Add(dirname); err != nil {
+		log.Fatalf("Failed to add watch directory with the following error: %s", err)
 	}
+	<-done
+}
 
-	// Watch passed folder recursively for changes.
-
-	// Print a list of all of the files and folders currently
-	// being watched and their paths.
-	for path, f := range w.WatchedFiles() {
-		log.Info("Existing File found: ", path)
-		log.Debug("Existing File found (Detailed): ", f)
+// Processdir we need this because fsnotify only chatches files when it is running, so
+// any existing files on startup won't be processed.
+func Processdir(dirname string, triggerext string, processext string) {
+	log.Infof("Processing existing files in %s...prior to starting watcher", dirname)
+	var files []string
+	err := filepath.Walk(dirname, func(path string, info os.FileInfo, err error) error {
+		files = append(files, path)
+		return nil
+	})
+	if err != nil {
+		log.Fatalf("Processing Directory failed with the error: %s", err)
 	}
-
-	// fmt.Println()
-
-	// Just wait for files to be created
-	go func() {
-		w.Wait()
-		w.TriggerEvent(watcher.Create, nil)
-
-	}()
-
-	// Start the watching process - it'll check for changes every 100ms.
-	if err := w.Start(time.Millisecond * 100); err != nil {
-		log.Fatalln(err)
+	for _, file := range files {
+		ProcessFile(file, triggerext, processext)
 	}
 }

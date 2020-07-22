@@ -95,12 +95,16 @@ mkdir -p "$GOROOT"
 tar -C "$GOROOT" --strip-components=1 -xzf "$TEMP_DIRECTORY/go.tar.gz"
 {
     echo '# GoLang'
-    echo export GOROOT=${GOROOT}
-    echo export PATH=${GOROOT}/bin:${PATH}
+    echo '# It is no longer recommended to set the GOROOT variable anywhere!'
+    echo '#export GOROOT=${GOROOT}'
+    echo 'export PATH=${GOROOT}/bin:${PATH}'
+    echo 'if [ -d \${HOME}/go/bin ] ; then'
+    echo '    export PATH=${GOPATH}/bin:${PATH}'
+    echo 'fi'
     echo 'if [ -d \${HOME}/go ] ; then'
     echo '    export GOPATH=${HOME}/go'
-    echo '    export PATH=${GOPATH}/bin:${PATH}'
-    echo fi
+    echo 'fi'
+    
 } > '/etc/profile.d/golang.sh'
 
 mkdir -p $GOPATH/{src,pkg,bin}

@@ -9,8 +9,10 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"os/signal"
 	"os/user"
 	"runtime"
+	"syscall"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -24,16 +26,6 @@ var (
 	BuildDate string
 )
 
-// Httpport - String for ListenAndServer
-const Httpport string = ":3000"
-
-func webhome(w http.ResponseWriter, r *http.Request) {
-	log.Info("HTTP Handler called for home")
-	w.Header().Set("Server", "A Go Web Server")
-	w.WriteHeader(200)
-	w.Write([]byte("Hello from Web Server"))
-}
-
 // GlobalVersionType - needs to be all capital for JSON marshalling
 type GlobalVersionType struct {
 	Version       int
@@ -46,31 +38,23 @@ type GlobalVersionType struct {
 type GlobalConfigurationType struct {
 	// List of Sources to be monitored - typically directories (also known as Inboxes)
 	Sources []string
-	// Recursive
-	SourcesRecursive []bool
-	// List of File Extensions that single the file is ready to be moved for each Source
-	SourceRegExps []string
-	// List of Destinations for File Transfers (also known as Outboxes)
-	Destinations []string
+	// Extension of trigger files
+	TriggerExts []string
+	// Extension of process/instruction files
+	ProcessExts []string
+	// List of Destinations (URLs) to be sent to
+	DestinationURLs []string
 	// Restrict the IP addresses that can connect to the Web Server
-	RestrictWebServer string
-	// Enable Network Listener to wait for File Transfers
-	EnableNETFileListener bool
-	// Enable Network Listener to wait for File Transfers
-	EnableHTTPFILEListener bool
 }
 
-// GlobalTelemetry - The Global Configuration
-type GlobalTelemetry struct {
-	// Total Number of Files processed - since starting
-	TotalFilesProcessed int64
-	// Total Number of Files processed - last hour
-	TotalFilesLastHour int64
-	// Total Bytes processed - since starting
-	TotalBytesProcessed int64
-	// Total Bytes processed - last hour
-	TotalBytesLastHour int64
-	// Total Number of Files processed - last hour
+// Httpport - String for ListenAndServer
+const Httpport string = ":3000"
+
+func webhome(w http.ResponseWriter, r *http.Request) {
+	log.Info("HTTP Handler called for home")
+	w.Header().Set("Server", "A Go Web Server")
+	w.WriteHeader(200)
+	w.Write([]byte("Hello from Web Server"))
 }
 
 // ByteCountSI Counts Bytes into human readable form (SI units - KB)
@@ -291,7 +275,7 @@ func initialize() {
 	log.Info("Repo Name            = ", Repo)
 	log.Info("Repo HASH            = ", Hash)
 	log.Info("Repo Version         = ", Version)
-	log.Info("Repo Build Date      = ", BuildDate)
+	log.Info("Code Build Date      = ", BuildDate)
 
 	// git clone $URL
 	// cd $PROJECT_NAME
@@ -301,37 +285,76 @@ func initialize() {
 
 	//testbytecount1()
 	//testbytecount2()
-	testbytecount3()
+	//testbytecount3()
+}
+
+func prgstatus() {
+	info := syscall.Sysinfo_t{}
+	err := syscall.Sysinfo(&info)
+
+	if err != nil {
+		log.Fatalf("Error: %s", err)
+	}
+
+	// uptime seconds since boot
+	log.Infof("Status: Machine Uptime: %dmin, Total Files Processed: %d Failures: %d, Sucesses: %d",
+		info.Uptime/60,
+		GlobalTelemetry.TotalFilesProcessed,
+		GlobalTelemetry.TotalFilesFailure,
+		GlobalTelemetry.TotalFilesSuccess,
+	)
+
+}
+
+// SetupHandler creates a 'listener' on a new goroutine which will notify the
+// program if it receives an interrupt from the OS. We then handle this by calling
+// our clean up procedure and exiting
+func SetupHandler() {
+	c := make(chan os.Signal)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-c
+		fmt.Println("")
+		log.Error("Ctrl+C pressed or killed....")
+		log.Fatal("Exiting")
+	}()
 }
 
 func main() {
 
 	initialize()
 
+	// handle control-c, kill etc..
+	SetupHandler()
+
 	GlobalConfiguration := GlobalConfigurationType{
-		Sources:                []string{"/app1/inbox1", "/app1/inbox2"},
-		SourcesRecursive:       []bool{false, false},
-		SourceRegExps:          []string{"", "^..ok"},
-		Destinations:           []string{"/app1/outbox1", "/app1/outbox2"},
-		RestrictWebServer:      "string",
-		EnableNETFileListener:  true,
-		EnableHTTPFILEListener: false,
+		Sources:         []string{"/app1/inbox1", "/app1/inbox2"},
+		TriggerExts:     []string{".ok", ".ok"},
+		ProcessExts:     []string{".txt", "..txt"},
+		DestinationURLs: []string{"/app1/outbox1", "/app1/outbox2"},
 	}
 
-	//log.Info("GlobalConfiguration.Sources[0] =", GlobalConfiguration.Sources[0])
-	//log.Info("GlobalConfiguration.Sources[1] =", GlobalConfiguration.Sources[1])
-	//log.Info("GlobalConfiguration.SourceRegExps[0] =", GlobalConfiguration.SourceRegExps[0])
-	//log.Info("GlobalConfiguration.SourceRegExps[1] =", GlobalConfiguration.SourceRegExps[1])
-	//log.Info("GlobalConfiguration.Destinations[0] =", GlobalConfiguration.Destinations[0])
-	//log.Info("GlobalConfiguration.Destinations[1] =", GlobalConfiguration.Destinations[1])
+	go startwebserver()
+	time.Sleep(2 * time.Second)
 
-	Watchdirectory(GlobalConfiguration.Sources[0],
-		GlobalConfiguration.SourcesRecursive[0],
-		GlobalConfiguration.SourceRegExps[0])
+	// Process Files first - since the fsnotify does not pick upfiles that already exists
+	Processdir(GlobalConfiguration.Sources[0],
+		GlobalConfiguration.TriggerExts[0],
+		GlobalConfiguration.ProcessExts[0])
+	// As a Go Routine - run fsnotify for the specified directory
+	go Watchdirectory(GlobalConfiguration.Sources[0],
+		GlobalConfiguration.TriggerExts[0],
+		GlobalConfiguration.ProcessExts[0])
 
-	log.Info("Back from watchdirectory")
+	time.Sleep(4 * time.Second)
+	log.Infof("======== Finished Starting Up...waiting for something to happen! ========")
 
-	// does not return - unless an error
-	startwebserver()
+	prgstatus()
+	for ok := true; ok; ok = true {
+		time.Sleep(10 * time.Minute)
+		prgstatus()
+	}
+
+	// should never get here
 	log.Info("===EXITING==")
 }
