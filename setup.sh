@@ -287,6 +287,10 @@ if grep -q "microsoft" /proc/version &>/dev/null; then
 fi
 EOF'
 
+#sudo bash -c 'cat << EOF > /etc/profile.d/pulse.sh
+#export PULSE_SERVER=tcp:$(grep nameserver /etc/resolv.conf | awk '{print $2}'); > /etc/profile.d/pulse.sh
+#EOF'
+
 sudo sh -c 'echo "# Ensure \$LINES and \$COLUMNS always get updated."  >  /etc/profile.d/bash.sh'
 sudo sh -c 'echo shopt -s checkwinsize                                 >>  /etc/profile.d/bash.sh'
 
