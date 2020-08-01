@@ -13,6 +13,9 @@ VERSION=`git describe --tags --always --dirty --match=v* 2> /dev/null || echo v0
 BUILDDATE=`date +%F\(%A\)`
 
 # Go Platforms
+# run the following for a list
+# go tool dist list
+
 PLATFORMS1=linux windows
 PLATFORM_ARCHITECTURES1=amd64
 

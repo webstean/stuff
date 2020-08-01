@@ -8,6 +8,7 @@ import (
 	"math"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
 	"os/user"
@@ -26,30 +27,37 @@ var (
 	BuildDate string
 )
 
-// GlobalVersionType - needs to be all capital for JSON marshalling
+//GlobalVersionType - needs to be all capital for JSON marshalling
 type GlobalVersionType struct {
 	Version       int
 	LastCommitSHA string
 	Description   string
-	// Sources to be monitored - typically directories
 }
 
-// GlobalConfigurationType - The Global Configuration
-type GlobalConfigurationType struct {
+//GlobalConfigurationBasicType - The Global Configuration
+type GlobalConfigurationBasicType struct {
+	// Httpport - String for ListenAndServer
+	Httpport  string
+	StartTime time.Time
+}
+
+//GlobalConfiguraitonBasic - The Global Configuration
+var GlobalConfiguraitonBasic GlobalConfigurationBasicType
+
+// GlobalConfigurationAppType - The Global Configuration
+type GlobalConfigurationAppType struct {
 	// List of Sources to be monitored - typically directories (also known as Inboxes)
-	Sources []string
+	Sources string
 	// Extension of trigger files
-	TriggerExts []string
+	TriggerExts string
 	// Extension of process/instruction files
-	ProcessExts []string
+	ProcessExts string
 	// List of Destinations (URLs) to be sent to
-	DestinationURLs []string
+	DestinationURLs string
 	// Restrict the IP addresses that can connect to the Web Server
 }
 
-// Httpport - String for ListenAndServer
-const Httpport string = ":3000"
-
+//webhome responder
 func webhome(w http.ResponseWriter, r *http.Request) {
 	log.Info("HTTP Handler called for home")
 	w.Header().Set("Server", "A Go Web Server")
@@ -61,7 +69,7 @@ func webhome(w http.ResponseWriter, r *http.Request) {
 func ByteCountSI(b int64) string {
 	const unit = 1000
 	if b < unit {
-		return fmt.Sprintf("%6dB", b)
+		return fmt.Sprintf("%dBytes", b)
 	}
 	div, exp := int64(unit), 0
 	for n := b / unit; n >= unit; n /= unit {
@@ -162,20 +170,6 @@ func GetExternalIP() string {
 	return string(content)
 }
 
-//func keepLines(s string, n int) string {
-//	result := strings.Join(strings.Split(s, "\n")[:n], "\n")
-//	return strings.Replace(result, "\r", "", -1)
-//}
-
-//func GetExternalIP() string {
-//	resp, err := http.Get("http://ipv4.myexternalip.com/raw")
-//	if err != nil {
-//		return ("")
-//	}
-//	defer resp.Body.Close()
-//
-//}
-
 func webversion(w http.ResponseWriter, r *http.Request) {
 	log.Info("HTTP Handler called for version")
 	log.Debug("HTTP Handler called for version", r)
@@ -193,7 +187,7 @@ func webversion(w http.ResponseWriter, r *http.Request) {
 	w.Write(b)
 }
 
-func startwebserver() {
+func startwebserver(Httpport string) {
 	// Web Server
 	http.HandleFunc("/", webhome)
 	http.HandleFunc("/version", webversion)
@@ -202,7 +196,72 @@ func startwebserver() {
 	log.Fatal(http.ListenAndServe(Httpport, nil))
 }
 
-func initialize() {
+// GlobalConfigurationApp xxx
+var GlobalConfigurationApp []GlobalConfigurationAppType
+
+func prgstatus() {
+	info := syscall.Sysinfo_t{}
+	err := syscall.Sysinfo(&info)
+
+	if err != nil {
+		log.Fatalf("Unable to retreive system status, had error: %s", err)
+	}
+
+	t := time.Now()
+	elapsed := t.Sub(GlobalConfiguraitonBasic.StartTime)
+	elapsedint := int64(elapsed) / int64(time.Minute)
+
+	// uptime seconds since boot
+	log.Warnf("Status: Uptime: % 5dmins, Total Files Processed: % 6d Failed: % 6d, Ok: % 6d, Total Size: %s",
+		elapsedint,
+		GlobalTelemetry.TotalFilesProcessed,
+		GlobalTelemetry.TotalFilesFailure,
+		GlobalTelemetry.TotalFilesSuccess,
+		ByteCountSI(GlobalTelemetry.TotalFilesBytes),
+	)
+}
+
+// SetupHandler creates a 'listener' on a new goroutine which will notify the
+// program if it receives an interrupt from the OS. We then handle this by calling
+// our clean up procedure and exiting
+// not this does not fire on runtime errors
+func SetupHandler() {
+	c := make(chan os.Signal)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-c
+		fmt.Println("")
+		log.Error("Ctrl+C pressed or killed....")
+		log.Fatal("Exiting")
+	}()
+}
+
+// Call before main
+func init() {
+
+	// handle control-c, kill etc..
+	SetupHandler()
+
+	// Get Starttime - useful later
+	GlobalConfiguraitonBasic.StartTime = time.Now()
+
+	// Needs to move to a database or config file / something else
+	GlobalConfiguraitonBasic.Httpport = ":3000"
+	GlobalConfigurationApp = []GlobalConfigurationAppType{
+		GlobalConfigurationAppType{
+			Sources:         "/app1/inbox1",
+			TriggerExts:     ".ok",
+			ProcessExts:     ".txt",
+			DestinationURLs: "/app1/outbox1",
+		},
+		GlobalConfigurationAppType{
+			Sources:         "/app1/inbox2",
+			TriggerExts:     ".ok",
+			ProcessExts:     ".txt",
+			DestinationURLs: "/app1/outbox2",
+		},
+	}
+
 	// Info - move to a dedicated spot later
 	path, err1 := os.Executable()
 	if err1 != nil {
@@ -228,12 +287,17 @@ func initialize() {
 	// Warning true adds overhead
 	log.SetReportCaller(false)
 
+	// Only log the warning severity or above.
+	log.SetLevel(log.InfoLevel)
+
 	user, err := user.Current()
 	if err != nil {
 		log.Fatal("Cannot determine username!")
 	}
 
-	log.Info("Start Time      : ", time.Now())
+	StartTime := time.Now()
+	log.Info("Start Time      : ", StartTime)
+
 	log.Info("Program         : ", path)
 	log.Info("Running as      : ", user.Username+" ("+user.Uid+")")
 
@@ -288,73 +352,52 @@ func initialize() {
 	//testbytecount3()
 }
 
-func prgstatus() {
-	info := syscall.Sysinfo_t{}
-	err := syscall.Sysinfo(&info)
-
-	if err != nil {
-		log.Fatalf("Error: %s", err)
-	}
-
-	// uptime seconds since boot
-	log.Infof("Status: Machine Uptime: %dmin, Total Files Processed: %d Failures: %d, Sucesses: %d",
-		info.Uptime/60,
-		GlobalTelemetry.TotalFilesProcessed,
-		GlobalTelemetry.TotalFilesFailure,
-		GlobalTelemetry.TotalFilesSuccess,
-	)
-
-}
-
-// SetupHandler creates a 'listener' on a new goroutine which will notify the
-// program if it receives an interrupt from the OS. We then handle this by calling
-// our clean up procedure and exiting
-func SetupHandler() {
-	c := make(chan os.Signal)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-	go func() {
-		<-c
-		fmt.Println("")
-		log.Error("Ctrl+C pressed or killed....")
-		log.Fatal("Exiting")
-	}()
-}
-
 func main() {
 
-	initialize()
+	testurl()
+	log.Fatal("===EXITING==")
 
-	// handle control-c, kill etc..
-	SetupHandler()
-
-	GlobalConfiguration := GlobalConfigurationType{
-		Sources:         []string{"/app1/inbox1", "/app1/inbox2"},
-		TriggerExts:     []string{".ok", ".ok"},
-		ProcessExts:     []string{".txt", "..txt"},
-		DestinationURLs: []string{"/app1/outbox1", "/app1/outbox2"},
-	}
-
-	go startwebserver()
+	go startwebserver(GlobalConfiguraitonBasic.Httpport)
 	time.Sleep(2 * time.Second)
 
+	// GlobalConfigurationApp = []GlobalConfigurationAppType{
+
 	// Process Files first - since the fsnotify does not pick upfiles that already exists
-	Processdir(GlobalConfiguration.Sources[0],
-		GlobalConfiguration.TriggerExts[0],
-		GlobalConfiguration.ProcessExts[0])
+	Processdir(GlobalConfigurationApp[0].Sources,
+		GlobalConfigurationApp[0].TriggerExts,
+		GlobalConfigurationApp[0].ProcessExts)
+
 	// As a Go Routine - run fsnotify for the specified directory
-	go Watchdirectory(GlobalConfiguration.Sources[0],
-		GlobalConfiguration.TriggerExts[0],
-		GlobalConfiguration.ProcessExts[0])
+	go Watchdirectory(GlobalConfigurationApp[0].Sources,
+		GlobalConfigurationApp[0].TriggerExts,
+		GlobalConfigurationApp[0].ProcessExts)
 
 	time.Sleep(4 * time.Second)
 	log.Infof("======== Finished Starting Up...waiting for something to happen! ========")
 
 	prgstatus()
 	for ok := true; ok; ok = true {
-		time.Sleep(10 * time.Minute)
+		time.Sleep(1 * time.Minute)
 		prgstatus()
 	}
 
 	// should never get here
-	log.Info("===EXITING==")
+	log.Fatal("===EXITING==")
+}
+
+func testurl() {
+	url, err := url.Parse("http://bing.com/search?q=dotnet")
+	if err != nil {
+		log.Fatal("URL parse failed", err)
+	}
+	url.Scheme = "sftp"
+	url.Host = "google.com"
+	q := url.Query()
+	log.Info("---", url.Hostname())
+	log.Info("---", q)
+	q.Set("q", "golang")
+	url.RawQuery = q.Encode()
+	log.Info(url)
+	aaaa, _ := url.Parse("https://cnn.com")
+	log.Info(aaaa)
 }

@@ -5,7 +5,6 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/fsnotify/fsnotify"
 	log "github.com/sirupsen/logrus"
@@ -24,6 +23,8 @@ var (
 type GlobalTelemetryType struct {
 	// Total Number of Files processed - since starting
 	TotalFilesProcessed int64
+	// Total Amount of Files processed - since starting
+	TotalFilesBytes int64
 	// Total Number of Files processed sucessfully
 	TotalFilesSuccess int64
 	// Total Number of Files processed sucessfully
@@ -40,7 +41,8 @@ func ProcessFile(fsnotifyfilename string, triggerext string, processext string) 
 	// Traps any buys or double notifications
 	_, err1 := os.Stat(fsnotifyfilename)
 	if os.IsNotExist(err1) {
-		log.Errorf("Event   : Triggered - but the specified file %s was not found", fsnotifyfilename)
+		// log.Errorf("Event   : Triggered - but the specified file %s was not found", fsnotifyfilename)
+		// has to be a watcher bug
 		return false
 	}
 
@@ -65,15 +67,17 @@ func ProcessFile(fsnotifyfilename string, triggerext string, processext string) 
 	GlobalTelemetry.TotalFilesProcessed++
 
 	// Check if trigger file exists
-	_, err2 := os.Stat(triggerfile)
+	filesize1, err2 := os.Stat(triggerfile)
 	if os.IsNotExist(err2) {
-		log.Errorf("Not Found : trigger file %s was not found!", triggerfile)
+		log.Errorf("Not Found   : trigger file %s was not found!", triggerfile)
 		GlobalTelemetry.TotalFilesFailure++
 		return false
 	}
 
+	GlobalTelemetry.TotalFilesBytes = GlobalTelemetry.TotalFilesBytes + filesize1.Size()
+
 	// Check if process file exists
-	_, err3 := os.Stat(processfile)
+	filesize2, err3 := os.Stat(processfile)
 	if os.IsNotExist(err3) {
 		log.Errorf("Process File: %s not found!", processfile)
 		log.Warnf("Trigger File: %s deleted, as process file %s was not found!", triggerfile, processfile)
@@ -82,8 +86,17 @@ func ProcessFile(fsnotifyfilename string, triggerext string, processext string) 
 		return false
 	}
 
-	// Time to process file - processfilename
+	GlobalTelemetry.TotalFilesBytes = GlobalTelemetry.TotalFilesBytes + filesize2.Size()
+
 	GlobalTelemetry.TotalFilesSuccess++
+
+	// Time to process file - processfilename
+	// for now - just delete it
+	log.Infof("Processing File: %s...", processfile)
+	os.Remove(triggerfile)
+	os.Remove(processfile)
+	// slow thing down a bit
+	// time.Sleep(30 * time.Millisecond)
 	return true
 }
 
@@ -106,15 +119,21 @@ func Watchdirectory(dirname string, triggerext string, processext string) {
 
 	go func() {
 		for {
-			time.Sleep(3 * time.Second)
 			select {
-			// slow thing down - 3 second wait
 			case event, ok := <-watcher.Events:
 				if !ok {
 					return
 				}
-				if event.Op&fsnotify.Write == fsnotify.Write {
-					ProcessFile(event.Name, triggerext, processext)
+				// Any file Create
+				//if event.Op&fsnotify.Create == fsnotify.Create {
+				//	ProcessFile(event.Name, triggerext, processext)
+				//}
+				// Just files that match triggerext
+				if event.Op&fsnotify.Create == fsnotify.Create {
+					extension := path.Ext(event.Name)
+					if extension == triggerext {
+						ProcessFile(event.Name, triggerext, processext)
+					}
 				}
 			case err, ok := <-watcher.Errors:
 				if !ok {
