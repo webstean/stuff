@@ -1,0 +1,19 @@
+---
+app_folder: "/data/apps/station"
+nodejs_install_npm_user: "vagrant"
+nodejs_version: "8.9.0"
+npm_config_prefix: "/data/.npm-global"
+npm_config_unsafe_perm: "true"
+nodejs_npm_global_packages:
+  - n
+  - pm2
+
+#  # Install a specific version of a package.
+#  - name: jslint
+#    version: 0.9.3
+#  # Install the latest stable release of a package.
+#  - name: node-sass
+#  # This shorthand syntax also works (same as previous example).
+#  - node-sass
+
+nodejs_package_json_path: ""

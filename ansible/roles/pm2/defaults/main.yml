@@ -1,0 +1,10 @@
+
+pm2_bin: "/data/.npm-global/bin/pm2"
+pm2_home: "/data/.pm2"
+pm2_app_folder: "/data/apps/station"
+pm2_npm_global: "yes"
+pm2_npm_name: "pm2"
+pm2_npm_production: "yes"
+pm2_user: "vagrant"
+pm2_service_name: "pm2-vagrant.service"
+pm2_version: "2.10.4"

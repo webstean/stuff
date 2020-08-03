@@ -1,0 +1,25 @@
+[Unit]
+Description=PM2 process manager
+Documentation=https://pm2.keymetrics.io/
+After=network.target
+
+[Service]
+
+Type=forking
+User={{pm2_user}}
+
+LimitNOFILE=infinity
+LimitNPROC=infinity
+LimitCORE=infinity
+
+Environment=PATH=/usr/local/bin:/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
+Environment=PM2_HOME={{pm2_home}}
+PIDFile={{pm2_home}}/pm2.pid
+
+ExecStartPre={{pm2_bin}} kill
+ExecStart={{pm2_bin}} resurrect
+ExecReload={{pm2_bin}} reload all
+
+ExecStop={{pm2_bin}} dump
+ExecStop={{pm2_bin}} delete all
+ExecStop={{pm2_bin}} kill
