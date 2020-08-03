@@ -54,19 +54,21 @@ cat /dev/zero | ssh-keygen -q -N "" -C "webstean@gmail.com"
 mkdir ~/git
 git clone https://github.com/oracle/docker-images ~/git/oracle-docker-images
 # An example of multi-repository C project that is updated regularly
-$INSTALL_CMD pkg-config alsa-utils libasound2-dev
+$INSTALL_CMD pkg-config alsa-utils libasound2-dev libpulse-dev
 # Gstreamer bits, so the baresip gstreamer module will be built
 $INSTALL_CMD gstreamer1.0-alsa gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-tools gstreamer1.0-x 
 $INSTALL_CMD libgstreamer-plugins-base1.0-0 libgstreamer-plugins-base1.0-dev libgstreamer1.0-0 libgstreamer1.0-dev
-git clone https://github.com/baresip/baresip ~/git/baresip
+$INSTALL_CMD build-essential pkg-config intltool libtool libsndfile1-dev libjson-c-dev
+
+git clone https://github.com/openssl/openssl ~/git/openssl
 git clone https://github.com/baresip/re ~/git/re
 git clone https://github.com/creytiv/rem  ~/git/rem
-git clone https://github.com/openssl/openssl ~/git/openssl
-# Install & Build Libre
+git clone https://github.com/baresip/baresip ~/git/baresip
+# Install & Build openssl
 cd ~/git/openssl && make && sudo make install && sudo ldconfig
-# Install & Build Libre
+# Install & Build re
 cd ~/git/re && make RELEASE=1 && sudo make RELEASE=1 install && sudo ldconfig
-# Install & Build Librem
+# Install & Build rem
 cd ~/git/rem && make && sudo make install && sudo ldconfig
 # Build baresip
 cd ~/git/baresip && make RELEASE=1 && sudo make RELEASE=1 install && sudo ldconfig
@@ -83,6 +85,10 @@ cp -R ~/git/baresip-docker/.asoundrc $HOME
 git clone --depth 1 https://github.com/junegunn/fzf.git ~/git/fzf 
 ~/git/fzf/install
 
+# Install Python
+$INSTALL_CMD python
+$INSTALL_CMD python-dev py-pip build-base 
+
 # Install ASDF (version manager for non-Dockerized apps).
 git clone https://github.com/asdf-vm/asdf.git ~/git/asdf --branch v0.7.8
 
@@ -97,7 +103,6 @@ asdf plugin-add ruby https://github.com/asdf-vm/asdf-ruby.git
 asdf install ruby 2.7.1
 asdf global ruby 2.7.1
 
-
 # Install Ansible.
 pip3 install --user ansible
 
@@ -108,10 +113,6 @@ pip3 install --user ansible
 
 # Firewall Rules for SSH Server
 ufw allow ssh
-
-# Install Python
-$INSTALL_CMD python
-$INSTALL_CMD python-dev py-pip build-base 
 
 # *DATABASE* SQL Lite
 $INSTALL_CMD sqlite3 libsqlite3-dev
@@ -168,7 +169,7 @@ fi
 dbus_status=$(service dbus status)
 # Ensure dbus is running:
 if [[ $dbus_status = *"is not running"* ]]; then
-          sudo service dbus --full-restart
+    sudo service dbus --full-restart
 fi
 echo $dbus_status
 $INSTALL_CMD docker docker.io
@@ -285,11 +286,72 @@ if grep -q "microsoft" /proc/version &>/dev/null; then
     # Requires: https://sourceforge.net/projects/vcxsrv/ (or alternative)
     export DISPLAY=\$(ip route list | sed -n -e "s/^default.*[[:space:]]\([[:digit:]]\+\.[[:digit:]]\+\.[[:digit:]]\+\.[[:digit:]]\+\).*/\1/p"):0
 fi
+export LIBGL_ALWAYS_INDIRECT=1
 EOF'
 
-#sudo bash -c 'cat << EOF > /etc/profile.d/pulse.sh
-#export PULSE_SERVER=tcp:$(grep nameserver /etc/resolv.conf | awk '{print $2}'); > /etc/profile.d/pulse.sh
-#EOF'
+# sudo bash -c 'cat << EOF > /etc/systemd/system/pulseaudio.service
+# [Unit]
+# Description=PulseAudio system server
+
+# [Service]
+# Type=notify
+# Exec=pulseaudio --daemonize=no --system --realtime --log-target=journal
+# #Exec=pulseaudio -p /usr/local/lib/pulse-10.0/modules/ -n -F /usr/local/etc/pulse/system.pa --system --disallow-exit=1 --disable-shm=1 --fail=1
+
+# [Install]
+# WantedBy=multi-user.target
+# EOF'
+
+# systemctl --system enable pulseaudio.service
+# systemctl --system start pulseaudio.service
+
+# sudo bash -c 'cat << EOF > /etc/pulse/client.conf
+# default-server = /var/run/pulse/native
+# autospawn = no
+# EOF'
+
+# System wide
+
+# crt
+# openssl req -newkey rsa:4096 \
+#     -x509 \
+#     -sha256 \
+#     -days 3650 \
+#     -nodes \
+#     -out /etc/ssl/certs/ca-certificates.crt/example.crt \
+#     -keyout /etc/ssl/certs/ca-certificates.crt/example.key
+
+# openssl req -newkey rsa:2048
+#     -nodes \
+#     -keyout yourdomain.key \
+#     -out /etc/ssl/certs/ca-certificates.csr \
+#     -subj "/C=AU/ST=Victoria/L=Melbourne/O=webstean/OU=IT/CN=webstean.com"
+
+
+# openssl req -x509 \
+#     -newkey rsa:2048 \
+#     -keyout key.pem \
+#     -out cert.pem \
+#     -days 36500 \
+#     -nodes \
+#     -subj "/C=AU/ST=Victoria/L=Melbourne/O=webstean/OU=IT/CN=webstean.com"
+
+# openssl genrsa -out server.key 2048
+# openssl req -new -key server.key -out server.csr -subj "/C=AU/ST=Victoria/L=Melbourne/O=webstean/OU=IT/CN=webstean.com"
+# openssl x509 -req -days 3650 -in server.csr -signkey server.key -out server.crt     
+
+sudo bash -c 'cat << EOF > /etc/profile.d/pulsewsl.sh
+# Pulse Audio - needs to point to the Windows Pulse Daemon/Service -- needs to be installed and running
+# Windows Binaries can be found here: https://www.freedesktop.org/wiki/Software/PulseAudio/Ports/Windows/Support/
+export PULSE_SERVER=\$(ip route list | sed -n -e "s/^default.*[[:space:]]\([[:digit:]]\+\.[[:digit:]]\+\.[[:digit:]]\+\.[[:digit:]]\+\).*/\1/p")
+# Run natively - when WSL can support ALSA directly
+# export PULSE_SERVER="unix:/usr/local/var/run/pulse/native"
+# FYI: Pulse Server listens on port 4713/tcp
+EOF'
+
+# apt install pulseaudio
+
+# pulseaudio --start --log-target=syslog
 
 sudo sh -c 'echo "# Ensure \$LINES and \$COLUMNS always get updated."  >  /etc/profile.d/bash.sh'
 sudo sh -c 'echo shopt -s checkwinsize                                 >>  /etc/profile.d/bash.sh'

@@ -354,9 +354,6 @@ func init() {
 
 func main() {
 
-	testurl()
-	log.Fatal("===EXITING==")
-
 	go startwebserver(GlobalConfiguraitonBasic.Httpport)
 	time.Sleep(2 * time.Second)
 

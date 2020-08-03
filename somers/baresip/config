@@ -1,5 +1,5 @@
 #
-# baresip configuration
+# Andrew's baresip configuration
 #
 
 #------------------------------------------------------------------------------
@@ -16,8 +16,10 @@ poll_method		epoll		# poll, select, epoll ..
 call_local_timeout	120
 call_max_calls		4
 
-# Audio
+# Audio (Global)
 #audio_path		/usr/local/share/baresip
+
+# Audio (ALSA)
 audio_player		alsa,default
 audio_source		alsa,default
 audio_alert		alsa,default
@@ -32,6 +34,11 @@ auplay_format		s16		# s16, float, ..
 auenc_format		s16		# s16, float, ..
 audec_format		s16		# s16, float, ..
 audio_buffer		20-160		# ms
+
+# Audio (Pulse)
+#audio_player		pulse
+#audio_source		pulse
+#audio_alert	    pulse
 
 # Video
 #video_source		v4l2,/dev/video0
@@ -66,7 +73,7 @@ module_path		/usr/local/lib/baresip/modules
 module			stdio.so
 #module			cons.so
 #module			evdev.so
-#module			httpd.so
+module			httpd.so
 
 # Audio codec Modules (in order)
 #module			opus.so
@@ -91,7 +98,7 @@ module			g711.so
 
 # Audio driver Modules
 module			alsa.so
-#module			pulse.so
+module			pulse.so
 #module			jack.so
 #module			portaudio.so
 #module			aubridge.so
