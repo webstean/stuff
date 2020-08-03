@@ -1,0 +1,17 @@
+---
+
+- hosts: all
+
+  roles:
+    - andyceo.preconf
+
+  tasks:
+    - name: DEBUG - print host names
+      debug:
+        msg: >-
+          Host {{ ansible_hostname }} has inventory hostname {{ inventory_hostname }},
+          has uuid {{ ansible_product_uuid }}
+
+    - name: DEBUG - display all variables/facts known for a host
+      debug:
+        var=hostvars[inventory_hostname]
