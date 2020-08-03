@@ -10,6 +10,10 @@ chown -R mpd:audio /var/lib/mpd
 mkdir -p /var/log/mpd
 chown -R mpd:audio /var/log/mpd
 
+mkdir -p /var/run/mpd
+chown -R mpd:audio /var/log/mpd
+
+
 sudo bash -c 'cat << EOF > /etc/mpd.conf
 bind_to_address "::"
 audio_output {    

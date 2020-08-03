@@ -80,6 +80,7 @@ cp -R ~/git/baresip-docker $HOME/.baresip
 cp -R ~/git/baresip-docker/.asoundrc $HOME
 # Run Baresip set the SIP account
 #CMD baresip -d -f $HOME/.baresip && sleep 2 && curl http://127.0.0.1:8000/raw/?Rsip:root:root@127.0.0.1 && sleep 5 && curl http://127.0.0.1:8000/raw/?dbaresip@conference.sip2sip.info && sleep 60 && curl http://127.0.0.1:8000/raw/?bq
+# /uanew sip:12345@webstean.com:5060;auth_user=12345;auth_pass=ABC123
 
 # Install FZF (fuzzy finder on the terminal and used by a Vim plugin).
 git clone --depth 1 https://github.com/junegunn/fzf.git ~/git/fzf 

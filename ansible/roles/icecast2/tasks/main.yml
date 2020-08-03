@@ -1,0 +1,13 @@
+---
+- name: INSTALLING ICECAST2 AUDIO STREAMING SERVER
+  apt: pkg={{ item }} state=latest
+  become: yes
+  with_items:
+    - icecast2
+
+- name: DISABLING ICECAST SERVICE
+  service:
+    name: icecast2
+    enabled: no
+  become: yes
+

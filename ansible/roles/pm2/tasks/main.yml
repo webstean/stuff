@@ -1,0 +1,61 @@
+---
+- name: CREATING THE PM2 HOME DIRECTORY
+  file:
+    path: "{{pm2_home}}"
+    owner: "{{pm2_user}}"
+    group: "{{pm2_user}}"
+    mode: 0775
+    state: directory
+    recurse: yes
+  become: yes
+
+- name: ADDING PM2_HOME
+  lineinfile:
+    dest: /etc/profile.d/npm.sh
+    line: export PM2_HOME={{pm2_home}}
+  become: yes
+
+- name: CREATING PM2 STARTUP SCRIPT BY USING A SERVICE TEMPLATE
+  template:
+    src: service.j2
+    dest: "/etc/systemd/system/{{pm2_service_name}}"
+    mode: 0777
+  become: yes
+
+- name: STOPPING PM2
+  shell:
+    cmd: "{{pm2_bin}} kill"
+
+- name: UPDATING PM2
+  shell:
+    cmd: "{{pm2_bin}} update"
+  environment:
+    PM2_HOME: "{{pm2_home}}"
+  become: yes
+  become_user: "{{pm2_user}}"
+
+- name: SERVICE DAEMON RELOAD
+  command: systemctl daemon-reload
+  become: yes
+
+- name: RESTART PM2 SERVICE
+  service:
+    name: "{{pm2_service_name}}"
+    state: restarted
+  become: yes
+
+- name: CHOWN THE WHOLE DATA FOLDER
+  shell:
+    cmd: chown -R "{{pm2_user}}":"{{pm2_user}}" "{{item}}"
+  with_items:
+    - "/data"
+  become: yes
+
+- name: ADDING THE APP TO PM2
+  shell:
+    cmd: "{{pm2_bin}} start ecosystem.config.js --env vagrant"
+    chdir: "{{pm2_app_folder}}"
+  environment:
+      PM2_HOME: "{{pm2_home}}"
+  become: yes
+  become_user: "{{pm2_user}}"

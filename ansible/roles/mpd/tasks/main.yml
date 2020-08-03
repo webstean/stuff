@@ -1,0 +1,13 @@
+---
+- name: INSTALLING MUSIC PLAYER DAEMON (MPD)
+  apt: pkg={{ item }} state=latest
+  become: yes
+  with_items:
+    - mpd
+
+- name: DISABLING MPD SERVICE
+  service:
+    name: mpd
+    enabled: no
+  become: yes
+

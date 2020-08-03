@@ -1,0 +1,11 @@
+---
+- name: main
+  hosts: all
+  roles:
+    - system
+    - icecast2
+    - mpd
+    - mpc
+    - ffmpeg
+    - nodejs
+    - pm2

@@ -1,0 +1,50 @@
+---
+- name: UPDATING APT CACHE
+  apt: update_cache=yes cache_valid_time=3600
+  become: yes
+
+- name: INSTALLIGN APTITUDE
+  apt: pkg=aptitude
+  become: yes
+
+- name: UPGRADE DISTRIBUTION
+  apt: upgrade=yes
+  become: yes
+
+- name: INSTALLING SOME PACKAGES
+  apt: pkg={{ item }} state=latest
+  become: yes
+  with_items:
+    - sudo
+    - git
+    - htop
+    - tree
+    - nano
+    - curl
+    - zip
+    - rsync
+    - wget
+
+
+- name: BE SURE NTP IS PRESENT
+  apt: pkg=ntp state=present
+  tags: ntp
+  become: yes
+
+- name: BE SURE NTP IS PRESENT AND STARTED
+  service: name=ntp state=started enabled=yes
+  tags: ntp
+  become: yes
+
+- name: ADDING ~/bin to PATH
+  lineinfile:
+    dest: ~/.bashrc
+    line: export PATH=$HOME/bin:$PATH
+
+- name: MAKE SURE ~/bin exists
+  file: path=~/bin state=directory
+
+- name: COPY COMMON BIN FILES TO ~/bin
+  copy: src={{ item }} dest=~/bin/  mode=755
+  with_fileglob:
+    - bin/*
