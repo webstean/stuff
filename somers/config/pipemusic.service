@@ -1,0 +1,20 @@
+# Default-Start: 2 3 4 5
+[Unit]
+Description=Piped Music
+Wants=network-online.target
+After=network-online.target syslog.target network.target ntpdate.service
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+ExecStartPre=/bin/sleep 6
+#ExecStart=/usr/bin/mplayer -ao alsa:device=MixLoopback http://localhost:8000/stream
+#ExecStart=/usr/bin/aplay -D default /home/pi/music1.wav
+ExecStart=/usr/bin/aplay -D hw:Loopback,0,0 /home/pi/music1.wav 
+#ExecStart=/usr/bin/mplayer -ao hw:Loop,0,0 http://localhost:8000/source/radio
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+

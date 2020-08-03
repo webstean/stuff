@@ -1,0 +1,17 @@
+#!/bin/bash
+#rm -rf /tmp/dtmf.out
+
+# ldd baresip - to troubleshoot libaries
+# /sbin/ldconfig
+
+# EDU
+# Volume Control
+# ubnt-vorbis-player -V50 # for 50%
+
+# Multicast Address: 224.0.0.0 to 239.255.255.255
+# Multicasr Address: 224.0.0.1 <-- all hosts group
+
+/usr/local/bin/baresip -4 -f /etc/baresip -v -e "/about" -e "/sysinfo" -s
+
+# sip:200@192.168.0.11
+
