@@ -1,0 +1,19 @@
+# Default-Start: 2 3 4 5
+[Unit]
+Description=Pulseaudio daemon in system mode
+Wants=network-online.target
+After=network-online.target syslog.target network.target ntpdate.service
+
+[Service]
+Type=simple
+User=root
+Group=root
+ExecStartPre=/bin/umask 007
+ExecStart=/usr/bin/pulseaudio --realtime --no-cpu-limit --system --verbose --disable-exit --daemonize=no --disallow-exit --disallow-module-loading -vvv
+ExecStart1=/usr/bin/pulseaudio --system --verbose --disable-exit --daemonize -vvv
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+
