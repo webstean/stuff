@@ -125,9 +125,9 @@ func testbytecount3() {
 	var i int64
 	for i = 1; i < 2112971802400; i++ {
 		if i > 1096000 {
-			i = i + 9185960
+			i += 9185960
 		} else {
-			i = i + 2
+			i += 2
 		}
 
 		fmt.Printf("\r(%8s)",
@@ -315,12 +315,18 @@ func init() {
 	args := os.Args[1:]
 	log.Info("Parameters      : ", args)
 
-	log.Info("====PLATFORM INFO====")
+	log.Info("====GOLANG INFO====")
 	log.Info("GOOS            = ", runtime.GOOS)
 	log.Info("GOARCH          = ", runtime.GOARCH)
 	log.Info("GOVER           = ", runtime.Version())
 	log.Info("Maximum Threads = ", runtime.NumCPU())
 	log.Info("====PLATFORM INFO====")
+
+	log.Info("====ORACLE INFO====")
+	log.Info("ORACLE_HOME     = ", os.Getenv("ORACLE_HOME"))
+	log.Info("ORACLE_SID      = ", os.Getenv("ORACLE_SID"))
+	log.Info("LD_LIBRARY_PATH = ", os.Getenv("LD_LIBRARY_PATH"))
+	log.Info("====ORACLE INFO====")
 
 	log.Info("====RUNTIME INFO=====")
 	log.Info("Process ID      = ", os.Getpid())

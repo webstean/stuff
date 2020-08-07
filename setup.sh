@@ -46,7 +46,7 @@ git config --global user.name "Andrew Webster"
 git config --global user.email "webstean@gmail.com"
 git config --list
 
-# Generate an SSH
+# Generate an SSH Certificate
 $INSTALL_CMD openssh-client
 cat /dev/zero | ssh-keygen -q -N "" -C "webstean@gmail.com"
 
@@ -274,6 +274,7 @@ curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 
 # azcmagent connect --resource-group "<resourceGroupName>" --tenant-id "<tenantID>" --location "<regionName>" --subscription-id "<subscriptionID>"
 
+# Solution: GUI 
 sudo bash -c 'cat << EOF > /etc/profile.d/display.sh
 # WSL 1 - Easy 
 if grep -qE "(Microsoft|WSL)" /proc/version &>/dev/null; then
@@ -342,15 +343,22 @@ EOF'
 # openssl x509 -req -days 3650 -in server.csr -signkey server.key -out server.crt     
 
 sudo bash -c 'cat << EOF > /etc/profile.d/pulsewsl.sh
-# Pulse Audio - needs to point to the Windows Pulse Daemon/Service -- needs to be installed and running
-# Windows Binaries can be found here: https://www.freedesktop.org/wiki/Software/PulseAudio/Ports/Windows/Support/
-export PULSE_SERVER=\$(ip route list | sed -n -e "s/^default.*[[:space:]]\([[:digit:]]\+\.[[:digit:]]\+\.[[:digit:]]\+\.[[:digit:]]\+\).*/\1/p")
+# Pulse Audio
+# To hear audio under WSL2 the Linux pulseaudio needs to point to the Pulse Daemon/Service
+# -- running on Windows
+# See: https://www.freedesktop.org/wiki/Software/PulseAudio/Ports/Windows/Support/
+export PULSE_SERVER=tcp:\$(ip route list | sed -n -e "s/^default.*[[:space:]]\([[:digit:]]\+\.[[:digit:]]\+\.[[:digit:]]\+\.[[:digit:]]\+\).*/\1/p")
+# export PULSE_SEREVER = unix:/tmp/pulse-socket
 # Run natively - when WSL can support ALSA directly
-# export PULSE_SERVER="unix:/usr/local/var/run/pulse/native"
+# export PULSE_SERVER="unix:/var/run/pulse/native"
 # FYI: Pulse Server listens on port 4713/tcp
 EOF'
 
 # apt install pulseaudio
+
+
+# Install Jack (Audio)
+# apt-get install qjackctl
 
 # pulseaudio --start --log-target=syslog
 
@@ -380,6 +388,7 @@ sudo sh -c 'echo [ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"   
 sudo sh -c 'echo [automount]             >   /etc/wsl.conf'
 sudo sh -c 'echo root = /                >>  /etc/wsl.conf'
 sudo sh -c 'echo options = "metadata"    >>  /etc/wsl.conf'
+# needs a "wsl shutdown" before theis is effective
 
 # apt clean  up
 if [ -f /usr/bin/apt ] ; then
