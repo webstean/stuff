@@ -21,7 +21,7 @@ ENV PGDATA /var/lib/kamailio/data
 ENV USERAS postgres
 
 # Install Kamailio
-RUN apk --no-cache add kamailio kamailio-presence kamailio-postgres
+RUN apk --no-cache add kamailio kamailio-presence kamailio-postgres kamailio-sqlite
 
 RUN chown ${USERAS}:${USERAS} /etc/kamailio/* && chown ${USERAS}:${USERAS} /etc/kamailio
 
