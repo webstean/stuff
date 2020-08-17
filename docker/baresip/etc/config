@@ -1,0 +1,14 @@
+module_path /baresip/modules
+audio_path  /baresip/wav
+
+module stdio.so
+module contact.so
+module debug_cmd.so
+module g711.so
+module menu.so
+module srtp.so
+
+module_tmp account.so
+
+sip_certificate /baresip/certificate/example.pem
+sip_listen 0.0.0.0:5060

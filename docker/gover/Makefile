@@ -8,9 +8,17 @@ BINARY=gover
 # git commit -am "One more change after the tags"
 REPO=`git remote get-url --all origin`
 HASH=`git rev-parse HEAD`
-VERSION=`git describe --tags --always --dirty --match=v* 2> /dev/null || echo v0`
+VERSION=`git describe --abbrev=0 --tags --always --match=v* 2> /dev/null || echo v0`
 # BUILDD=`git log -1 --format=%cd`
 BUILDDATE=`date +%F\(%A\)`
+
+# Ensure the following is setup in the main Go package
+#var (
+# 	Repo		string
+#	Hash		string
+#  	Version		string
+# 	BuildDate	string
+#)
 
 # Go Platforms
 # run the following for a list
@@ -21,14 +29,6 @@ PLATFORM_ARCHITECTURES1=amd64
 
 PLATFORMS2=aix
 PLATFORM_ARCHITECTURES2=ppc64
-
-# Ensure the following is setup in the main Go package
-#var (
-# 	Repo		string
-#	Hash		string
-#  	Version		string
-# 	BuildDate	string
-#)
 
 # Setup the -ldflags option for go build here, interpolate the variable values
 LDFLAGS=-ldflags "-X main.Repo=${REPO} -X main.Hash=${HASH} -X main.Version=${VERSION} -X main.BuildDate=${BUILDDATE}"

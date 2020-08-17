@@ -55,23 +55,39 @@ mkdir ~/git
 git clone https://github.com/oracle/docker-images ~/git/oracle-docker-images
 # An example of multi-repository C project that is updated regularly
 $INSTALL_CMD pkg-config alsa-utils libasound2-dev libpulse-dev
-# Gstreamer bits, so the baresip gstreamer module will be built
 $INSTALL_CMD gstreamer1.0-alsa gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-tools gstreamer1.0-x 
 $INSTALL_CMD libgstreamer-plugins-base1.0-0 libgstreamer-plugins-base1.0-dev libgstreamer1.0-0 libgstreamer1.0-dev
-$INSTALL_CMD build-essential pkg-config intltool libtool libsndfile1-dev libjson-c-dev
+$INSTALL_CMD build-essential pkg-config intltool libtool libsndfile1-dev libjson-c-dev libopus-dev
+$INSTALL_CMD libsndfile1-dev libspandsp-dev libgtk2.0-dev libjack-jackd2-dev
+
+# Video Codecs
+$INSTALL_CMD libavcodec-dev libavutil-dev libcairo2-dev
+# $INSTALL_CMD libavdevice-dev libavformat-dev mpg123-dev 
+
+# Create an example certificate
+openssl req -newkey rsa:4096 -x509 -sha256 -days 3650 -nodes -out /etc/ssl/certs/example.crt -keyout /etc/ssl/certs/example.key \
+    -subj "/C=AU/ST=Victoria/L=Melbourne/O=webstean/OU=IT/CN=webstean.com"
+cat /etc/ssl/certs/example.crt /etc/ssl/certs/example.key > /etc/ssl/certs/example.pem
 
 git clone https://github.com/openssl/openssl ~/git/openssl
 git clone https://github.com/baresip/re ~/git/re
 git clone https://github.com/creytiv/rem  ~/git/rem
 git clone https://github.com/baresip/baresip ~/git/baresip
+git clone https://github.com/juha-h/libzrtp ~/git/libzrtp
+
+# Install & Build libzrtp
+cd ~/git/libzrtp && ./bootstrap.sh && ./configure CFLAGS="-O0 -g3 -W -Wall -DBUILD_WITH_CFUNC -DBUILD_DEFAULT_CACHE -DBUILD_DEFAULT_TIMER" && make && sudo make install
 # Install & Build openssl
-cd ~/git/openssl && make && sudo make install && sudo ldconfig
+cd ~/git/openssl && ./config && make install && sudo make install
 # Install & Build re
-cd ~/git/re && make RELEASE=1 && sudo make RELEASE=1 install && sudo ldconfig
+cd ~/git/re && make RELEASE=1 && sudo make RELEASE=1 install
 # Install & Build rem
-cd ~/git/rem && make && sudo make install && sudo ldconfig
+cd ~/git/rem && make && sudo make install
 # Build baresip
-cd ~/git/baresip && make RELEASE=1 && sudo make RELEASE=1 install && sudo ldconfig
+cd ~/git/baresip && make RELEASE=1 && sudo make RELEASE=1 install
+# ldconfig
+sudo ldconfig
+
 # Test Baresip to initialize default config and Exit
 baresip -t -f $HOME/.baresip
 # Install Configuration from baresip-docker
@@ -90,19 +106,26 @@ git clone --depth 1 https://github.com/junegunn/fzf.git ~/git/fzf
 $INSTALL_CMD python
 $INSTALL_CMD python-dev py-pip build-base 
 
+# asdf prereqs
+$INSTALL_CMD dirmngr gpg curl
 # Install ASDF (version manager for non-Dockerized apps).
-git clone https://github.com/asdf-vm/asdf.git ~/git/asdf --branch v0.7.8
+mkdir -p ~/.asdf
+git clone https://github.com/asdf-vm/asdf.git ~/.asdf
+cd ~/.asdf
+git checkout dirmngr "$(git describe --abbrev=0 --tags)"
+chmod +x ~/.asdf/asdf.sh
+source ~/.asdf/asdf.sh
 
 # Install Node through ASDF.
 asdf plugin-add nodejs https://github.com/asdf-vm/asdf-nodejs.git
 bash ~/.asdf/plugins/nodejs/bin/import-release-team-keyring
-asdf install nodejs 12.17.0
-asdf global nodejs 12.17.0
+asdf install nodejs latest
+asdf global nodejs latest
 
 # Install Ruby through ASDF.
-asdf plugin-add ruby https://github.com/asdf-vm/asdf-ruby.git
-asdf install ruby 2.7.1
-asdf global ruby 2.7.1
+#asdf plugin-add ruby https://github.com/asdf-vm/asdf-ruby.git
+#asdf install ruby 2.7.1
+#asdf global ruby 2.7.1
 
 # Install Ansible.
 pip3 install --user ansible
@@ -189,7 +212,7 @@ $INSTALL_CMD libaio unzip
 tmpdir=$(mktemp -d)
 wget https://download.oracle.com/otn_software/linux/instantclient/instantclient-basic-linuxx64.zip -nc -O $tmpdir
 sudo mkdir -p /opt/oracle
-sudo unzip $tmpdir/instantclient-basic*.zip -d /opt/oracle
+sudo unzip ${tmpdir}/instantclient-basic*.zip -d /opt/oracle
 sudo chmod 755 /opt
 sudo chmod 755 /opt/oracle
 
@@ -201,12 +224,12 @@ sudo sh -c "echo export PATH=$1:'\$PATH'    >> /etc/profile.d/oracle.sh"
 
 # Permanent Link (latest version) - Instant Client - SQLplus (x86 64 bit) - addon (tiny - why not)
 wget https://download.oracle.com/otn_software/linux/instantclient/instantclient-sqlplus-linuxx64.zip -nc -O $tmpdir
-sudo unzip $tmpdir/instantclient-sqlplus*.zip -d $LD_LIBRARY_PATH/..
+sudo unzip ${tmpdir}/instantclient-sqlplus*.zip -d $LD_LIBRARY_PATH/..
 # rm instantclient-sqlplus*.zip
 
 # Permanent Link (latest version) - Instant Client - Tools (x86 64 bit) - addons incl Data Pump
 wget https://download.oracle.com/otn_software/linux/instantclient/instantclient-tools-linuxx64.zip -nc -O $tmpdir
-sudo unzip $tmpdir/instantclient-tools*.zip -d $LD_LIBRARY_PATH/..
+sudo unzip ${tmpdir}/instantclient-tools*.zip -d $LD_LIBRARY_PATH/..
 # rm instantclient-tools*.zip
 
 # With the normal Oracle Client, oraenv script sets the ORACLE_HOME, ORACLE_BASE and LD_LIBRARY_PATH variables and
@@ -250,12 +273,15 @@ fi
 # Ubuntu
 # sudo apt-get install krb5-user samba sssd sssd-tools libnss-sss libpam-sss ntp ntpdate realmd adcli
 # Centos/ReadHat/Oracle
-#sudo yum install -y realmd sssd krb5-workstation krb5-libs oddjob oddjob-mkhomedir samba-common-tools
+# sudo yum install -y realmd sssd krb5-workstation krb5-libs oddjob oddjob-mkhomedir samba-common-tools
 # ensure NTP is running and time is correct
 # Domain name needs to be upper case
 #AD_DOMAIN=AADDSCONTOSO.COM
 #AD_USER=webstean@$AD_DOMAIN
 #sudo realm discover $AD_DOMAIN && kinit contosoadmin@$AD_DOMAIN && sudo realm join --verbose $AD_DOMAIN -U '$AD_USER' --install=/
+
+# Grant the 'AAD DC Administrators' group sudo privileges
+# sudo bash -c "%AAD\ DC\ Administrators@aaddscontoso.com ALL=(ALL) NOPASSWD:ALL"
 
 # Install AWS CLI
 cd ~
@@ -266,15 +292,21 @@ sudo ~/./aws/install
 # Install Azure CLI
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 
-# Azure Arc Agent - Download the installation package.
+# Azure Arc Agent -won't work on WSL VM as they dont run systemd
+# cd ~
 # wget https://aka.ms/azcmagent -O ~/Install_linux_azcmagent.sh
-
-# Azure Arc Agent - Install the connected machine agent. 
 # bash ~/Install_linux_azcmagent.sh
-
 # azcmagent connect --resource-group "<resourceGroupName>" --tenant-id "<tenantID>" --location "<regionName>" --subscription-id "<subscriptionID>"
+# azcmagent connect --resource-group "<resourceGroupName>" --tenant-id "<tenantID>" --location "<regionName>" --subscription-id "2d2089b6-d701-49aa-9600-bc2e3796d53a"
 
-# Solution: GUI 
+# Install Google Cloud (GCP) CLI
+cd ~
+curl https://sdk.cloud.google.com > install.sh
+chmod +x install.sh
+bash install.sh --disable-prompts
+~/google-cloud-sdk/install.sh --quiet
+
+# Solution: Xwindows Display
 sudo bash -c 'cat << EOF > /etc/profile.d/display.sh
 # WSL 1 - Easy 
 if grep -qE "(Microsoft|WSL)" /proc/version &>/dev/null; then
@@ -314,22 +346,6 @@ EOF'
 
 # System wide
 
-# crt
-# openssl req -newkey rsa:4096 \
-#     -x509 \
-#     -sha256 \
-#     -days 3650 \
-#     -nodes \
-#     -out /etc/ssl/certs/ca-certificates.crt/example.crt \
-#     -keyout /etc/ssl/certs/ca-certificates.crt/example.key
-
-# openssl req -newkey rsa:2048
-#     -nodes \
-#     -keyout yourdomain.key \
-#     -out /etc/ssl/certs/ca-certificates.csr \
-#     -subj "/C=AU/ST=Victoria/L=Melbourne/O=webstean/OU=IT/CN=webstean.com"
-
-
 # openssl req -x509 \
 #     -newkey rsa:2048 \
 #     -keyout key.pem \
@@ -355,7 +371,6 @@ export PULSE_SERVER=tcp:\$(ip route list | sed -n -e "s/^default.*[[:space:]]\([
 EOF'
 
 # apt install pulseaudio
-
 
 # Install Jack (Audio)
 # apt-get install qjackctl
@@ -384,11 +399,17 @@ sudo sh -c "echo [ -f /etc/bash_completion ] && . /etc/bash_completion >>  /etc/
 sudo sh -c 'echo "# Improve output of less for binary files."          >> /etc/profile.d/bash.sh'
 sudo sh -c 'echo [ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"   >>  /etc/profile.d/bash.sh'
 
+sudo sh -c 'echo "# Alias to provide distribution name"                 >> /etc/profile.d/bash.sh'
+sudi sh -c 'alias distribution=$(. /etc/os-release;echo $ID$VERSION_ID) >> /etc/profile.d/bash.sh'
+
 # configure WSL
-sudo sh -c 'echo [automount]             >   /etc/wsl.conf'
-sudo sh -c 'echo root = /                >>  /etc/wsl.conf'
-sudo sh -c 'echo options = "metadata"    >>  /etc/wsl.conf'
-# needs a "wsl shutdown" before theis is effective
+sudo sh -c 'echo [automount]            >   /etc/wsl.conf'
+sudo sh -c 'echo root = /               >>  /etc/wsl.conf'
+sudo sh -c 'echo options = "metadata"   >>  /etc/wsl.conf'
+
+sudo sh -c 'echo [interop]              >>  /etc/wsl.conf'
+sudo sh -c 'echo enabled = true         >>  /etc/wsl.conf'
+sudo sh -c 'appendWindowsPath = true    >>  /etc/wsl.conf'
 
 # apt clean  up
 if [ -f /usr/bin/apt ] ; then

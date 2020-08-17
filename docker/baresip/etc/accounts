@@ -1,0 +1,1 @@
+sip:a@example.com;regint=0;transport=tls;mediaenc=srtp-mand;answermode=early
