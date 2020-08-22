@@ -88,14 +88,12 @@ cd ~/git/baresip && make RELEASE=1 && sudo make RELEASE=1 install
 # ldconfig
 sudo ldconfig
 
-# Test Baresip to initialize default config and Exit
-baresip -t -f $HOME/.baresip
-# Install Configuration from baresip-docker
-git clone https://github.com/QXIP/baresip-docker.git ~/git/baresip-docker
+# Get some decent config files for baresip
+curl https://raw.githubusercontent.com/webstean/stuff/master/baresip/accounts -o ~/.baresip/accounts
+curl https://raw.githubusercontent.com/webstean/stuff/master/baresip/config -o ~/.baresip/config
+curl https://raw.githubusercontent.com/webstean/stuff/master/baresip/contacts -o ~/.baresip/contacts
+baresip -t
 
-
-cp -R ~/git/baresip-docker $HOME/.baresip
-cp -R ~/git/baresip-docker/.asoundrc $HOME
 # Run Baresip set the SIP account
 #CMD baresip -d -f $HOME/.baresip && sleep 2 && curl http://127.0.0.1:8000/raw/?Rsip:root:root@127.0.0.1 && sleep 5 && curl http://127.0.0.1:8000/raw/?dbaresip@conference.sip2sip.info && sleep 60 && curl http://127.0.0.1:8000/raw/?bq
 # /uanew sip:12345@webstean.com:5060;auth_user=12345;auth_pass=ABC123
