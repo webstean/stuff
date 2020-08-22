@@ -92,6 +92,8 @@ sudo ldconfig
 baresip -t -f $HOME/.baresip
 # Install Configuration from baresip-docker
 git clone https://github.com/QXIP/baresip-docker.git ~/git/baresip-docker
+
+
 cp -R ~/git/baresip-docker $HOME/.baresip
 cp -R ~/git/baresip-docker/.asoundrc $HOME
 # Run Baresip set the SIP account
@@ -173,7 +175,7 @@ fi
 # gem install bundler
 # rbenv rehash
 
-# Docker 
+# Docker - do we need this?
 # Add SSL support for APT repositories (required for Docker)
 $INSTALL_CMD apt-transport-https ca-certificates curl software-properties-common
 # cleanup
@@ -198,7 +200,7 @@ fi
 echo $dbus_status
 $INSTALL_CMD docker docker.io
 # Turn on Docker Build kit
-sudo sh -c 'echo export DOCKER_BUILDKIT="1" >> /etc/profile.d/ruby.sh'
+sudo sh -c 'echo export DOCKER_BUILDKIT="1" >> /etc/profile.d/docker.sh'
 
 # Alpine
 $INSTALL_CMD musl-dev libaio-dev libnsl-dev
