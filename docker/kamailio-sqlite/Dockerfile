@@ -18,7 +18,7 @@ RUN cp /usr/share/zoneinfo/Australia/Melbourne /etc/localtime && \
     echo "Australia/Melbourne" >  /etc/timezone && \
     date 
 
-ENV LANG=en_US.UTF-8 
+ENV LANG=C.UTF-8 
 ENV LANGUAGE=en_US.UTF-8
 
 ENV PGDATA /var/lib/kamailio/data
@@ -29,7 +29,7 @@ ENV RUN_KAMAILIO=yes
 # Install Kamailio
 RUN apk --no-cache add  kamailio kamailio-json kamailio-sctp kamailio-presence \
                         kamailio-sqlite kamailio-extras kamailio-uuid kamailio-websocket \
-                        kamailio-ev
+                        kamailio-ev kamailio-geoip2-modules
 
 RUN chown ${USERAS}:${USERAS} /etc/kamailio/* && chown ${USERAS}:${USERAS} /etc/kamailio
 
@@ -60,6 +60,8 @@ RUN touch /etc/kamailio/kamailio-local.cfg
 ## RUN echo "enable_sctp = 1" >> /etc/kamailio/kamailio-local.cfg
 
 RUN echo "log_stderror = yes" >> /etc/kamailio/kamailio-local.cfg
+
+## GeoIP - /usr/share/GeoIP
 
 # silently drop scanners
 ##RUN echo "## Block Rogue Agents " >> /etc/kamailio/kamailio-local.cfg

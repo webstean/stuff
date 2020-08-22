@@ -1,4 +1,4 @@
-FROM alpine:latest as kamailio
+FROM kamailio/kamailio-ci:latest-alpine as kamailio
 
 LABEL maintainer="webstean@gmail.com"
 
@@ -7,57 +7,82 @@ LABEL maintainer="webstean@gmail.com"
 # Create User
 # RUN groupadd -r postgres && useradd --no-log-init -r -g postgres postgres.
 
-# Install Postresql into /usr/bin
-RUN apk --no-cache add tzdata libpq postgresql postgresql-client postgresql-contrib
+# Prereqs
+RUN apk --no-cache add tzdata libpq
 
 # Timezone
 RUN cp /usr/share/zoneinfo/Australia/Melbourne /etc/localtime && \
     echo "Australia/Melbourne" >  /etc/timezone && \
-    date 
+    date && mkdir -p /etc/kamailio/db
 
+ENV AW=tem
 ENV LANG=en_US.UTF-8 
 ENV LANGUAGE=en_US.UTF-8
-ENV PGDATA /var/lib/kamailio/data
-ENV USERAS postgres
+ENV DB=/etc/kamailio/db/
+ENV USERAS=kamailio
 
 # Install Kamailio
-RUN apk --no-cache add kamailio kamailio-presence kamailio-postgres kamailio-sqlite
+RUN apk --no-cache add sqlite kamailio kamailio-presence kamailio-sqlite kamailio-tls kamailio-db
+RUN apk --no-cache add kamailio-authephemeral kamailio-carrierroute kamailio-cpl kamailio-ev kamailio-extras kamailio-geoip2 kamailio-ims kamailio-json kamailio-openrc kamailio-outbound kamailio-sctp kamailio-sipdump
+RUN apk --no-cache add kamailio-utils kamailio-xml curl 
+
+# Install Letsencrypt
+#RUN apk --no-cache add netcat-openbsd bc curl wget git bash openssl
+#RUN apk --no-cache apk libressl
+#RUN git clone https://github.com/Neilpang/acme.sh.git /tmp
+
+# Get Geoip database
+#RUN curl -v "https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-Country&license_key=tyrhLJpJiWmke42x&suffix=tar.gz" --output /etc/kamailio/db/geoip.tar.gz
+#RUN tar t -f /etc/kamailio/db/geoip.tar.gz
+#RUN ls -la /etc/kamailio/db
+#RUN false
+#RUN tar x -zv --exclude 'GeoLite2-Country_*/' -f /etc/kamailio/db/geoip.tar.gz -C /etc/kamailio/db
+#RUN ls -la /etc/kamailio/db
+#RUN ls -la /etc/kamailio/db/GeoLite2-Country_20200818
+#RUN false
+#RUN mv /etc/kamailio/GeoLite2-Country*/GeoLite2-Country.mmdb ${DB}
 
 RUN chown ${USERAS}:${USERAS} /etc/kamailio/* && chown ${USERAS}:${USERAS} /etc/kamailio
 
-RUN mkdir -p ${PGDATA} && chown -R ${USERAS}:${USERAS} ${PGDATA} && chmod 0700 ${PGDATA}
+# Configure kamailio to talk to SQLLite Database
+RUN echo "SIP_DOMAIN=sip.local.net" > /etc/kamailio/kamctlrc
+RUN echo "DBENGINE=SQLITE" >> /etc/kamailio/kamctlrc
+RUN echo "DB_PATH=${DB}/sqlite" >> /etc/kamailio/kamctlrc
+RUN echo "INSTALL_EXTRA_TABLES=yes" >> /etc/kamailio/kamctlrc
+RUN echo "INSTALL_PRESENCE_TABLES=yes" >> /etc/kamailio/kamctlrc
+RUN echo "INSTALL_DBUID_TABLES=yes" >> /etc/kamailio/kamctlrc
 
-RUN mkdir /var/run/postgresql && chown -R ${USERAS}:${USERAS} /var/run/postgresql
+RUN mkdir -p ${DB} && kamdbctl create
+RUN chown -R ${USERAS}:${USERAS} ${DB} && chmod 0700 ${DB}
+
+RUN kamctl add 201 201 && kamctl add 202 202 && kamctl add 301 301 && kamctl add 302 302
 
 # Change User
 USER ${USERAS}
 
-# Configure kamailio to talk to Database
-RUN sed "/^[# ]*SIP_DOMAIN/cSIP_DOMAIN=sip.local.net" -i /etc/kamailio/kamctlrc
-RUN sed '/^[# ]*DBENGINE/cDBENGINE=PGSQL' -i /etc/kamailio/kamctlrc
-RUN sed '/^[# ]*DBHOST/cDBHOST=localhost' -i /etc/kamailio/kamctlrc
-RUN sed '/^[# ]*DBNAME/cDBNAME=openser' -i /etc/kamailio/kamctlrc
-RUN sed '/^[# ]*DBRWUSER/cDBRWUSER=openser' -i /etc/kamailio/kamctlrc
-RUN sed '/^[# ]*DBRWPW/cDBRWPW="openser"' -i /etc/kamailio/kamctlrc
-RUN sed '/^[# ]*DBROUSER/cDBROUSER=openserro' -i /etc/kamailio/kamctlrc
-RUN sed '/^[# ]*DBROPW/cDBROPW=openserro' -i /etc/kamailio/kamctlrc
-RUN sed '/^[# ]*DBROOTUSER/cDBROOTUSER="postgres" ' -i /etc/kamailio/kamctlrc
+### RUN cat /etc/kamailio/kamailio.cfg | grep module
 
-# Configure
-RUN pg_ctl -D ${PGDATA} initdb && \
-    cp /usr/share/postgresql/postgresql.conf.sample ${PGDATA}/postgresql.conf && \
-    echo "host all  all    0.0.0.0/0  md5" >> ${PGDATA}/pg_hba.conf && \
-    echo "listen_addresses='*'" >> ${PGDATA}/postgresql.conf && \
-    pg_ctl -D ${PGDATA} start && echo postgres > /tmp/.pgpass && \
-    chmod 600 /tmp/.pgpass && \
-    kamdbctl create openser && \
-    kamctl add 1234 1234 && kamctl add 2345 2345 && kamctl add 9999 9999 && kamctl add 1111 1111 && \
-    pg_ctl -D ${PGDATA} stop
+COPY files/sip-router.cfg /etc/kamailio/kamailio-local.cfg
+COPY files/routing.cfg /etc/kamailio/routing.cfg
+RUN cat /etc/kamailio/routing.cfg >> /etc/kamailio/kamailio.cfg
+COPY files/dispatcher.list /etc/kamailio/dispatcher.list
+COPY files/tls.cfg /etc/kamailio
+COPY files/GeoLite2-Country.mmdb /etc/kamailio/db/GeoLite2-Country.mmdb
+RUN touch /etc/kamailio/permissions.allow && touch /etc/kamailio/permissions.deny
+## RUN ls -la /etc/kamailio
+## RUN false
 
 COPY files/docker-entrypoint.sh /
 
-ENTRYPOINT ["/docker-entrypoint.sh"]
+#### ENTRYPOINT ["/docker-entrypoint.sh"]
+
+ENTRYPOINT ["kamailio", "-DD", "-E"]
 
 # Expose the PostgreSQL port
-EXPOSE 5432
+# SIP/SCTP
+EXPOSE 5060/udp
+# SIP
+EXPOSE 5060/tcp
+# SIP with TLS
+EXPOSE 5061/tcp
 
