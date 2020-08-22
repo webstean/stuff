@@ -1,0 +1,48 @@
+#
+# SIP contacts
+#
+# Displayname <sip:user@domain>;addr-params
+#
+#  addr-params:
+#    ;presence={none,p2p}
+#    ;access={allow,block}
+#
+
+
+"Echo Server" <sip:echo@creytiv.com>
+"webstean" <sip:webstean@domain>;presence=p2p
+
+# Access rules
+#"Catch All" <sip:*@*>;access=block
+"Good Friend" <sip:good@friend.com>;access=allow
+
+"aw" <sip:music@studio.link>
+"time" <sip:test.time@sip5060.net>
+
+"IdeaSIP" <sip:301@ideasip.com>
+
+"music"	<sip:0289304@zero-nine.biz>
+
+"test1" <sip:thetestcall@sip.linphone.org>
+
+
+"echo test - audio & video"  <sip:gary@selfie.vc>
+"echo test - audio & video"  <sip:amy@selfie.vc>
+"echo test - audio & video"  <sip:goldfish@selfie.vc>
+"echo test - audio & video"  <sip:astronaut@selfie.vc>
+"echo test - audio & video"  <sip:president@selfie.vc>
+
+"fireplace - audio & video with menu" <sipr:fireplace@ivr.vc>
+
+
+"Cisco Loopback	Virtual Room (Video)"	<sip:loopback@rtp.ciscotac.net>
+"SIP Test Call	Echo Test (Audio)"	<sip:thetestcall@getonsip.com>
+"President Echo	Echo Test (Audio/Video)"	<sip:president@selfie.vc>
+
+"Queensland Courts"     <sip:4444@psn.qld.gov.au>
+
+"lifecloud"		<sip:370608@lifesizecloud.com>
+
+"test"			<sip:test@sip.webstean.com>
+
+
