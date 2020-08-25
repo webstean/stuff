@@ -78,14 +78,14 @@ git clone https://github.com/juha-h/libzrtp ~/git/libzrtp
 # Install & Build libzrtp
 cd ~/git/libzrtp && ./bootstrap.sh && ./configure CFLAGS="-O0 -g3 -W -Wall -DBUILD_WITH_CFUNC -DBUILD_DEFAULT_CACHE -DBUILD_DEFAULT_TIMER" && make && sudo make install
 # Install & Build openssl
-cd ~/git/openssl && ./config && make install && sudo make install
+cd ~/git/openssl && ./config && make && sudo make install
 # Install & Build re
 cd ~/git/re && make RELEASE=1 && sudo make RELEASE=1 install
 # Install & Build rem
 cd ~/git/rem && make && sudo make install
 # Build baresip
-cd ~/git/baresip && make RELEASE=1 && sudo make RELEASE=1 install
-# ldconfig
+cd ~/git/baresip && make RELEASE=1 EXTRA_MODULES=b2bua && sudo make RELEASE=1 EXTRA_MODULES=b2bua install
+# ldconfig - just for kicks
 sudo ldconfig
 
 # Get some decent config files for baresip

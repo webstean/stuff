@@ -10,16 +10,22 @@ LABEL maintainer="webstean@gmail.com"
 # RUN groupadd -r postgres && useradd --no-log-init -r -g postgres postgres.
 
 # Prereqs
-RUN apk --no-cache add tzdata libpq
+RUN apk --no-cache add tzdata libpq 
 
-# Timezone
-RUN cp /usr/share/zoneinfo/Australia/Melbourne /etc/localtime && \
-    echo "Australia/Melbourne" >  /etc/timezone && \
-    date && mkdir -p /etc/kamailio/db
-
-ENV AW=tem
+# Language
 ENV LANG=en_US.UTF-8 
 ENV LANGUAGE=en_US.UTF-8
+
+# Timezone
+RUN apk --no-cache update 
+### && apk add locale
+RUN cp /usr/share/zoneinfo/Australia/Melbourne /etc/localtime && \
+    echo "Australia/Melbourne" >  /etc/timezone && \
+    date
+# No locale-gen wil Alpine
+
+RUN mkdir -p /etc/kamailio/db
+
 ENV DB=/etc/kamailio/db/
 ENV USERAS=kamailio
 
@@ -57,8 +63,6 @@ RUN echo "DB_PATH=${DB}/sqlite" >> /etc/kamailio/kamctlrc
 RUN echo "INSTALL_EXTRA_TABLES=yes" >> /etc/kamailio/kamctlrc
 RUN echo "INSTALL_PRESENCE_TABLES=yes" >> /etc/kamailio/kamctlrc
 RUN echo "INSTALL_DBUID_TABLES=yes" >> /etc/kamailio/kamctlrc
-RUN echo "INSTALL_DBUID_TABLES=drouter" >> /etc/kamailio/kamctlrc
-
 
 ##RUN ls -la /usr/lib/kamailio/modules/tl*
 ##RUN false
@@ -67,7 +71,7 @@ RUN mkdir -p ${DB} && kamdbctl create
 RUN chown -R ${USERAS}:${USERAS} ${DB} && chmod 0700 ${DB}
 
 RUN kamctl add 201 201 && kamctl add 202 202 && kamctl add 301 301 && kamctl add 302 302
-RUN kamctl add kamalio kamailo
+RUN kamctl add camp kamailio123 && kamctl add albert kamailio123
 
 # Change User
 USER ${USERAS}
@@ -86,20 +90,40 @@ RUN echo "All : ALL" >> /etc/kamailio/register.allow
 COPY files/sip-router.cfg /etc/kamailio/kamailio-local.cfg
 COPY files/routing.cfg /etc/kamailio/routing.cfg
 COPY files/dispatcher.list /etc/kamailio/dispatcher.list
+COPY files/execshow.sh /etc/kamailio/execshow.sh
 COPY files/tls.cfg /etc/kamailio
 COPY files/tls.cfg /usr/local/etc/kamailio/tls.cfg
 COPY files/GeoLite2-Country.mmdb /etc/kamailio/db/GeoLite2-Country.mmdb
 COPY files/88-kamailio.conf /etc/rsyslog.d/88-kamailio.conf
 COPY files/kamailio /etc/logrotate.d/kamailio
 
-RUN /etc/kamailio/kamailio-local.cfg >> /etc/kamailio/kamailio.cfg
+RUN echo "modparam(\"auth\", \"nonce_count\", 1) # enable nonce_count support" >> /etc/kamailio/kamailio.cfg
+RUN echo "modparam(\"auth\", \"qop\", \"auth\")  # enable qop=auth" >> /etc/kamailio/kamailio.cfg
 
-### RUN cat /etc/kamailio/dispatcher.list
+RUN echo "loadmodule \"exec\"" >> /etc/kamailio/kamailio.cfg
 
-RUN grep auth_db /etc/kamailio/kamailio.cfg
+RUN echo import_file \"routing.cfg\" >> /etc/kamailio/kamailio.cfg
+
+RUN grep set_mod_param_regex /etc/kamailio/*.cfg || true
+
+## RUN cat /etc/kamailio/kamailio.cfg
+## RUN false
+
+#### set default/variables  standard stuff          routing logic
+#### kamailio-andrew.cfg -> kamailio-default.cfg -> kamailio-routing.cfg
+
+### RUN echo import_file \"kamailio-andrew.cfg\" > /etc/kamailio/kamailio.cfg
+### RUN echo import_file \"kamailio-default.cfg\" >> /etc/kamailio/kamailio.cfg
+### RUN echo import_file \"kamailio-routing.cfg\" >> /etc/kamailio/kamailio.cfg
+
+### dont forget kamcmd (need binrpc)
+### modparam("ctl", "binrpc", "unix:/var/run/kamailio//kamailio_ctl")
+### modparam("ctl", "mode", 0666)
 
 ## RUN ls -la /etc/kamailio
 ## RUN false
+
+##### $rU is the extension dialed
 
 COPY files/docker-entrypoint.sh /
 
