@@ -69,22 +69,31 @@ openssl req -newkey rsa:4096 -x509 -sha256 -days 3650 -nodes -out /etc/ssl/certs
     -subj "/C=AU/ST=Victoria/L=Melbourne/O=webstean/OU=IT/CN=webstean.com"
 cat /etc/ssl/certs/example.crt /etc/ssl/certs/example.key > /etc/ssl/certs/example.pem
 
-git clone https://github.com/openssl/openssl ~/git/openssl
-git clone https://github.com/baresip/re ~/git/re
-git clone https://github.com/creytiv/rem  ~/git/rem
-git clone https://github.com/baresip/baresip ~/git/baresip
-git clone https://github.com/juha-h/libzrtp ~/git/libzrtp
+mkdir -p /usr/local/src
+cd /usr/local/src
+git clone https://github.com/letsencrypt/letsencrypt /usr/local/src/letsencrypt
+#./letsencrypt-auto --help
+#./letsencrypt-auto certonly --standalone -d MYDOMAIN
+
+git clone https://github.com/openssl/openssl /usr/local/src/openssl
+git clone https://github.com/baresip/re /usr/local/src/re
+git clone https://github.com/creytiv/rem  /usr/local/src/rem
+git clone https://github.com/baresip/baresip /usr/local/src/baresip
+git clone https://github.com/juha-h/libzrtp /usr/local/src/git/libzrtp
 
 # Install & Build libzrtp
-cd ~/git/libzrtp && ./bootstrap.sh && ./configure CFLAGS="-O0 -g3 -W -Wall -DBUILD_WITH_CFUNC -DBUILD_DEFAULT_CACHE -DBUILD_DEFAULT_TIMER" && make && sudo make install
+cd /usr/local/src/libzrtp && ./bootstrap.sh && ./configure CFLAGS="-O0 -g3 -W -Wall -DBUILD_WITH_CFUNC -DBUILD_DEFAULT_CACHE -DBUILD_DEFAULT_TIMER" && make && sudo make install && sudo ldconfig
 # Install & Build openssl
-cd ~/git/openssl && ./config && make && sudo make install
+cd /usr/local/src/openssl && ./config && make && sudo make install && sudo ldconfig
 # Install & Build re
-cd ~/git/re && make RELEASE=1 && sudo make RELEASE=1 install
+# Build as Release
+#cd /usr/local/src/re && make RELEASE=1 && sudo make RELEASE=1 install && sudo ldconfig
+# Build with debug enabled
+cd /usr/local/src/re && make && sudo make install && sudo ldconfig
 # Install & Build rem
-cd ~/git/rem && make && sudo make install
+cd /usr/local/src/rem && make && sudo make install
 # Build baresip
-cd ~/git/baresip && make RELEASE=1 EXTRA_MODULES=b2bua && sudo make RELEASE=1 EXTRA_MODULES=b2bua install
+cd /usr/local/src/baresip && make RELEASE=1 EXTRA_MODULES=b2bua && sudo make RELEASE=1 EXTRA_MODULES=b2bua install
 # ldconfig - just for kicks
 sudo ldconfig
 

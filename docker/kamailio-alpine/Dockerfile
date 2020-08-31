@@ -70,8 +70,9 @@ RUN echo "INSTALL_DBUID_TABLES=yes" >> /etc/kamailio/kamctlrc
 RUN mkdir -p ${DB} && kamdbctl create
 RUN chown -R ${USERAS}:${USERAS} ${DB} && chmod 0700 ${DB}
 
-RUN kamctl add 201 201 && kamctl add 202 202 && kamctl add 301 301 && kamctl add 302 302
+RUN kamctl add 201 kamailio123 && kamctl add 202 kamailio123 && kamctl add 301 kamailio123 && kamctl add 302 kamailio123
 RUN kamctl add camp kamailio123 && kamctl add albert kamailio123
+RUN kamctl add amw kamailio123 && kamctl add srm kamailio123
 
 # Change User
 USER ${USERAS}
@@ -87,34 +88,30 @@ RUN echo "All : ALL" >> /etc/kamailio/register.allow
 
 ### RUN curl https://raw.githubusercontent.com/kamailio/kamailio/master/etc/kamailio.cfg -o /etc/kamailio/kamailio.cfg
 
-COPY files/sip-router.cfg /etc/kamailio/kamailio-local.cfg
+COPY files/andrew.cfg /etc/kamailio/andrew.cfg
+COPY files/default.cfg /etc/kamailio/default.cfg
 COPY files/routing.cfg /etc/kamailio/routing.cfg
+COPY files/simple-routing.cfg /etc/kamailio/simple-routing.cfg
 COPY files/dispatcher.list /etc/kamailio/dispatcher.list
 COPY files/execshow.sh /etc/kamailio/execshow.sh
-COPY files/tls.cfg /etc/kamailio
+COPY files/tls.cfg /etc/kamailio/tls.cfg
 COPY files/tls.cfg /usr/local/etc/kamailio/tls.cfg
 COPY files/GeoLite2-Country.mmdb /etc/kamailio/db/GeoLite2-Country.mmdb
 COPY files/88-kamailio.conf /etc/rsyslog.d/88-kamailio.conf
 COPY files/kamailio /etc/logrotate.d/kamailio
 
-RUN echo "modparam(\"auth\", \"nonce_count\", 1) # enable nonce_count support" >> /etc/kamailio/kamailio.cfg
-RUN echo "modparam(\"auth\", \"qop\", \"auth\")  # enable qop=auth" >> /etc/kamailio/kamailio.cfg
-
-RUN echo "loadmodule \"exec\"" >> /etc/kamailio/kamailio.cfg
-
-RUN echo import_file \"routing.cfg\" >> /etc/kamailio/kamailio.cfg
-
-RUN grep set_mod_param_regex /etc/kamailio/*.cfg || true
-
 ## RUN cat /etc/kamailio/kamailio.cfg
 ## RUN false
 
 #### set default/variables  standard stuff          routing logic
-#### kamailio-andrew.cfg -> kamailio-default.cfg -> kamailio-routing.cfg
+#### andrew.cfg         -> default.cfg ->       routing.cfg
 
-### RUN echo import_file \"kamailio-andrew.cfg\" > /etc/kamailio/kamailio.cfg
-### RUN echo import_file \"kamailio-default.cfg\" >> /etc/kamailio/kamailio.cfg
-### RUN echo import_file \"kamailio-routing.cfg\" >> /etc/kamailio/kamailio.cfg
+RUN echo import_file \"andrew.cfg\" > /etc/kamailio/kamailio.cfg
+RUN echo import_file \"default.cfg\" >> /etc/kamailio/kamailio.cfg
+RUN echo import_file \"simple-routing.cfg\" >> /etc/kamailio/kamailio.cfg
+
+RUN cat /etc/kamailio/kamailio.cfg
+
 
 ### dont forget kamcmd (need binrpc)
 ### modparam("ctl", "binrpc", "unix:/var/run/kamailio//kamailio_ctl")
