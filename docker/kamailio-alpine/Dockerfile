@@ -100,18 +100,15 @@ COPY files/GeoLite2-Country.mmdb /etc/kamailio/db/GeoLite2-Country.mmdb
 COPY files/88-kamailio.conf /etc/rsyslog.d/88-kamailio.conf
 COPY files/kamailio /etc/logrotate.d/kamailio
 
-## RUN cat /etc/kamailio/kamailio.cfg
-## RUN false
-
 #### set default/variables  standard stuff          routing logic
 #### andrew.cfg         -> default.cfg ->       routing.cfg
 
+### RUN echo import_file \"andrew.cfg\" > /etc/kamailio/kamailio.cfg && cat /etc/kamailio/kamailio.cfg && false
 RUN echo import_file \"andrew.cfg\" > /etc/kamailio/kamailio.cfg
-RUN echo import_file \"default.cfg\" >> /etc/kamailio/kamailio.cfg
-RUN echo import_file \"simple-routing.cfg\" >> /etc/kamailio/kamailio.cfg
+#RUN echo import_file \"default.cfg\" >> /etc/kamailio/kamailio.cfg
+#RUN echo import_file \"simple-routing.cfg\" >> /etc/kamailio/kamailio.cfg
 
-RUN cat /etc/kamailio/kamailio.cfg
-
+RUN cat /etc/kamailio/andrew.cfg
 
 ### dont forget kamcmd (need binrpc)
 ### modparam("ctl", "binrpc", "unix:/var/run/kamailio//kamailio_ctl")
