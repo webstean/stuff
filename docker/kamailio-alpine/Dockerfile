@@ -105,10 +105,8 @@ COPY files/kamailio /etc/logrotate.d/kamailio
 
 ### RUN echo import_file \"andrew.cfg\" > /etc/kamailio/kamailio.cfg && cat /etc/kamailio/kamailio.cfg && false
 RUN echo import_file \"andrew.cfg\" > /etc/kamailio/kamailio.cfg
-#RUN echo import_file \"default.cfg\" >> /etc/kamailio/kamailio.cfg
-#RUN echo import_file \"simple-routing.cfg\" >> /etc/kamailio/kamailio.cfg
-
-RUN cat /etc/kamailio/andrew.cfg
+RUN echo import_file \"default.cfg\" >> /etc/kamailio/kamailio.cfg
+RUN echo import_file \"simple-routing.cfg\" >> /etc/kamailio/kamailio.cfg
 
 ### dont forget kamcmd (need binrpc)
 ### modparam("ctl", "binrpc", "unix:/var/run/kamailio//kamailio_ctl")
