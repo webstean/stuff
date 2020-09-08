@@ -40,29 +40,31 @@ sudo bash -c "echo '%sudo ALL=(ALL:ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' vis
 # sudo sh -c 'echo # NO_PROXY=localhost,127.0.0.1,::1,10.0.0.0/8 >> /etc/profile.d/proxy.sh'
 
 # Ensure git is install and then configure it 
-$INSTALL_CMD git
+${INSTALL_CMD} git
 git config --global color.ui true
 git config --global user.name "Andrew Webster"
 git config --global user.email "webstean@gmail.com"
 git config --list
 
 # Generate an SSH Certificate
-$INSTALL_CMD openssh-client
+${INSTALL_CMD} openssh-client
 cat /dev/zero | ssh-keygen -q -N "" -C "webstean@gmail.com"
 
 # Install dependencies for reference GIT Repos
 mkdir ~/git
 git clone https://github.com/oracle/docker-images ~/git/oracle-docker-images
 # An example of multi-repository C project that is updated regularly
-$INSTALL_CMD pkg-config alsa-utils libasound2-dev libpulse-dev
-$INSTALL_CMD gstreamer1.0-alsa gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-tools gstreamer1.0-x 
-$INSTALL_CMD libgstreamer-plugins-base1.0-0 libgstreamer-plugins-base1.0-dev libgstreamer1.0-0 libgstreamer1.0-dev
-$INSTALL_CMD build-essential pkg-config intltool libtool libsndfile1-dev libjson-c-dev libopus-dev
-$INSTALL_CMD libsndfile1-dev libspandsp-dev libgtk2.0-dev libjack-jackd2-dev
+${INSTALL_CMD} pkg-config alsa-utils libasound2-dev libpulse-dev
+${INSTALL_CMD} gstreamer1.0-alsa gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-tools gstreamer1.0-x 
+${INSTALL_CMD} libgstreamer-plugins-base1.0-0 libgstreamer-plugins-base1.0-dev libgstreamer1.0-0 libgstreamer1.0-dev
+${INSTALL_CMD} build-essential pkg-config intltool libtool libsndfile1-dev libjson-c-dev libopus-dev
+${INSTALL_CMD} libsndfile1-dev libspandsp-dev libgtk2.0-dev libjack-jackd2-dev
 
+# Grep for SIP Network Sessions
+${INSTALL_CMD} sngrep
 # Video Codecs
-$INSTALL_CMD libavcodec-dev libavutil-dev libcairo2-dev
-# $INSTALL_CMD libavdevice-dev libavformat-dev mpg123-dev 
+${INSTALL_CMD} libavcodec-dev libavutil-dev libcairo2-dev
+# ${INSTALL_CMD} libavdevice-dev libavformat-dev mpg123-dev 
 
 # Create an example certificate
 openssl req -newkey rsa:4096 -x509 -sha256 -days 3650 -nodes -out /etc/ssl/certs/example.crt -keyout /etc/ssl/certs/example.key \
@@ -111,11 +113,11 @@ git clone --depth 1 https://github.com/junegunn/fzf.git ~/git/fzf
 ~/git/fzf/install
 
 # Install Python
-$INSTALL_CMD python
-$INSTALL_CMD python-dev py-pip build-base 
+${INSTALL_CMD} python
+${INSTALL_CMD} python-dev py-pip build-base 
 
 # asdf prereqs
-$INSTALL_CMD dirmngr gpg curl
+${INSTALL_CMD} dirmngr gpg curl
 # Install ASDF (version manager for non-Dockerized apps).
 mkdir -p ~/.asdf
 git clone https://github.com/asdf-vm/asdf.git ~/.asdf
@@ -147,21 +149,21 @@ pip3 install --user ansible
 ufw allow ssh
 
 # *DATABASE* SQL Lite
-$INSTALL_CMD sqlite3 libsqlite3-dev
+${INSTALL_CMD} sqlite3 libsqlite3-dev
 if [ -f /sbin/apk ] ; then  
-    $INSTALL_CMD sqlite libsqlite-dev
+    ${INSTALL_CMD} sqlite libsqlite-dev
 fi
 # create database
 # sqlite test.db
 
 # sqlite3 is the cli, sqlitebrowser is the GUI
 # but needs XWindows
-# $INSTALL_CMD sqlitebrowser
+# ${INSTALL_CMD} sqlitebrowser
 
 # Ruby on Rails
-#$INSTALL_CMD git-core zlib1g-dev build-essential libssl-dev libreadline-dev libyaml-dev 
-#$INSTALL_CMD libsqlite3-dev sqlite3 libxml2-dev libxslt1-dev libcurl4-openssl-dev 
-#$INSTALL_CMD software-properties-common libffi-dev nodejs yarn
+#${INSTALL_CMD} git-core zlib1g-dev build-essential libssl-dev libreadline-dev libyaml-dev 
+#${INSTALL_CMD} libsqlite3-dev sqlite3 libxml2-dev libxslt1-dev libcurl4-openssl-dev 
+#${INSTALL_CMD} software-properties-common libffi-dev nodejs yarn
 
 # sudo git clone https://github.com/rbenv/rbenv.git /opt/rbenv
 # sudo sh -c 'echo export PATH=/opt/rbenv:\$PATH >  /etc/profile.d/ruby.sh'
@@ -183,7 +185,7 @@ fi
 
 # Docker - do we need this?
 # Add SSL support for APT repositories (required for Docker)
-$INSTALL_CMD apt-transport-https ca-certificates curl software-properties-common
+${INSTALL_CMD} apt-transport-https ca-certificates curl software-properties-common
 # cleanup
 sudo apt-get purge docker lxc-docker docker-engine docker.io
 # add key
@@ -191,7 +193,7 @@ curl -fsSL https://download.docker.com/linux/ubuntu/gpg > ~/aw.txt
 sudo apt-key add ~/aw.txt
 if [ -f /usr/bin/apt ] ; then
     # add apt repository for docker
-    $INSTALL_CMD software-properties-common
+    ${INSTALL_CMD} software-properties-common
     sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/$(lsb_release -is) $(lsb_release -cs) stable" 
     # got with stable
     # sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/$(lsb_release -is) $(lsb_release -cs) edge"
@@ -204,17 +206,17 @@ if [[ $dbus_status = *"is not running"* ]]; then
     sudo service dbus --full-restart
 fi
 echo $dbus_status
-$INSTALL_CMD docker docker.io
+${INSTALL_CMD} docker docker.io
 # Turn on Docker Build kit
 sudo sh -c 'echo export DOCKER_BUILDKIT="1" >> /etc/profile.d/docker.sh'
 
 # Alpine
-$INSTALL_CMD musl-dev libaio-dev libnsl-dev
+${INSTALL_CMD} musl-dev libaio-dev libnsl-dev
 sudo ldconfig
 
 # Install Oracle Database Instant Client via permanent OTN link
 # Dependencies for Oracle Client
-$INSTALL_CMD libaio unzip
+${INSTALL_CMD} libaio unzip
 # Permanent Link (latest version) - Instant Client - Basic (x86 64 bit) - you need this for anything else to work
 # Note: there is no Instant Client for the ARM processor, Intel/AMD x86 only
 tmpdir=$(mktemp -d)
@@ -251,7 +253,7 @@ if [ -f /sbin/apk ] ; then
     # enable Edge repositories - hoepfully this will go away eventually
     echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
     apk update
-    $INSTALL_CMD libnsl libaio musl-dev autconfig
+    ${INSTALL_CMD} libnsl libaio musl-dev autconfig
 fi
 
 # Install Microsoft SQL Server Client
@@ -423,13 +425,17 @@ sudo sh -c 'echo "# Alias to provide distribution name"                 >> /etc/
 sudi sh -c 'alias distribution=$(. /etc/os-release;echo $ID$VERSION_ID) >> /etc/profile.d/bash.sh'
 
 # configure WSL
-sudo sh -c 'echo [automount]            >   /etc/wsl.conf'
-sudo sh -c 'echo root = /               >>  /etc/wsl.conf'
-sudo sh -c 'echo options = "metadata"   >>  /etc/wsl.conf'
+sudo sh -c 'echo [automount]                >   /etc/wsl.conf'
+sudo sh -c 'echo root = /                   >>  /etc/wsl.conf'
+sudo sh -c 'echo options = "metadata"       >>  /etc/wsl.conf'
 
-sudo sh -c 'echo [interop]              >>  /etc/wsl.conf'
-sudo sh -c 'echo enabled = true         >>  /etc/wsl.conf'
-sudo sh -c 'appendWindowsPath = true    >>  /etc/wsl.conf'
+sudo sh -c 'echo [interop]                  >>  /etc/wsl.conf'
+sudo sh -c 'echo enabled = true             >>  /etc/wsl.conf'
+sudo sh -c 'echo appendWindowsPath = true   >>  /etc/wsl.conf'
+
+sudo sh -c 'echo [network]                  >>  /etc/wsl.conf'
+sudo sh -c 'echo generateResolvConf = false >>  /etc/wsl.conf'
+sudo sh -c 'echo generateHosts = false      >>  /etc/wsl.conf'
 
 # apt clean  up
 if [ -f /usr/bin/apt ] ; then
