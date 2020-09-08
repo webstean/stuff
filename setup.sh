@@ -50,7 +50,7 @@ git config --list
 $INSTALL_CMD openssh-client
 cat /dev/zero | ssh-keygen -q -N "" -C "webstean@gmail.com"
 
-# Install some Reference GIT Repos
+# Install dependencies for reference GIT Repos
 mkdir ~/git
 git clone https://github.com/oracle/docker-images ~/git/oracle-docker-images
 # An example of multi-repository C project that is updated regularly
@@ -70,7 +70,6 @@ openssl req -newkey rsa:4096 -x509 -sha256 -days 3650 -nodes -out /etc/ssl/certs
 cat /etc/ssl/certs/example.crt /etc/ssl/certs/example.key > /etc/ssl/certs/example.pem
 
 mkdir -p /usr/local/src
-cd /usr/local/src
 git clone https://github.com/letsencrypt/letsencrypt /usr/local/src/letsencrypt
 #./letsencrypt-auto --help
 #./letsencrypt-auto certonly --standalone -d MYDOMAIN
@@ -86,12 +85,12 @@ cd /usr/local/src/libzrtp && ./bootstrap.sh && ./configure CFLAGS="-O0 -g3 -W -W
 # Install & Build openssl
 cd /usr/local/src/openssl && ./config && make && sudo make install && sudo ldconfig
 # Install & Build re
-# Build as Release
+# Build as Release (no SIP debugging)
 #cd /usr/local/src/re && make RELEASE=1 && sudo make RELEASE=1 install && sudo ldconfig
 # Build with debug enabled
-cd /usr/local/src/re && make && sudo make install && sudo ldconfig
+cd /usr/local/src/re && sudo make install && sudo ldconfig
 # Install & Build rem
-cd /usr/local/src/rem && make && sudo make install
+cd /usr/local/src/rem && sudo make install
 # Build baresip
 cd /usr/local/src/baresip && make RELEASE=1 EXTRA_MODULES=b2bua && sudo make RELEASE=1 EXTRA_MODULES=b2bua install
 # ldconfig - just for kicks
@@ -314,6 +313,18 @@ curl https://sdk.cloud.google.com > install.sh
 chmod +x install.sh
 bash install.sh --disable-prompts
 ~/google-cloud-sdk/install.sh --quiet
+
+
+# install sysstat and enable it
+sudo apt-get install sysstat
+
+$ sudo vi /etc/default/sysstat
+change ENABLED="false" to ENABLED="true"
+save the file
+Last, restart the sysstat service:
+
+$ sudo service sysstat restart
+
 
 # Solution: Xwindows Display
 sudo bash -c 'cat << EOF > /etc/profile.d/display.sh

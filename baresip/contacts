@@ -45,4 +45,10 @@
 
 "test"			<sip:test@sip.webstean.com>
 
+"music-iptel"   <sip:music@iptel.org>
+
+"echo antisip.com"  <sip:echo@antisip.com>
+
+
+
 

@@ -351,6 +351,11 @@ func init() {
 	// cd $PROJECT_NAME
 	// git reset --hard $SHA1
 
+	// where M.M = release or tag
+	// git clone $URL
+	// cd $PROJECT_NAME
+	// git checkout -b M.M origin/M.M
+
 	log.Info("====GIT INFO===")
 
 	//testbytecount1()
