@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-VERSION="1.14"
+VERSION="1.15"
 GOROOT="/usr/local/go"
 # GOPATH="/usr/local/go"
 GOPATH="$HOME/go"
@@ -119,7 +119,6 @@ echo "Installing Godror (Oracle Client) into ${GOPATH}..."
 ${GOROOT}/bin/go get github.com/godror/godror
 ${GOROOT}/bin/go install github.com/godror/godror
 
-
 # Install Go Methods for SQL Lite
 echo "Installing SQL Lite Client into ${GOPATH}..."
 ${GOROOT}/bin/go get github.com/mattn/go-sqlite3
@@ -134,6 +133,7 @@ ${GOROOT}/bin/go get -u -d github.com/Azure/azure-sdk-for-go/...
 echo "Installing Go Debugger Dlv into ${GOPATH}..."
 ${GOROOT}/bin/go get github.com/go-delve/delve/cmd/dlv
 
+# Install some Go Examples
 echo "Installing Go Examples ${HOME}/go/src/github.com/inancgumus/learngo"
 ${GOROOT}/bin/go get github.com/inancgumus/learngo
 

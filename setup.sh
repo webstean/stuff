@@ -72,9 +72,10 @@ openssl req -newkey rsa:4096 -x509 -sha256 -days 3650 -nodes -out /etc/ssl/certs
 cat /etc/ssl/certs/example.crt /etc/ssl/certs/example.key > /etc/ssl/certs/example.pem
 
 mkdir -p /usr/local/src
+
 git clone https://github.com/letsencrypt/letsencrypt /usr/local/src/letsencrypt
 #./letsencrypt-auto --help
-#./letsencrypt-auto certonly --standalone -d MYDOMAIN
+# sudo -H /usr/local/src/letsencrypt/letsencrypt-auto certonly --standalone -d example.com -d www.example.com
 
 git clone https://github.com/openssl/openssl /usr/local/src/openssl
 git clone https://github.com/baresip/re /usr/local/src/re
@@ -399,7 +400,7 @@ EOF'
 
 # pulseaudio --start --log-target=syslog
 
-sudo sh -c 'echo "# Ensure \$LINES and \$COLUMNS always get updated."  >  /etc/profile.d/bash.sh'
+sudo sh -c 'echo "# Ensure \$LINES and \$COLUMNS always get updated."   >  /etc/profile.d/bash.sh'
 sudo sh -c 'echo shopt -s checkwinsize                                 >>  /etc/profile.d/bash.sh'
 
 sudo sh -c 'echo "# Limit number of lines and entries in the history." >>  /etc/profile.d/bash.sh'
