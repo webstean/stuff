@@ -75,7 +75,19 @@ mkdir -p /usr/local/src
 
 git clone https://github.com/letsencrypt/letsencrypt /usr/local/src/letsencrypt
 #./letsencrypt-auto --help
-# sudo -H /usr/local/src/letsencrypt/letsencrypt-auto certonly --standalone -d example.com -d www.example.com
+# sudo certbot certificates
+
+#if [ -d /etc/apache2 ] ; then
+#    sudo -H /usr/local/src/letsencrypt/letsencrypt-auto certonly --apache -d example.com -d www.example.com
+#else
+#    sudo -H /usr/local/src/letsencrypt/letsencrypt-auto certonly --standalone -d example.com -d www.example.com
+#fi
+
+certbot-auto certonly --server https://acme-v02.api.letsencrypt.org/directory --manual --preferred-challenges dns -d 'lordsomerscamp.org.au,*.lordsomercamp.org.au'
+
+# test
+# sudo certbot renew --dry-run
+
 
 git clone https://github.com/openssl/openssl /usr/local/src/openssl
 git clone https://github.com/baresip/re /usr/local/src/re

@@ -57,6 +57,9 @@ RUN chown ${USERAS}:${USERAS} /etc/kamailio/* && chown ${USERAS}:${USERAS} /etc/
 RUN mkdir -p /usr/local/etc/kamailio/ && chown -R ${USERAS}:${USERAS} /usr/local/etc/kamailio
 
 # Configure kamailio to talk to SQLLite Database
+RUN cat /etc/kamailio/kamctlrc
+RUN false
+
 RUN echo "SIP_DOMAIN=sip.local.net" > /etc/kamailio/kamctlrc
 RUN echo "DBENGINE=SQLITE" >> /etc/kamailio/kamctlrc
 RUN echo "DB_PATH=${DB}/sqlite" >> /etc/kamailio/kamctlrc

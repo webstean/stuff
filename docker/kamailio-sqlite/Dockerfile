@@ -13,6 +13,10 @@ RUN apk update && apk --no-cache add tzdata libpq sqlite sudo
 # Enable sudo for all
 RUN echo '%sudo ALL=(ALL:ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo
 
+## RUN dnf -y install dnf-plugins-core && dnf config-manager --add-repo https://rpm.kamailio.org/centos/kamailio.repo && dnf install kamailio
+
+## RUN yum -y install yum-utils && yum-config-manager --add-repo https://rpm.kamailio.org/centos/kamailio.repo && yum install kamailio
+
 # Timezone
 RUN cp /usr/share/zoneinfo/Australia/Melbourne /etc/localtime && \
     echo "Australia/Melbourne" >  /etc/timezone && \
@@ -28,7 +32,7 @@ ENV RUN_KAMAILIO=yes
 
 # Install Kamailio
 RUN apk --no-cache add  kamailio kamailio-json kamailio-sctp kamailio-presence \
-                        kamailio-sqlite kamailio-extras kamailio-uuid kamailio-websocket \
+                        kamailio-sqlite kamailio-mysql kamailio-extras kamailio-uuid kamailio-websocket \
                         kamailio-ev kamailio-geoip2-modules
 
 RUN chown ${USERAS}:${USERAS} /etc/kamailio/* && chown ${USERAS}:${USERAS} /etc/kamailio
@@ -42,7 +46,7 @@ USER ${USERAS}
 
 # Configure kamailio to talk to Database
 RUN sed "/^[# ]*SIP_DOMAIN/cSIP_DOMAIN=sip.local.net" -i /etc/kamailio/kamctlrc
-RUN sed '/^[# ]*DBENGINE/cDBENGINE=SQLITE' -i /etc/kamailio/kamctlrc
+RUN sed '/^[# ]*DBENGINE/cDBENGINE=MYSQLSQLITE' -i /etc/kamailio/kamctlrc
 RUN sed '/^[# ]*DB_PATH/cDB_PATH=${PGDATA}/${USERAS}' -i /etc/kamailio/kamctlrc
 RUN sed '/^[# ]*DBHOST/cDBHOST=localhost' -i /etc/kamailio/kamctlrc
 RUN sed '/^[# ]*DBNAME/cDBNAME=openser' -i /etc/kamailio/kamctlrc
