@@ -83,11 +83,14 @@ git clone https://github.com/letsencrypt/letsencrypt /usr/local/src/letsencrypt
 #    sudo -H /usr/local/src/letsencrypt/letsencrypt-auto certonly --standalone -d example.com -d www.example.com
 #fi
 
-certbot-auto certonly --server https://acme-v02.api.letsencrypt.org/directory --manual --preferred-challenges dns -d 'lordsomerscamp.org.au,*.lordsomercamp.org.au'
+# WILDCARD: This need a DNS record
+# certbot certonly -d 'lordsomerscamp.org.au,*.lordsomercamp.org.au' --server https://acme-v02.api.letsencrypt.org/directory --preferred-challenges dns --agree-tos --email webstean@gmail.com
+
+# WILDCARD: this need a file put on the web server 
+# certbot certonly -d -d 'lordsomerscamp.org.au,*.lordsomercamp.org.au' --server https://acme-v02.api.letsencrypt.org/directory --agree-tos --email webstean@gmail.com
 
 # test
 # sudo certbot renew --dry-run
-
 
 git clone https://github.com/openssl/openssl /usr/local/src/openssl
 git clone https://github.com/baresip/re /usr/local/src/re

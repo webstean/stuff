@@ -57,9 +57,6 @@ RUN chown ${USERAS}:${USERAS} /etc/kamailio/* && chown ${USERAS}:${USERAS} /etc/
 RUN mkdir -p /usr/local/etc/kamailio/ && chown -R ${USERAS}:${USERAS} /usr/local/etc/kamailio
 
 # Configure kamailio to talk to SQLLite Database
-RUN cat /etc/kamailio/kamctlrc
-RUN false
-
 RUN echo "SIP_DOMAIN=sip.local.net" > /etc/kamailio/kamctlrc
 RUN echo "DBENGINE=SQLITE" >> /etc/kamailio/kamctlrc
 RUN echo "DB_PATH=${DB}/sqlite" >> /etc/kamailio/kamctlrc
@@ -76,6 +73,10 @@ RUN chown -R ${USERAS}:${USERAS} ${DB} && chmod 0700 ${DB}
 RUN kamctl add 201 kamailio123 && kamctl add 202 kamailio123 && kamctl add 301 kamailio123 && kamctl add 302 kamailio123
 RUN kamctl add camp kamailio123 && kamctl add albert kamailio123
 RUN kamctl add amw kamailio123 && kamctl add srm kamailio123
+
+# kamctl ul show                <- will print the list of records in user location table from Kamailio memory.
+# kamctl db show subscriber     <- look for provisioned users (i.e., users having a subscriber profile):
+# kamctl online                 <- Details of online users such as Expires, Callid, User-Agent, Last-KeepAlive, Last-Modified then use:
 
 # Change User
 USER ${USERAS}
@@ -109,7 +110,7 @@ COPY files/kamailio /etc/logrotate.d/kamailio
 ### RUN echo import_file \"andrew.cfg\" > /etc/kamailio/kamailio.cfg && cat /etc/kamailio/kamailio.cfg && false
 RUN echo import_file \"andrew.cfg\" > /etc/kamailio/kamailio.cfg
 RUN echo import_file \"default.cfg\" >> /etc/kamailio/kamailio.cfg
-RUN echo import_file \"simple-routing.cfg\" >> /etc/kamailio/kamailio.cfg
+RUN echo import_file \"routing.cfg\" >> /etc/kamailio/kamailio.cfg
 
 ### dont forget kamcmd (need binrpc)
 ### modparam("ctl", "binrpc", "unix:/var/run/kamailio//kamailio_ctl")
