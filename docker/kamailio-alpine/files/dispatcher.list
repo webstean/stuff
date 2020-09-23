@@ -1,8 +1,15 @@
 # setid(integer) destination(sip uri) flags (integer, optional), priority(int,opt), attrs (str,optional)
 # flag 0 = hash over callid, ping_from from URI with SIP Options
-1 sip:sip.pstnhub.microsoft.com;transport=tls 0 3 socket=tls:20.190.118.9:5061;ping_from=sip:sbc.lordsomerscamp.org.au
-1 sip:sip2.pstnhub.microsoft.com;transport=tls 0 2 socket=tls:20.190.118.9:5061;ping_from=sip:sbc.lordsomerscamp.org.au
-1 sip:sip3.pstnhub.microsoft.com;transport=tls 0 1 socket=tls:20.190.118.9:5061;ping_from=sip:sbc.lordsomerscamp.org.au
-# 1 sip:camp.lordsomerscamp.org.au;transport=udp 0 1 socket=udp:20.190.118.9:5060;ping_from=sip:sbc.lordsomerscamp.org.au
-# 1 sip:mail.lordsomerscamp.org.au;transport=udp 0 1 socket=udp:20.190.118.9:5060;ping_from=sip:sbc.lordsomerscamp.org.au
-
+# output from kamcmd dispatcher.list
+#  AP – Active Probing – Destination is responding to pings & is up
+#  IP – Inactive Probing – Destination is not responding to pings and is probably unreachable
+# LSC&PH
+22 sip:albert.lordsomerscamp.org.au:5070 0 1 socket=tcp:20.190.118.9:5060;ping_from=sip:sbc.lordsomerscamp.org.au
+33 sip:camp.lordsomerscamp.org.au:5070   0 1 socket=tcp:20.190.118.9:5060;ping_from=sip:sbc.lordsomerscamp.org.au
+# Microsoft Teams
+44 sip:sip.pstnhub.microsoft.com;transport=tls 0 3 socket=tls:20.190.118.9:5061;ping_from=sip:sbc.lordsomerscamp.org.au
+44 sip:sip2.pstnhub.microsoft.com;transport=tls 0 2 socket=tls:20.190.118.9:5061;ping_from=sip:sbc.lordsomerscamp.org.au
+44 sip:sip3.pstnhub.microsoft.com;transport=tls 0 1 socket=tls:20.190.118.9:5061;ping_from=sip:sbc.lordsomerscamp.org.au
+# Trunk - SIP.US
+99 sip:gw1.sip.us;transport=tls 0 3 socket=tls:20.190.118.9:5061;ping_from=sip:sbc.lordsomerscamp.org.au
+99 sip:gw2.sip.us;transport=tls 0 2 socket=tls:20.190.118.9:5061;ping_from=sip:sbc.lordsomerscamp.org.au
