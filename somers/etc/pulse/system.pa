@@ -76,5 +76,3 @@ set-default-sink rtpsink1
 #### RTP Receiver (for clients) - for reference
 ## load-module module-rtp-recv
 
-
-
