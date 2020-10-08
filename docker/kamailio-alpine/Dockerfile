@@ -73,6 +73,8 @@ RUN chown -R ${USERAS}:${USERAS} ${DB} && chmod 0700 ${DB}
 RUN kamctl add 201 kamailio123 && kamctl add 202 kamailio123 && kamctl add 301 kamailio123 && kamctl add 302 kamailio123
 RUN kamctl add camp kamailio123 && kamctl add albert kamailio123
 RUN kamctl add amw kamailio123 && kamctl add srm kamailio123
+RUN kamctl add bria kamailio123
+
 
 # kamctl ul show                <- will print the list of records in user location table from Kamailio memory.
 # kamctl db show subscriber     <- look for provisioned users (i.e., users having a subscriber profile):
