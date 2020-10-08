@@ -16,6 +16,10 @@ dphys-swapfile swapoff
 dphys-swapfile uninstall
 update-rc.d dphys-swapfile remove
 
+# Latest update
+sudo apt update && sudo apt full-upgrade
+sudo rpi-eeprom-update -d -a
+
 # Unattended Upgrades
 sudo apt-get install unattended-upgrades
 sudo unattended-upgrade -d -v --dry-run
