@@ -11,6 +11,11 @@ if ! (sudo id | grep -q root) ; then
     bash -c "echo '%sudo ALL=(ALL:ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo"
 fi
 
+# Firewall
+ufw status verbose
+# ufw enable
+# ufw status
+
 # Turn off Swapping
 dphys-swapfile swapoff
 dphys-swapfile uninstall
