@@ -63,6 +63,18 @@ RUN mkdir -p /baresip/certificate
 RUN mkdir -p /baresip/modules
 RUN mkdir -p /baresip/wav
 
+COPY --from=baresip-build /usr/local/bin/baresip /usr/local/bin/baresip
+COPY --from=baresip-build /usr/local/lib/libre.so /usr/local/lib/libre.so
+COPY --from=baresip-build /usr/local/lib/libre.a /usr/local/lib/libre.a
+COPY --from=baresip-build /usr/local/lib/librem.so /usr/local/lib/librem.so
+COPY --from=baresip-build /usr/local/lib/librem.a /usr/local/lib/librem.a
+COPY --from=baresip-build /usr/local/lib/baresip /usr/local/lib/baresip
+COPY --from=baresip-build /usr/local/share/baresip /usr/local/share/baresip
+
+COPY --from=baresip-build /usr/lib/x86_64-linux-gnu/gstreamer-1.0 /usr/lib/x86_64-linux-gnu/gstreamer-1.0
+COPY --from=baresip-build /usr/lib/x86_64-linux-gnu/libgst* /usr/lib/x86_64-linux-gnu/
+COPY ./testcall.mp3 /testcall.mp3
+
 COPY --from=baresip-build /baresip/certificate              /baresip/certificate
 COPY --from=baresip-build /usr/local/lib/baresip/modules    /baresip/modules
 COPY --from=baresip-build /usr/local/share/baresip          /baresip/wav
@@ -73,9 +85,15 @@ COPY etc/accounts /baresip/etc
 COPY etc/config /baresip/etc
 
 ## RUN ldconfig
-
-EXPOSE 5060
+## Ports for Service (SIP,RTP) and Control (HTTP,TCP)
+EXPOSE 5060 5061 10000-10020 8000 5555
 
 COPY ./docker-entrypoint.sh /
-ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD ["baresip"]
+
+RUN ldconfig && apt-get update && apt-get --no-install-recommends -y install libasound2-dev libasound2 libasound2-data libsndfile1-dev gstreamer0.10-alsa alsa-oss alsa-utils module-init-tools libgstreamer1.0-dev  \
+ && ldconfig \
+ && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+ && $HOME/dummy.sh
+
+# Default Baresip run command arguments
+CMD ["baresip", "-f","/root/.baresip"]
