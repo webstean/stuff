@@ -1,5 +1,12 @@
+# docker run --rm \
+# 	-it \
+# 	-v ${PWD}/hosts:/etc/ansible/hosts \
+# 	-v ${PWD}/ansible.cfg:/etc/ansible/ansible.cfg \
+# 	-v ${HOME}/.ssh:/root/.ssh:ro \
+# 	ansible all -m ping
+
 FROM python:3-alpine
-LABEL maintainer "Christian Koep <christiankoep@gmail.com>"
+LABEL maintainer "Andrew Webster <webstean@gmail.com>"
 
 RUN builddeps=' \
 		musl-dev \
@@ -15,3 +22,4 @@ RUN builddeps=' \
 	&& apk del --purge $builddeps
 
 ENTRYPOINT [ "ansible" ]
+
