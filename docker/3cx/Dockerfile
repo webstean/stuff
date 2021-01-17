@@ -4,7 +4,10 @@ FROM debian:stretch
 
 LABEL build.string $BUILD_STRING LABEL build.date $BUILD_DATE LABEL build.time $BUILD_TIME
 
-ENV DEBIAN_FRONTEND noninteractive ENV LANG en_US.UTF-8 ENV LANGUAGE en ENV container docker
+ENV DEBIAN_FRONTEND noninteractive
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en
+ENV container docker
 
 RUN apt-get update -y && apt-get upgrade -y && apt-get install -y --allow-unauthenticated apt-utils wget gnupg2 systemd locales && \
 sed -i 's/# (en_US.UTF-8)/\1/' /etc/locale.gen && \
