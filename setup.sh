@@ -107,10 +107,10 @@ cd /usr/local/src/libzrtp && ./bootstrap.sh && ./configure CFLAGS="-O0 -g3 -W -W
 cd /usr/local/src/openssl && ./config && make && sudo make install && sudo ldconfig
 # Install & Build re
 # Build as Release (no SIP debugging)
-#cd /usr/local/src/re && make RELEASE=1 && sudo make RELEASE=1 install && sudo ldconfig
+# cd /usr/local/src/re && make RELEASE=1 && sudo make RELEASE=1 install && sudo ldconfig
 # Build with debug enabled
 cd /usr/local/src/re && sudo make install && sudo ldconfig
-# Install & Build rem
+# Install & Build rem (Note: re is a dependency)
 cd /usr/local/src/rem && sudo make install
 # Build baresip
 cd /usr/local/src/baresip && make RELEASE=1 EXTRA_MODULES=b2bua && sudo make RELEASE=1 EXTRA_MODULES=b2bua install
@@ -248,8 +248,9 @@ sudo chmod 755 /opt/oracle
 # rm instantclient-basic*.zip
 set -- /opt/oracle/instantclient*
 export LD_LIBRARY_PATH=$1
-sudo sh -c "echo export LD_LIBRARY_PATH=$1  >  /etc/profile.d/oracle.sh"
-sudo sh -c "echo export PATH=$1:'\$PATH'    >> /etc/profile.d/oracle.sh"
+sudo sh -c "# Oracle Instant Client         >  /etc/profile.d/instant-oracle.sh"
+sudo sh -c "echo export LD_LIBRARY_PATH=$1  >> /etc/profile.d/instant-oracle.sh"
+sudo sh -c "echo export PATH=$1:'\$PATH'    >> /etc/profile.d/instant-oracle.sh"
 
 # Permanent Link (latest version) - Instant Client - SQLplus (x86 64 bit) - addon (tiny - why not)
 wget https://download.oracle.com/otn_software/linux/instantclient/instantclient-sqlplus-linuxx64.zip -nc -O $tmpdir
