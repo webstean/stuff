@@ -42,6 +42,20 @@ fi
 # Proxy exceptions
 # sudo sh -c 'echo # NO_PROXY=localhost,127.0.0.1,::1,10.0.0.0/8 >> /etc/profile.d/proxy.sh'
 
+# Locale Settings
+sudo sh -c "echo # Language                      >   /etc/profile.d/locale.sh"
+sudo sh -c "echo export LANG=en_AU.UTF-8         >>  /etc/profile.d/locale.sh"
+locale-gen en_AU.UTF-8
+update-locale LANG=en_AU.UTF-8
+sudo sh -c "echo export LANGUAGE=                >>  /etc/profile.d/locale.sh"
+
+cp /usr/share/zoneinfo/Australia/Melbourne /etc/localtime
+echo "Australia/Melbourne" >  /etc/timezone
+sudo sh -c "echo export TZ="Australia/Melbourne" >>  /etc/profile.d/timezone.sh"
+
+export LANG=en_AU.UTF-8
+export TZ="Australia/Melbourne"
+
 # Ensure git is install and then configure it 
 ${INSTALL_CMD} git
 git config --global color.ui true
@@ -56,7 +70,8 @@ cat /dev/zero | ssh-keygen -q -N "" -C "webstean@gmail.com"
 # Install dependencies for reference GIT Repos
 mkdir ~/git
 git clone https://github.com/oracle/docker-images ~/git/oracle-docker-images
-# An example of multi-repository C project that is updated regularly
+
+# BARESIP: An example of multi-repository C project that is updated regularly
 ${INSTALL_CMD} pkg-config alsa-utils libasound2-dev libpulse-dev
 ${INSTALL_CMD} gstreamer1.0-alsa gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-tools gstreamer1.0-x 
 ${INSTALL_CMD} libgstreamer-plugins-base1.0-0 libgstreamer-plugins-base1.0-dev libgstreamer1.0-0 libgstreamer1.0-dev
@@ -77,6 +92,7 @@ cat /etc/ssl/certs/example.crt /etc/ssl/certs/example.key > /etc/ssl/certs/examp
 mkdir -p /usr/local/src
 
 git clone https://github.com/letsencrypt/letsencrypt /usr/local/src/letsencrypt
+
 #./letsencrypt-auto --help
 # sudo certbot certificates
 
@@ -330,12 +346,10 @@ curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 # azcmagent connect --resource-group "<resourceGroupName>" --tenant-id "<tenantID>" --location "<regionName>" --subscription-id "2d2089b6-d701-49aa-9600-bc2e3796d53a"
 
 # Install Google Cloud (GCP) CLI
-cd ~
-curl https://sdk.cloud.google.com > install.sh
+cd ~ && curl https://sdk.cloud.google.com > install.sh
 chmod +x install.sh
 bash install.sh --disable-prompts
 ~/google-cloud-sdk/install.sh --quiet
-
 
 # install sysstat and enable it
 sudo apt-get install sysstat
