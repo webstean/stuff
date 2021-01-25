@@ -22,8 +22,10 @@ RUN cp /usr/share/zoneinfo/Australia/Melbourne /etc/localtime && \
     echo "Australia/Melbourne" >  /etc/timezone && \
     date 
 
-ENV LANG=C.UTF-8 
-ENV LANGUAGE=en_US.UTF-8
+ENV TZ="Australia/Melbourne"
+ENV LANG=en_AU.UTF-8
+ENV LANGUAGE=
+RUN locale-gen ${LANG}
 
 ENV PGDATA /var/lib/kamailio/data
 ENV USERAS kamailio
