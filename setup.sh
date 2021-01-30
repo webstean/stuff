@@ -30,6 +30,16 @@ fi
 
 # Proxy Support
 
+# Environent Variables
+set HTTP_PROXY=http://192.168.1.4:3128
+set HTTPS_PROXY=http://192.168.1.4:3128
+set NO_PROXY=localhost,127.0.0.1,::1,192.168.0.0/16,10.0.0.0/8
+
+# 
+# Proxy exceptions
+# sudo sh -c 'echo # NO_PROXY=localhost,127.0.0.1,::1,192.168.0.0/16,10.0.0.0/8 >> /etc/profile.d/proxy.sh'
+
+
 # Squid default port is 3128, but many setup the proxy on port 80,8000,8080
 # Authenticated
 # USERN=UserName
@@ -40,7 +50,7 @@ fi
 # sudo sh -c 'echo # {HTTP,HTTPS,FTP}_PROXY=http://proxy.support.com:port   >  /etc/profile.d/proxy.sh'
 # 
 # Proxy exceptions
-# sudo sh -c 'echo # NO_PROXY=localhost,127.0.0.1,::1,10.0.0.0/8 >> /etc/profile.d/proxy.sh'
+# sudo sh -c 'echo # NO_PROXY=localhost,127.0.0.1,::1,192.168.0.0/16,10.0.0.0/8 >> /etc/profile.d/proxy.sh'
 
 # Ensure git is install and then configure it 
 ${INSTALL_CMD} git
