@@ -36,6 +36,8 @@ LDFLAGS=-ldflags "-X main.Repo=${REPO} -X main.Hash=${HASH} -X main.Version=${VE
 # Build the project - default architecture and platform
 build:
 	echo ${BUILDDATE}
+	go get github.com/sirupsen/logrus
+	go get github.com/fsnotify/fsnotify
 	go build ${LDFLAGS} -o ${BINARY}
 
 build_all:
