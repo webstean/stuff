@@ -71,7 +71,7 @@ ${INSTALL_CMD} git
 git config --global color.ui true
 git config --global user.name "Andrew Webster"
 git config --global user.email "webstean@gmail.com"
-# cached cretnails for 4 hours
+# cached credentials for 4 hours
 git config --global credential.help cache =timeout=14400 
 git config --list
 
