@@ -13,12 +13,15 @@ LABEL maintainer="webstean@gmail.com"
 #RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 #RUN apt-get update && apt-get install -y locale-gen tzdata sudo git 
 #RUN apt-get update && dpkg-reconfigure --frontend noninteractive tzdata
-# Set Language - on Ubuntu
-# ENV LANG=en_AU.UTF-8
-ENV LANG=C
-ENV LANGUAGE=${LANG}
-ENV LC_ALL=${LANG}
-#RUN locale-gen ${LANG} && dpkg-reconfigure --frontend noninteractive tzdata
+
+# Locales
+# ENV LOCALE=en_US.UTF-8
+# ENV LOCALE=en_UK.UTF-8
+ENV LOCALE=en_AU.UTF-8
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install --yes locales locales-all
+ENV LC_ALL ${LOCALE}
+ENV LANG ${LOCALE}
+ENV LANGUAGE ${LOCALE}
 
 # Set Timezone
 ENV TZ=Australia/Melbourne
@@ -33,33 +36,26 @@ RUN echo '%sudo ALL=(ALL:ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo
 
 ENV BHOME /baresip
 
-# Install basic baresip dependencies
+# Install basic baresip dependencies - for building
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install --yes build-essential pkg-config intltool libtool libjson-c-dev 
-RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install --yes libsndfile1-dev libasound2-dev libsndfile1-dev libspandsp-dev libopus-dev
+# Basic Audio
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install --yes alsa-utils libpulse-dev libjack-jackd2-dev
+# Advanced Audio
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install --yes libavcodec-dev libavdevice-dev libavformat-dev libgtk-3-dev libjack-jackd2-dev libmosquitto-dev libmpg123-dev libopus-dev libpulse-dev libsndfile1-dev libspandsp-dev libglib2.0-dev libsndfile1-dev libspandsp-dev libsndfile1-dev libasound2-dev  
+# Video 
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install --yes libavcodec-dev libavutil-dev libcairo2-dev libgtk2.0-dev 
 
-# gstreamer dependencies
-# RUN apt-get update && apt-get install --yes gstreamer1.0-alsa gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-tools gstreamer1.0-x libgstreamer-plugins-base1.0-0 libgstreamer-plugins-base1.0-dev libgstreamer1.0-0 libgstreamer1.0-dev
-
-# Jack audio dependencies
-RUN apt-get update && apt-get install --yes libjack-jackd2-dev
-
-# ALSA & Pulse Audio dependencies
-RUN apt-get update && apt-get install --yes alsa-utils libpulse-dev
-
-# Video Dependencies
-# RUN apt-get update && apt-get install --yes libavcodec-dev libavutil-dev libcairo2-dev libgtk2.0-dev 
-
-# Clone github repositories 
-RUN git clone https://github.com/baresip/re ${BHOME}/re
-RUN git clone https://github.com/baresip/rem ${BHOME}/rem
-RUN git clone https://github.com/baresip/baresip ${BHOME}/baresip
+# Clone github repositories (active development) 
+RUN git clone https://github.com/baresip/re.git master ${BHOME}/re
+RUN git clone https://github.com/baresip/rem.git master ${BHOME}/rem
+RUN git clone https://github.com/baresip/baresip.git master ${BHOME}/baresip
 
 # Build & Install baresip dependency re
-RUN cd ${BHOME}/re && make RELEASE=1 && make RELEASE=1 install
+RUN cd ${BHOME}/re && make RELEASE=1 && make RELEASE=1 install && ldconfig
 # Build & Install baresip dependency rem
 RUN cd ${BHOME}/rem && make && make install
 
-# SSL Support
+# Complie SSL Support
 #RUN git clone https://github.com/openssl/openssl ${BHOME}/openssl
 # Build & Install openssl
 #RUN cd  ${BHOME}/openssl && ./config && make install
@@ -69,14 +65,16 @@ RUN cd ${BHOME}/rem && make && make install
 # Build & Install baresip - with SSL (which will include ZRTP)
 #RUN cd  ${BHOME}/baresip && make && make install && ldconfig
 
-# Create example certificate
-#RUN mkdir -p  ${BHOME}/certificate && \
-#    openssl req -newkey rsa:4096 -x509 -sha256 -days 3650 -nodes -out  ${BHOME}/certificate/example.crt -keyout /baresip/certificate/example.key \
-#    -subj "/C=AU/ST=Victoria/L=Melbourne/O=webstean/OU=IT/CN=webstean.com" && \
-#    cat  ${BHOME}/certificate/example.crt  ${BHOME}/certificate/example.key >  ${BHOME}/certificate/example.pem
-#end SSL support
-
 # OR
+# Just include library
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install --yes libssl-dev
+
+# Create example certificate
+RUN mkdir -p  ${BHOME}/certificate && \
+    openssl req -newkey rsa:4096 -x509 -sha256 -days 3650 -nodes -out  ${BHOME}/certificate/example.crt -keyout /baresip/certificate/example.key \
+    -subj "/C=AU/ST=Victoria/L=Melbourne/O=webstean/OU=IT/CN=webstean.com" && \
+    cat  ${BHOME}/certificate/example.crt  ${BHOME}/certificate/example.key >  ${BHOME}/certificate/example.pem
+end SSL support
 
 # Build & Install baresip - withOUT SSL
 RUN cd ${BHOME}/baresip && make USE_TLS= USE_OPENSSL= && make USE_TLS= USE_OPENSSL= install && ldconfig
@@ -121,7 +119,7 @@ COPY etc/accounts /etc/baresip
 COPY etc/config /etc/baresipc
 COPY etc/contacts /etc/baresip
 
-# Setup Pulseaudio client -  talks to pulse server running on host
+# Setup Pulseaudio client -  talks to pulse server running on physical host
 ENV UNAME pacat
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install --yes pulseaudio-utils
 # Set up the pulse user
