@@ -8,7 +8,6 @@
 #    ;access={allow,block}
 #
 
-
 "Echo Server" <sip:echo@creytiv.com>
 "webstean" <sip:webstean@domain>;presence=p2p
 
@@ -25,7 +24,6 @@
 
 "test1" <sip:thetestcall@sip.linphone.org>
 
-
 "echo test - audio & video"  <sip:gary@selfie.vc>
 "echo test - audio & video"  <sip:amy@selfie.vc>
 "echo test - audio & video"  <sip:goldfish@selfie.vc>
@@ -33,7 +31,6 @@
 "echo test - audio & video"  <sip:president@selfie.vc>
 
 "fireplace - audio & video with menu" <sipr:fireplace@ivr.vc>
-
 
 "Cisco Loopback	Virtual Room (Video)"	<sip:loopback@rtp.ciscotac.net>
 "SIP Test Call	Echo Test (Audio)"	<sip:thetestcall@getonsip.com>
@@ -49,6 +46,5 @@
 
 "echo antisip.com"  <sip:echo@antisip.com>
 
-
-
+"lenny"  <sip:2233435945@sip2sip.info>
 
