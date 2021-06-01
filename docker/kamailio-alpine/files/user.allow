@@ -1,0 +1,2 @@
+# only allow .userdomain.com
+“^sip:[^@]+@[^.]+\.userdomain\.com(:[0-9]+)?$” : ALL
