@@ -45,11 +45,17 @@ sudo apt-get install -y unattended-upgrades
 sudo unattended-upgrade -d -v --dry-run
 sudo dpkg-reconfigure --priority=low unattended-upgrades
 
+exit 0
+
+# 3CX Session Border Controller
+wget https://downloads-global.3cx.com/downloads/misc/d10pi.zip; sudo bash d10pi.zip .
+
 # Check Power Supply
 sudo apt-get install -y sysbench
 wget https://gist.githubusercontent.com/maxme/d5f000c84a4313aa531288c35c3a8887/raw/fc355cd96e5e18e69df06ee4c34f50b7cd9a4a2a/raspberry-power-supply-check.sh
 chmod +x raspberry-power-supply-check.sh
 sudo ./raspberry-power-supply-check.sh
+
 
 # Get Docker
 sudo apt-get install -y apt-transport-https ca-certificates software-properties-common git curl
