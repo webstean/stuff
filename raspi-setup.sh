@@ -22,6 +22,7 @@ sudo dphys-swapfile uninstall
 sudo update-rc.d dphys-swapfile remove
 sudo systemctl disable dphys-swapfile
 
+# Setup some stuff
 sudo apt-get install -y git curl
 git config --global color.ui true
 git config --global user.name "Andrew Webster"
