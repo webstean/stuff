@@ -48,14 +48,38 @@ sudo dpkg-reconfigure --priority=low unattended-upgrades
 exit 0
 
 # 3CX Session Border Controller
-wget https://downloads-global.3cx.com/downloads/misc/d10pi.zip; sudo bash d10pi.zip .
+# wget https://downloads-global.3cx.com/downloads/misc/d10pi.zip; sudo bash d10pi.zip .
 
 # Check Power Supply
 sudo apt-get install -y sysbench
 wget https://gist.githubusercontent.com/maxme/d5f000c84a4313aa531288c35c3a8887/raw/fc355cd96e5e18e69df06ee4c34f50b7cd9a4a2a/raspberry-power-supply-check.sh
 chmod +x raspberry-power-supply-check.sh
-sudo ./raspberry-power-supply-check.sh
+# sudo ./raspberry-power-supply-check.sh
 
+# Enable Linux features for Docker
+if ! (grep "cgroup_enable=memory cgroup_memory=1 swapaccount=1" /boot/cmdline.txt ) ; then
+    bash -c "echo -n 'cgroup_enable=memory cgroup_memory=1 swapaccount=1' >>/boot/cmdline.txt"
+    sed '${s/$/cgroup_enable=memory cgroup_memory=1 swapaccount=1/}' /boot/cmdline.txt >/boot/cmdline.txt
+fi
+
+# Install IOTstack
+sudo bash -c '[ $(egrep -c "^allowinterfaces eth0,wlan0" /etc/dhcpcd.conf) -eq 0 ] && echo "allowinterfaces eth0,wlan0" >> /etc/dhcpcd.conf'
+sudo apt install -y git curl
+# Install docker for $USER (usually pi user)
+git clone https://github.com/SensorsIot/IOTstack.git ~/IOTstack 
+curl -fsSL https://get.docker.com | sh
+sudo usermod -G docker -a $USER
+sudo usermod -G bluetooth -a $USER
+sudo apt install -y python3-pip python3-dev
+sudo pip3 install -U docker-compose
+sudo pip3 install -U ruamel.yaml==0.16.12 blessed
+
+exit 0
+
+sudo reboot
+cd ~/IOTstack
+./menu.sh
+docker-compose up -d
 
 # Get Docker
 sudo apt-get install -y apt-transport-https ca-certificates software-properties-common git curl
@@ -66,12 +90,6 @@ sudo systemctl enable docker.service
 sudo systemctl start docker.service
 sudo docker run hello-world
 sudo docker images hello-world
-
-# Enable Linux features for Docker
-#if ! (grep "cgroup_enable=memory cgroup_memory=1 swapaccount=1" /boot/cmdline.txt ) ; then
-#    bash -c "echo -n 'cgroup_enable=memory cgroup_memory=1 swapaccount=1' >>/boot/cmdline.txt"
-#    sed '${s/$/cgroup_enable=memory cgroup_memory=1 swapaccount=1/}' /boot/cmdline.txt >/boot/cmdline.txt
-#fi
 
 # Get IOTstack
 if [ ! -d ~/IOTstack ]; then
