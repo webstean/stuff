@@ -11,10 +11,14 @@ if ! (sudo id | grep -q root) ; then
     bash -c "echo '%sudo ALL=(ALL:ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo"
 fi
 
+# Install some essentials
+sudo apt-get install ufw dos2unix vim
+
 # Firewall
 sudo ufw status verbose
 # sudo ufw enable
 # sudo ufw status
+### Note: ufw won't be enabled until you enabled it
 
 # Turn off Swapping
 sudo dphys-swapfile swapoff
@@ -22,14 +26,14 @@ sudo dphys-swapfile uninstall
 sudo update-rc.d dphys-swapfile remove
 sudo systemctl disable dphys-swapfile
 
-# Setup some stuff
+# Setup some basic dev stuff
 sudo apt-get install -y git curl
 git config --global color.ui true
 git config --global user.name "Andrew Webster"
 git config --global user.email "webstean@gmail.com"
 git config --list
 
-# Move log to RAM
+# Move Pi log to RAM
 if [ ! -d ~/log2ram ]; then
     git clone https://github.com/azlux/log2ram.git ~/log2ram
     chmod +x ~/log2ram/install.sh
@@ -80,6 +84,8 @@ sudo reboot
 cd ~/IOTstack
 ./menu.sh
 docker-compose up -d
+
+exit 0
 
 # Get Docker
 sudo apt-get install -y apt-transport-https ca-certificates software-properties-common git curl
