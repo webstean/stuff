@@ -7,4 +7,8 @@ choco install azure-cli -y
 choco install microsoftazurestorageexplorer -y
 
 ## AWS CLI
+choco install awscli-session-manager  -y
 choco install awscli -y
+
+## Terraform
+choco install terraform -y
