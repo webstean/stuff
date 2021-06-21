@@ -11,8 +11,8 @@ Else
     choco install git -y
 }
 
-## Terraform
-choco install terraform -y
+### Explorer addins
+choco install gitextensions -y 
 
 #### VS Code Extensiosns
 choco install vscode -y
@@ -22,6 +22,9 @@ choco install vscode-azure-deploy -y
 choco install vscode-gitlens -y
 choco install vscode-powershell -y
 choco install vscode-settingssync -y
+
+#### Windows Admin / Azure Migration
+choco install windows-admin-center -y 
 
 ##### Golang
 choco install golang -y
