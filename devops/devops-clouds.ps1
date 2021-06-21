@@ -12,3 +12,6 @@ choco install awscli -y
 
 ## Terraform
 choco install terraform -y
+
+## Remote Desktop
+choco install rdmfree -y 
