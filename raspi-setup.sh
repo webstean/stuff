@@ -12,7 +12,7 @@ if ! (sudo id | grep -q root) ; then
 fi
 
 # Install some essentials
-sudo apt-get install ufw dos2unix vim
+sudo apt-get install git ufw dos2unix vim
 
 # Firewall
 sudo ufw status verbose
