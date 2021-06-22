@@ -1,3 +1,7 @@
+# DevOps Install - Part 1 of 2
+# Andrew Webster
+
+choco feature enable -n allowGlobalConfirmation
 
 choco list --download-cache
 
@@ -17,7 +21,22 @@ choco install gitextensions -y
 ### Powertoys
 choco install powertoys -y 
 
-#### VS Code Extensiosns
+### More Devops
+choco install ilspy -y 
+choco install filezilla -y  
+choco install putty -y 
+
+# DEV
+choco install yeoman 
+choco install brackets
+choco install fiddler4
+choco install nodejs.install
+choco install github 
+choco install linqpad4 
+choco install baretail
+choco install wamp-server
+
+#### VS Code Extensions
 choco install vscode -y
 choco install onedarkpro-vscode -y
 choco install azureaccount-vscode -y
