@@ -14,6 +14,9 @@ Else
 ### Explorer addins
 choco install gitextensions -y 
 
+### Powertoys
+choco install powertoys -y 
+
 #### VS Code Extensiosns
 choco install vscode -y
 choco install onedarkpro-vscode -y
@@ -38,5 +41,4 @@ choco install NirLauncher -y -params "/sysinternals"
 #### WSL (Part#1)
 choco install -y wsl2 -params "/Version:2 /Retry:true"
 #### yep it works
-
 
