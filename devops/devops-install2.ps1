@@ -1,3 +1,8 @@
+# DevOps Install - Part 2 of 2
+# Andrew Webster
+
+choco feature enable -n allowGlobalConfirmation
+
 $localprograms = choco list --localonly
 if ($localprograms -like "*wsl-alphine*")
 {
