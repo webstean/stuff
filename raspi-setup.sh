@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Check if we are running as the root user
-if [[ $(id -u) -ne 0 ]] ; then echo "Please run as root - exiting" ; exit 1 ; fi
+if [[ $(id -u) -eq 0 ]] ; then echo "Don't run as root - but as normal user with full sudo access - exiting" ; exit 1 ; fi
 
 # Check if this is a Raspberry Pi
-if ( ! cat /proc/cpuinfo | grep Model | grep "Raspberry" ) > /dev/null ; then echo "This is not a Raspiberry Pi - exiting" ; exit 1 ; fi
+if ( ! cat /proc/cpuinfo | grep Model | grep "Raspberry" ) > /dev/null ; then echo "This is not a Raspberry Pi - exiting" ; exit 1 ; fi
 
 # Enable sudo for users member of sudo group
 if ! (sudo id | grep -q root) ; then 
@@ -12,19 +12,7 @@ if ! (sudo id | grep -q root) ; then
 fi
 
 # Install some essentials
-sudo apt-get install git ufw dos2unix vim
-
-# Firewall
-sudo ufw status verbose
-# sudo ufw enable
-# sudo ufw status
-### Note: ufw won't be enabled until you enabled it
-
-# Turn off Swapping
-sudo dphys-swapfile swapoff
-sudo dphys-swapfile uninstall
-sudo update-rc.d dphys-swapfile remove
-sudo systemctl disable dphys-swapfile
+sudo apt-get install -y ufw dos2unix vim apt-transport-https ca-certificates software-properties-common git curl wget
 
 # Setup some basic dev stuff
 sudo apt-get install -y git curl
@@ -33,16 +21,29 @@ git config --global user.name "Andrew Webster"
 git config --global user.email "webstean@gmail.com"
 git config --list
 
-# Move Pi log to RAM
+# Firewall
+sudo ufw status verbose
+# sudo ufw enable
+sudo ufw status
+### Note: ufw won't be enabled until you enabled it
+
+# Turn off Swapping - to preserve the SD card
+sudo dphys-swapfile swapoff
+sudo dphys-swapfile uninstall
+sudo update-rc.d dphys-swapfile remove
+sudo systemctl disable dphys-swapfile
+
+# Move Pi loging to RAM to preserve SD card
 if [ ! -d ~/log2ram ]; then
     git clone https://github.com/azlux/log2ram.git ~/log2ram
     chmod +x ~/log2ram/install.sh
     pushd ~/log2ram && sudo ./install.sh && popd
 fi
 
-# Latest update
-sudo apt update && sudo apt full-upgrade
-sudo rpi-eeprom-update -d -a
+# Latest updates
+sudo apt update -y && sudo apt full-upgrade -y
+sudo rpi-eeprom-update -a
+sudo apt autoremove -y
 
 # Unattended Upgrades
 sudo apt-get install -y unattended-upgrades
