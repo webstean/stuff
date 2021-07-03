@@ -33,6 +33,14 @@ sudo dphys-swapfile uninstall
 sudo update-rc.d dphys-swapfile remove
 sudo systemctl disable dphys-swapfile
 
+# Set Timezone
+sudo timedatectl set-timezone Australia/Melbourne
+timedatectl
+
+# Set Locale
+sudo update-locale LANG=en_AU.UTF-8 LANGUAGE= LC_MESSAGES= LC_COLLATE= LC_CTYPE=
+# need reboot to show up properly - it will update /etc/default/locale
+
 # Move Pi loging to RAM to preserve SD card
 if [ ! -d ~/log2ram ]; then
     git clone https://github.com/azlux/log2ram.git ~/log2ram

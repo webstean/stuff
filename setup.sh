@@ -18,7 +18,7 @@ if [ -z "$SHELL" ] ; then
     export SHELL=/bin/sh
 fi
 
-# Alpine apt - sudo won't be there by default om Alpine
+# Alpine apt - sudo won't be there by default on Alpine
 if [ -f /sbin/apk ] ; then  
     apk add sudo
 fi
@@ -52,19 +52,13 @@ set NO_PROXY=localhost,127.0.0.1,::1,192.168.0.0/16,10.0.0.0/8
 # Proxy exceptions
 # sudo sh -c 'echo # NO_PROXY=localhost,127.0.0.1,::1,192.168.0.0/16,10.0.0.0/8 >> /etc/profile.d/proxy.sh'
 
-# Locale Settings
-sudo sh -c "echo # Language                      >   /etc/profile.d/locale.sh"
-sudo sh -c "echo export LANG=en_AU.UTF-8         >>  /etc/profile.d/locale.sh"
-locale-gen en_AU.UTF-8
-update-locale LANG=en_AU.UTF-8
-sudo sh -c "echo export LANGUAGE=                >>  /etc/profile.d/locale.sh"
+# Set Timezone
+sudo timedatectl set-timezone Australia/Melbourne
+timedatectl
 
-cp /usr/share/zoneinfo/Australia/Melbourne /etc/localtime
-echo "Australia/Melbourne" >  /etc/timezone
-sudo sh -c "echo export TZ="Australia/Melbourne" >>  /etc/profile.d/timezone.sh"
-
-export LANG=en_AU.UTF-8
-export TZ="Australia/Melbourne"
+# Set Locale
+sudo update-locale LANG=en_AU.UTF-8 LANGUAGE= LC_MESSAGES= LC_COLLATE= LC_CTYPE=
+# need reboot to show up properly - it will update /etc/default/locale
 
 # Ensure git is install and then configure it 
 ${INSTALL_CMD} git
