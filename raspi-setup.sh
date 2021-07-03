@@ -12,7 +12,7 @@ if ! (sudo id | grep -q root) ; then
 fi
 
 # Install some essentials
-sudo apt-get install -y ufw dos2unix vim apt-transport-https ca-certificates software-properties-common git curl wget
+sudo apt-get install -y ufw dos2unix vim apt-transport-https ca-certificates software-properties-common git curl wget sngrep 
 
 # Setup some basic dev stuff
 sudo apt-get install -y git curl
