@@ -31,9 +31,9 @@ fi
 # Proxy Support
 
 # Environent Variables
-set HTTP_PROXY=http://192.168.1.4:3128
-set HTTPS_PROXY=http://192.168.1.4:3128
-set NO_PROXY=localhost,127.0.0.1,::1,192.168.0.0/16,10.0.0.0/8
+#set HTTP_PROXY=http://192.168.1.4:3128
+#set HTTPS_PROXY=http://192.168.1.4:3128
+#set NO_PROXY=localhost,127.0.0.1,::1,192.168.0.0/16,10.0.0.0/8
 
 # 
 # Proxy exceptions
