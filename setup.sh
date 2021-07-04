@@ -143,7 +143,7 @@ sudo ldconfig
 curl https://raw.githubusercontent.com/webstean/stuff/master/baresip/accounts -o ~/.baresip/accounts
 curl https://raw.githubusercontent.com/webstean/stuff/master/baresip/config -o ~/.baresip/config
 curl https://raw.githubusercontent.com/webstean/stuff/master/baresip/contacts -o ~/.baresip/contacts
-baresip -t
+baresip -t 28
 
 # Run Baresip set the SIP account
 #CMD baresip -d -f $HOME/.baresip && sleep 2 && curl http://127.0.0.1:8000/raw/?Rsip:root:root@127.0.0.1 && sleep 5 && curl http://127.0.0.1:8000/raw/?dbaresip@conference.sip2sip.info && sleep 60 && curl http://127.0.0.1:8000/raw/?bq
@@ -261,11 +261,19 @@ ${INSTALL_CMD} libaio unzip
 # Permanent Link (latest version) - Instant Client - Basic (x86 64 bit) - you need this for anything else to work
 # Note: there is no Instant Client for the ARM processor, Intel/AMD x86 only
 tmpdir=$(mktemp -d)
-wget https://download.oracle.com/otn_software/linux/instantclient/instantclient-basic-linuxx64.zip -nc -O $tmpdir
-sudo mkdir -p /opt/oracle
-sudo unzip ${tmpdir}/instantclient-basic*.zip -d /opt/oracle
+wget https://download.oracle.com/otn_software/linux/instantclient/instantclient-basic-linuxx64.zip -nc --directory-prefix=${tmpdir}
+wget https://download.oracle.com/otn_software/linux/instantclient/instantclient-sqlplus-linuxx64.zip -nc --directory-prefix=${tmpdir}
+wget https://download.oracle.com/otn_software/linux/instantclient/instantclient-tools-linuxx64.zip -nc --directory-prefix=${tmpdir}
+
+if [   -d /opt/oracle ] ; then sudo rm -rf /opt/oracle ; fi 
+if [ ! -d /opt/oracle ] ; then sudo mkdir -p /opt/oracle ; fi 
 sudo chmod 755 /opt
 sudo chmod 755 /opt/oracle
+sudo chown $USER /opt/oracle
+sudo unzip ${tmpdir}/instantclient-basic*.zip -d /opt/oracle
+sudo unzip ${tmpdir}/instantclient-sqlplus*.zip -d /opt/oracle
+sudo unzip ${tmpdir}/instantclient-tools*.zip -d /opt/oracle
+
 
 # rm instantclient-basic*.zip
 set -- /opt/oracle/instantclient*
@@ -273,16 +281,6 @@ export LD_LIBRARY_PATH=$1
 sudo sh -c "# Oracle Instant Client         >  /etc/profile.d/instant-oracle.sh"
 sudo sh -c "echo export LD_LIBRARY_PATH=$1  >> /etc/profile.d/instant-oracle.sh"
 sudo sh -c "echo export PATH=$1:'\$PATH'    >> /etc/profile.d/instant-oracle.sh"
-
-# Permanent Link (latest version) - Instant Client - SQLplus (x86 64 bit) - addon (tiny - why not)
-wget https://download.oracle.com/otn_software/linux/instantclient/instantclient-sqlplus-linuxx64.zip -nc -O $tmpdir
-sudo unzip ${tmpdir}/instantclient-sqlplus*.zip -d $LD_LIBRARY_PATH/..
-# rm instantclient-sqlplus*.zip
-
-# Permanent Link (latest version) - Instant Client - Tools (x86 64 bit) - addons incl Data Pump
-wget https://download.oracle.com/otn_software/linux/instantclient/instantclient-tools-linuxx64.zip -nc -O $tmpdir
-sudo unzip ${tmpdir}/instantclient-tools*.zip -d $LD_LIBRARY_PATH/..
-# rm instantclient-tools*.zip
 
 # With the normal Oracle Client, oraenv script sets the ORACLE_HOME, ORACLE_BASE and LD_LIBRARY_PATH variables and
 # updates the PATH variable for Oracle
@@ -292,29 +290,15 @@ sudo unzip ${tmpdir}/instantclient-tools*.zip -d $LD_LIBRARY_PATH/..
 
 # Alpine Libraries for Oracle client
 if [ -f /sbin/apk ] ; then
-    # enable Edge repositories - hoepfully this will go away eventually
+    # enable Edge repositories - hopefully this will go away eventually
     echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
     apk update
     ${INSTALL_CMD} libnsl libaio musl-dev autconfig
 fi
 
 # Install Microsoft SQL Server Client
-if [ -f /usr/bin/apt ] ; then
-    # Import the public repository GPG keys
-    curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
-
-    # Register the Microsoft Ubuntu repository
-    echo sudo apt-add-repository https://packages.microsoft.com/ubuntu/$(lsb_release -sr)/prod
-
-    # Update the list of products
-    sudo apt-get update
-
-    # Install mssql-cli
-    sudo apt-get install mssql-cli
-
-    # Install missing dependencies
-    sudo apt-get install -f
-fi
+sudo apt-get install -y libunwind8 python3-pip
+sudo pip install --user mssql-cli
 
 if [ -d /opt/mssql-tools/bin/ ] ; then  
         sudo sh -c 'echo export PATH="/opt/ssql-tools/bin:$PATH"  > /etc/profile.d/mssql.sh'
@@ -333,7 +317,7 @@ fi
 #sudo realm discover $AD_DOMAIN && kinit contosoadmin@$AD_DOMAIN && sudo realm join --verbose $AD_DOMAIN -U '$AD_USER' --install=/
 
 # Grant the 'AAD DC Administrators' group sudo privileges
-# sudo bash -c "%AAD\ DC\ Administrators@aaddscontoso.com ALL=(ALL) NOPASSWD:ALL"
+# sudo bash -c "%AAD\ DC\ Administrators@lordsomerscamp.org.au ALL=(ALL) NOPASSWD:ALL"
 
 # Install AWS CLI
 cd ~
