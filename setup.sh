@@ -117,23 +117,29 @@ git clone https://github.com/letsencrypt/letsencrypt /usr/local/src/letsencrypt
 # test
 # sudo certbot renew --dry-run
 
-## sudo git clone https://github.com/openssl/openssl /usr/local/src/openssl
-sudo git clone https://github.com/baresip/re /usr/local/src/re
-sudo git clone https://github.com/creytiv/rem  /usr/local/src/rem
-sudo git clone https://github.com/baresip/baresip /usr/local/src/baresip
-## sudo git clone https://github.com/juha-h/libzrtp /usr/local/src/git/libzrtp
+if [ -d /usr/local/src/openssl ] ; then sudo rm -rf /usr/local/src/openssl ; fi
+if [ -d /usr/local/src/libzrtp ] ; then sudo rm -rf /usr/local/src/libzrtp ; fi
+sudo git clone https://github.com/openssl/openssl /usr/local/src/openssl
+sudo git clone https://github.com/juha-h/libzrtp /usr/local/src/git/libzrtp && sudo chmod 755 /usr/local/src/libzrtp
+
+if [ -d /usr/local/src/re ] ; then sudo rm -rf /usr/local/src/re ; fi
+if [ -d /usr/local/src/rem ] ; then sudo rm -rf /usr/local/src/rem ; fi
+if [ -d /usr/local/src/baresip ] ; then sudo rm -rf /usr/local/src/baresip ; fi
+sudo git clone https://github.com/baresip/re /usr/local/src/re && sudo chmod 755 /usr/local/src/re
+sudo git clone https://github.com/baresip/rem  /usr/local/src/rem && sudo chmod 755 /usr/local/src/rem
+sudo git clone https://github.com/baresip/baresip /usr/local/src/baresip && sudo chmod 755 /usr/local/src/baresip
 
 # BARESIP: An example of multi-repository C project that is updated regularly
-apt-get install -y pkg-config alsa-utils libasound2-dev libpulse-dev
-apt-get install -y gstreamer1.0-alsa gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-tools gstreamer1.0-x 
-apt-get install -y libgstreamer-plugins-base1.0-0 libgstreamer-plugins-base1.0-dev libgstreamer1.0-0 libgstreamer1.0-dev
-apt-get install -y build-essential pkg-config intltool libtool libsndfile1-dev libjson-c-dev libopus-dev
-apt-get install -y libsndfile1-dev libspandsp-dev libgtk2.0-dev libjack-jackd2-dev
+sudo apt-get install -y pkg-config alsa-utils libasound2-dev libpulse-dev
+sudo apt-get install -y gstreamer1.0-alsa gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-tools gstreamer1.0-x 
+sudo apt-get install -y libgstreamer-plugins-base1.0-0 libgstreamer-plugins-base1.0-dev libgstreamer1.0-0 libgstreamer1.0-dev
+sudo apt-get install -y build-essential pkg-config intltool libtool libsndfile1-dev libjson-c-dev libopus-dev
+sudo apt-get install -y libsndfile1-dev libspandsp-dev libgtk2.0-dev libjack-jackd2-dev
 
 # Grep for SIP Network Sessions
-apt-get install -y sngrep
+sudo apt-get install -y sngrep
 # Video Codecs
-apt-get install -y libavcodec-dev libavutil-dev libcairo2-dev
+sudo apt-get install -y libavcodec-dev libavutil-dev libcairo2-dev
 
 # Install & Build libzrtp
 ### cd /usr/local/src/libzrtp && ./bootstrap.sh && ./configure CFLAGS="-O0 -g3 -W -Wall -DBUILD_WITH_CFUNC -DBUILD_DEFAULT_CACHE -DBUILD_DEFAULT_TIMER" && make && sudo make install && sudo ldconfig
@@ -145,9 +151,9 @@ apt-get install -y libavcodec-dev libavutil-dev libcairo2-dev
 # Build with debug enabled
 cd /usr/local/src/re && sudo make install && sudo ldconfig
 # Install & Build rem (Note: re is a dependency)
-cd /usr/local/src/rem && sudo make install
-# Build baresip
-cd /usr/local/src/baresip && make RELEASE=1 EXTRA_MODULES=b2bua && sudo make RELEASE=1 EXTRA_MODULES=b2bua install
+cd /usr/local/src/rem && sudo make install && sudo ldconfig 
+# Build baresip (Note: both re and rem are dependencies)
+cd /usr/local/src/baresip && sudo make RELEASE=1 && sudo make RELEASE=1 install
 # ldconfig - just for kicks
 sudo ldconfig
 
