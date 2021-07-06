@@ -56,7 +56,7 @@ sudo apt autoremove -y
 # Unattended Upgrades
 sudo apt-get install -y unattended-upgrades
 sudo unattended-upgrade -d -v --dry-run
-sudo dpkg-reconfigure --priority=low unattended-upgrades -y
+sudo dpkg-reconfigure --priority=low unattended-upgrades
 
 exit 0
 
