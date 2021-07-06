@@ -37,6 +37,8 @@
 #
 # Test accounts
 
+<sip:noreg@invalid>;auth_pass=none;regint=0
+
 # sip:udp
 #<sip:201u@test-sip-server>;transport=udp;auth_user=201;auth_pass=201
 #<sip:202u@test-sip-server>;transport=udp;auth_user=202;auth_pass=202
