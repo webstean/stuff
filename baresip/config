@@ -95,9 +95,9 @@ module_path		/usr/local/lib/baresip/modules
 
 # UI Modules
 module			stdio.so
-#module			cons.so
+module			cons.so
 #module			evdev.so
-#module			httpd.so
+module			httpd.so
 
 # Audio codec Modules (in order)
 #module			opus.so
@@ -161,9 +161,9 @@ module			alsa.so
 #module			ebuacip.so
 
 # Media NAT modules
-module			stun.so
+#module			stun.so
 #module			turn.so
-module			ice.so
+#module			ice.so
 #module			natpmp.so
 #module			pcp.so
 
@@ -196,8 +196,8 @@ module_app		menu.so
 #module_app		syslog.so
 #module_app		mqtt.so
 module_app		ctrl_tcp.so
-module_app		vidloop.so
-module_app		ctrl_dbus.so
+#module_app		vidloop.so
+#module_app		ctrl_dbus.so
 module_app		httpreq.so
 module_app		multicast.so
 
@@ -300,8 +300,9 @@ snd_path		/tmp
 #httpreq_key		key.pem
 
 # multicast receivers (in priority order)- port number must be even
-#multicast_call_prio	0
-#multicast_listener	224.0.2.21:50000
+multicast_call_prio	0
+multicast_listener 224.2.21.75:50002
+#multicast_listener 224.0.2.21:50000
 #multicast_listener	224.0.2.21:50002
 
 # avformat
