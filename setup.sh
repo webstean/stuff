@@ -117,16 +117,28 @@ git clone https://github.com/letsencrypt/letsencrypt /usr/local/src/letsencrypt
 # test
 # sudo certbot renew --dry-run
 
-git clone https://github.com/openssl/openssl /usr/local/src/openssl
-git clone https://github.com/baresip/re /usr/local/src/re
-git clone https://github.com/creytiv/rem  /usr/local/src/rem
-git clone https://github.com/baresip/baresip /usr/local/src/baresip
-git clone https://github.com/juha-h/libzrtp /usr/local/src/git/libzrtp
+## sudo git clone https://github.com/openssl/openssl /usr/local/src/openssl
+sudo git clone https://github.com/baresip/re /usr/local/src/re
+sudo git clone https://github.com/creytiv/rem  /usr/local/src/rem
+sudo git clone https://github.com/baresip/baresip /usr/local/src/baresip
+## sudo git clone https://github.com/juha-h/libzrtp /usr/local/src/git/libzrtp
+
+# BARESIP: An example of multi-repository C project that is updated regularly
+apt-get install -y pkg-config alsa-utils libasound2-dev libpulse-dev
+apt-get install -y gstreamer1.0-alsa gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-tools gstreamer1.0-x 
+apt-get install -y libgstreamer-plugins-base1.0-0 libgstreamer-plugins-base1.0-dev libgstreamer1.0-0 libgstreamer1.0-dev
+apt-get install -y build-essential pkg-config intltool libtool libsndfile1-dev libjson-c-dev libopus-dev
+apt-get install -y libsndfile1-dev libspandsp-dev libgtk2.0-dev libjack-jackd2-dev
+
+# Grep for SIP Network Sessions
+apt-get install -y sngrep
+# Video Codecs
+apt-get install -y libavcodec-dev libavutil-dev libcairo2-dev
 
 # Install & Build libzrtp
-cd /usr/local/src/libzrtp && ./bootstrap.sh && ./configure CFLAGS="-O0 -g3 -W -Wall -DBUILD_WITH_CFUNC -DBUILD_DEFAULT_CACHE -DBUILD_DEFAULT_TIMER" && make && sudo make install && sudo ldconfig
+### cd /usr/local/src/libzrtp && ./bootstrap.sh && ./configure CFLAGS="-O0 -g3 -W -Wall -DBUILD_WITH_CFUNC -DBUILD_DEFAULT_CACHE -DBUILD_DEFAULT_TIMER" && make && sudo make install && sudo ldconfig
 # Install & Build openssl
-cd /usr/local/src/openssl && ./config && make && sudo make install && sudo ldconfig
+### cd /usr/local/src/openssl && ./config && make && sudo make install && sudo ldconfig
 # Install & Build re
 # Build as Release (no SIP debugging)
 # cd /usr/local/src/re && make RELEASE=1 && sudo make RELEASE=1 install && sudo ldconfig
@@ -328,6 +340,12 @@ sudo ~/./aws/install
 # Install Azure CLI
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 
+# Install Google Cloud (GCP) CLI
+cd ~ && curl https://sdk.cloud.google.com > install.sh
+chmod +x install.sh
+bash install.sh --disable-prompts
+~/google-cloud-sdk/install.sh --quiet
+
 # Azure Arc Agent -won't work on WSL VM as they dont run systemd
 if [[ ! $(grep Microsoft /proc/version) ]]; then
     cd ~
@@ -343,12 +361,6 @@ if [[ ! $(grep Microsoft /proc/version) ]]; then
         --location "{resourceLocation}" \
         --subscription-id "2d2089b6-d701-49aa-9600-bc2e3796d53a"
 fi
-
-# Install Google Cloud (GCP) CLI
-cd ~ && curl https://sdk.cloud.google.com > install.sh
-chmod +x install.sh
-bash install.sh --disable-prompts
-~/google-cloud-sdk/install.sh --quiet
 
 # install sysstat and enable it
 sudo apt-get install sysstat
