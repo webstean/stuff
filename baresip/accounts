@@ -74,5 +74,5 @@
 #<sip:302sos@test-sip-server>;transport=tls;auth_user=302;auth_pass=302;outbound="sip:test-sip-server:5060";mediaenc=dtls_srtp
 
 # ttt
-<sip:667://lordsomerscampandpowehouse.3cx.com.au;transport=tcp;auth_user=667blank;auth_pass=667blank
+<sip:667:lordsomerscampandpowehouse.3cx.com.au;transport=tcp;auth_user=667blank;auth_pass=667blank
 
