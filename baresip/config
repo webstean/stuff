@@ -59,6 +59,8 @@ audio_telev_pt		101		# payload type for telephone-event
 
 # Video
 #video_source		v4l2,/dev/video0
+#video_source   rtsp://admin:password@ip_address:554//h264Preview_01_main
+#video_source   rtsp://admin:password@ip_address:554//h265Preview_01_main
 #video_display		x11,nil
 video_size		640x480
 video_bitrate		1000000
