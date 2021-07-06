@@ -36,35 +36,43 @@
 #  <sip:user@[2001:df8:0:16:216:6fff:fe91:614c]:5070;transport=tcp>;auth_pass=secret
 #
 # Test accounts
-<sip:201u@test-sip-server>;transport=udp;auth_user=201;auth_pass=201
-<sip:202u@test-sip-server>;transport=udp;auth_user=202;auth_pass=202
-<sip:301u@test-sip-server>;transport=udp;auth_user=301;auth_pass=301
-<sip:302u@test-sip-server>;transport=udp;auth_user=302;auth_pass=302
 
-<sip:201t@test-sip-server>;transport=tcp;auth_user=201;auth_pass=201
-<sip:202t@test-sip-server>;transport=tcp;auth_user=202;auth_pass=202
-<sip:301t@test-sip-server>;transport=tcp;auth_user=301;auth_pass=301
-<sip:302t@test-sip-server>;transport=tcp;auth_user=302;auth_pass=302
+# sip:udp
+#<sip:201u@test-sip-server>;transport=udp;auth_user=201;auth_pass=201
+#<sip:202u@test-sip-server>;transport=udp;auth_user=202;auth_pass=202
+#<sip:301u@test-sip-server>;transport=udp;auth_user=301;auth_pass=301
+#<sip:302u@test-sip-server>;transport=udp;auth_user=302;auth_pass=302
 
-<sip:201s@test-sip-server>;transport=tls;auth_user=201;auth_pass=201
-<sip:202s@test-sip-server>;transport=tls;auth_user=202;auth_pass=202
-<sip:301s@test-sip-server>;transport=tls;auth_user=301;auth_pass=301
-<sip:302s@test-sip-server>;transport=tls;auth_user=302;auth_pass=302
+# sip:tcp
+#<sip:201t@test-sip-server>;transport=tcp;auth_user=201;auth_pass=201
+#<sip:202t@test-sip-server>;transport=tcp;auth_user=202;auth_pass=202
+#<sip:301t@test-sip-server>;transport=tcp;auth_user=301;auth_pass=301
+#<sip:302t@test-sip-server>;transport=tcp;auth_user=302;auth_pass=302
 
-<sip:201w@test-sip-server>;transport=wss;auth_user=201;auth_pass=201
-<sip:202w@test-sip-server>;transport=wss;auth_user=202;auth_pass=202
-<sip:301w@test-sip-server>;transport=wss;auth_user=301;auth_pass=301
-<sip:302w@test-sip-server>;transport=wss;auth_user=302;auth_pass=302
+# sip:tls
+#<sip:201s@test-sip-server>;transport=tls;auth_user=201;auth_pass=201
+#<sip:202s@test-sip-server>;transport=tls;auth_user=202;auth_pass=202
+#<sip:301s@test-sip-server>;transport=tls;auth_user=301;auth_pass=301
+#<sip:302s@test-sip-server>;transport=tls;auth_user=302;auth_pass=302
 
-<sip:201so@test-sip-server>;transport=tls;auth_user=201;auth_pass=201;outbound="sip:test-sip-server:5060"
-<sip:202so@test-sip-server>;transport=tls;auth_user=202;auth_pass=202;outbound="sip:test-sip-server:5060"
-<sip:301so@test-sip-server>;transport=tls;auth_user=301;auth_pass=301;outbound="sip:test-sip-server:5060"
-<sip:302so@test-sip-server>;transport=tls;auth_user=302;auth_pass=302;outbound="sip:test-sip-server:5060"
+# sip: wss
+#<sip:201w@test-sip-server>;transport=wss;auth_user=201;auth_pass=201
+#<sip:202w@test-sip-server>;transport=wss;auth_user=202;auth_pass=202
+#<sip:301w@test-sip-server>;transport=wss;auth_user=301;auth_pass=301
+#<sip:302w@test-sip-server>;transport=wss;auth_user=302;auth_pass=302
 
-<sip:201sos@test-sip-server>;transport=tls;auth_user=201;auth_pass=201;outbound="sip:test-sip-server:5060";mediaenc=dtls_srtp
-<sip:202sos@test-sip-server>;transport=tls;auth_user=202;auth_pass=202;outbound="sip:test-sip-server:5060";mediaenc=dtls_srtp
-<sip:301sos@test-sip-server>;transport=tls;auth_user=301;auth_pass=301;outbound="sip:test-sip-server:5060";mediaenc=dtls_srtp
-<sip:302sos@test-sip-server>;transport=tls;auth_user=302;auth_pass=302;outbound="sip:test-sip-server:5060";mediaenc=dtls_srtp
+# sip: tls with outbound proxy
+#<sip:201so@test-sip-server>;transport=tls;auth_user=201;auth_pass=201;outbound="sip:test-sip-server:5060"
+#<sip:202so@test-sip-server>;transport=tls;auth_user=202;auth_pass=202;outbound="sip:test-sip-server:5060"
+#<sip:301so@test-sip-server>;transport=tls;auth_user=301;auth_pass=301;outbound="sip:test-sip-server:5060"
+#<sip:302so@test-sip-server>;transport=tls;auth_user=302;auth_pass=302;outbound="sip:test-sip-server:5060"
 
+# sip: tls with outbound proxy with dtls_srtp
+#<sip:201sos@test-sip-server>;transport=tls;auth_user=201;auth_pass=201;outbound="sip:test-sip-server:5060";mediaenc=dtls_srtp
+#<sip:202sos@test-sip-server>;transport=tls;auth_user=202;auth_pass=202;outbound="sip:test-sip-server:5060";mediaenc=dtls_srtp
+#<sip:301sos@test-sip-server>;transport=tls;auth_user=301;auth_pass=301;outbound="sip:test-sip-server:5060";mediaenc=dtls_srtp
+#<sip:302sos@test-sip-server>;transport=tls;auth_user=302;auth_pass=302;outbound="sip:test-sip-server:5060";mediaenc=dtls_srtp
 
+# ttt
+<sip:667://lordsomerscampandpowehouse.3cx.com.au;transport=tcp;auth_user=667blank;auth_pass=667blank
 
