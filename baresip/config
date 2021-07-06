@@ -303,7 +303,11 @@ snd_path		/tmp
 
 # multicast receivers (in priority order)- port number must be even
 multicast_call_prio	0
-multicast_listener 224.0.2.21:50002
+# Radio - Listener
+#multicast_listener 224.0.2.21:50002
+# Radio - Sender
+# /mcsend addr=224.0.2.21:50002
+
 #multicast_listener 224.2.21.75:50002
 #multicast_listener 224.0.2.21:50000
 #multicast_listener	224.0.2.21:50002
