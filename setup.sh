@@ -120,7 +120,7 @@ git clone https://github.com/letsencrypt/letsencrypt /usr/local/src/letsencrypt
 if [ -d /usr/local/src/openssl ] ; then sudo rm -rf /usr/local/src/openssl ; fi
 if [ -d /usr/local/src/libzrtp ] ; then sudo rm -rf /usr/local/src/libzrtp ; fi
 sudo git clone https://github.com/openssl/openssl /usr/local/src/openssl
-sudo git clone https://github.com/juha-h/libzrtp /usr/local/src/git/libzrtp && sudo chmod 755 /usr/local/src/libzrtp
+sudo git clone https://github.com/juha-h/libzrtp /usr/local/src/libzrtp && sudo chmod 755 /usr/local/src/libzrtp
 
 if [ -d /usr/local/src/re ] ; then sudo rm -rf /usr/local/src/re ; fi
 if [ -d /usr/local/src/rem ] ; then sudo rm -rf /usr/local/src/rem ; fi
