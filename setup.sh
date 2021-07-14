@@ -122,10 +122,12 @@ if [ -d /usr/local/src/openssl ] ; then sudo rm -rf /usr/local/src/openssl ; fi
 sudo git clone https://github.com/openssl/openssl /usr/local/src/openssl && sudo chmod 755 /usr/local/src/libzrtp
 
 # sngrep
-sudo apt-get install autoconf libpcap-dev ncurses-dev -y
+sudo apt-get install autoconf libpcap-dev ncurses-dev libgnutl*-dev libgcrypt*-dev -y
 if [ -d /usr/local/src/sngrep ] ; then sudo rm -rf /usr/local/src/sngrep ; fi
 sudo git clone https://github.com/irontec/sngrep /usr/local/src/sngrep && sudo chmod 755 /usr/local/src/sngrep
-cd /usr/local/src/sngrep && ./bootstrap.sh && ./configure --with-openssl --enable-eep && make && sudo make install
+# configure: error:  GnuTLS and OpenSSL can not be enabled at the same time 
+# cd /usr/local/src/sngrep && ./bootstrap.sh && ./configure --with-openssl --enable-eep && make && sudo make install
+cd /usr/local/src/sngrep && ./bootstrap.sh && ./configure --with-gnutls  --enable-eep && make && sudo make install
 
 # libzrtp
 if [ -d /usr/local/src/libzrtp ] ; then sudo rm -rf /usr/local/src/libzrtp ; fi
