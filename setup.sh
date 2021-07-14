@@ -117,11 +117,21 @@ git clone https://github.com/letsencrypt/letsencrypt /usr/local/src/letsencrypt
 # test
 # sudo certbot renew --dry-run
 
+# openssl
 if [ -d /usr/local/src/openssl ] ; then sudo rm -rf /usr/local/src/openssl ; fi
+sudo git clone https://github.com/openssl/openssl /usr/local/src/openssl && sudo chmod 755 /usr/local/src/libzrtp
+
+# sngrep
+apt-get install autoconf
+if [ -d /usr/local/src/sngrep ] ; then sudo rm -rf /usr/local/src/sngrep ; fi
+sudo git clone https://github.com/irontec/sngrep /usr/local/src/sngrep && sudo chmod 755 /usr/local/src/sngrep
+cd /usr/local/src/sngrep && ./bootstrap.sh && ./configure --with-openssl --enable-eep && make && sudo make install
+
+# libzrtp
 if [ -d /usr/local/src/libzrtp ] ; then sudo rm -rf /usr/local/src/libzrtp ; fi
-sudo git clone https://github.com/openssl/openssl /usr/local/src/openssl
 sudo git clone https://github.com/juha-h/libzrtp /usr/local/src/libzrtp && sudo chmod 755 /usr/local/src/libzrtp
 
+# baresip
 if [ -d /usr/local/src/re ] ; then sudo rm -rf /usr/local/src/re ; fi
 if [ -d /usr/local/src/rem ] ; then sudo rm -rf /usr/local/src/rem ; fi
 if [ -d /usr/local/src/baresip ] ; then sudo rm -rf /usr/local/src/baresip ; fi
@@ -135,9 +145,6 @@ sudo apt-get install -y gstreamer1.0-alsa gstreamer1.0-plugins-base gstreamer1.0
 sudo apt-get install -y libgstreamer-plugins-base1.0-0 libgstreamer-plugins-base1.0-dev libgstreamer1.0-0 libgstreamer1.0-dev
 sudo apt-get install -y build-essential pkg-config intltool libtool libsndfile1-dev libjson-c-dev libopus-dev
 sudo apt-get install -y libsndfile1-dev libspandsp-dev libgtk2.0-dev libjack-jackd2-dev
-
-# Grep for SIP Network Sessions
-sudo apt-get install -y sngrep
 # Video Codecs
 sudo apt-get install -y libavcodec-dev libavutil-dev libcairo2-dev
 
@@ -162,6 +169,9 @@ curl https://raw.githubusercontent.com/webstean/stuff/master/baresip/accounts -o
 curl https://raw.githubusercontent.com/webstean/stuff/master/baresip/config -o ~/.baresip/config
 curl https://raw.githubusercontent.com/webstean/stuff/master/baresip/contacts -o ~/.baresip/contacts
 baresip -t 28
+
+# Grep for SIP Network Sessions
+# sudo apt-get install -y sngrep
 
 # Run Baresip set the SIP account
 #CMD baresip -d -f $HOME/.baresip && sleep 2 && curl http://127.0.0.1:8000/raw/?Rsip:root:root@127.0.0.1 && sleep 5 && curl http://127.0.0.1:8000/raw/?dbaresip@conference.sip2sip.info && sleep 60 && curl http://127.0.0.1:8000/raw/?bq
