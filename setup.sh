@@ -85,7 +85,7 @@ ${INSTALL_CMD} build-essential pkg-config intltool libtool libsndfile1-dev libjs
 ${INSTALL_CMD} libsndfile1-dev libspandsp-dev libgtk2.0-dev libjack-jackd2-dev
 
 # Grep for SIP Network Sessions
-${INSTALL_CMD} sngrep
+### ${INSTALL_CMD} sngrep
 # Video Codecs
 ${INSTALL_CMD} libavcodec-dev libavutil-dev libcairo2-dev
 # ${INSTALL_CMD} libavdevice-dev libavformat-dev mpg123-dev 
@@ -122,7 +122,7 @@ if [ -d /usr/local/src/openssl ] ; then sudo rm -rf /usr/local/src/openssl ; fi
 sudo git clone https://github.com/openssl/openssl /usr/local/src/openssl && sudo chmod 755 /usr/local/src/libzrtp
 
 # sngrep
-apt-get install autoconf
+sudo apt-get install autoconf libpcap-dev ncurses-dev -y
 if [ -d /usr/local/src/sngrep ] ; then sudo rm -rf /usr/local/src/sngrep ; fi
 sudo git clone https://github.com/irontec/sngrep /usr/local/src/sngrep && sudo chmod 755 /usr/local/src/sngrep
 cd /usr/local/src/sngrep && ./bootstrap.sh && ./configure --with-openssl --enable-eep && make && sudo make install
