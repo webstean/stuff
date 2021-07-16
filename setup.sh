@@ -129,12 +129,24 @@ sudo apt-get install -y alsa-utils package
 # build dependencies
 sudo apt-get install -y build-essential pkg-config intltool libtool autoconf
 
+if [ -d /usr/local/src ] ; then sudo rm -rf /usr/local/src ; fi
+mkdir -p /usr/lcoal/src && sudo chmod 755 /usr/local/src
+
 # openssl
 if [ -d /usr/local/src/openssl ] ; then sudo rm -rf /usr/local/src/openssl ; fi
 sudo git clone https://github.com/openssl/openssl /usr/local/src/openssl && sudo chmod 755 /usr/local/src/openssl
 # Install & Build openssl
 cd /usr/local/src/openssl && sudo ./config 
 sudo make install && sudo ldconfig
+# fix for libssl.so.3: cannot open
+cp /usr/local/lib64/libcrypto.so.3 /usr/local/lib/
+cp /usr/local/lib64/libcrypto.a /usr/local/lib/
+cp /usr/local/lib64/libssl.so.3 /usr/local/lib
+# fix for libssl.so.3: cannot open
+#ln -s /usr/local/lib64/libcrypto.so.3 /usr/local/lib64/libcrypto.so
+#ln -s /usr/local/lib64/libssl.so.3 /usr/local/lib64/libssl.so
+sudo ldconfig
+openssl version -a
 
 # sngrep - depends on openssl
 sudo apt-get install -y autoconf libpcap-dev ncurses-dev # libgnutl*-dev libgcrypt*-dev
@@ -146,6 +158,34 @@ cd /usr/local/src/sngrep && sudo ./bootstrap.sh && sudo ./configure --with-opens
 # allow sngrep to run by non-root
 sudo setcap 'CAP_NET_RAW+eip' /usr/local/bin/sngrep
 # /etc/sngreprc for options
+
+# bcf729 - rtpengine dependency
+VER=1.0.4
+if [ -d /usr/local/src/bcg729-deb ] ; then sudo rm -rf /usr/local/src/bcg729-deb ; fi
+mkdir -p /usr/local/src/bcg729-deb && cd /usr/local/src/bcg729-deb
+curl https://codeload.github.com/BelledonneCommunications/bcg729/tar.gz/$VER >bcg729_$VER.orig.tar.gz
+tar zxf bcg729_$VER.orig.tar.gz 
+cd bcg729-$VER 
+git clone https://github.com/ossobv/bcg729-deb.git debian 
+dpkg-buildpackage -us -uc -sa
+cd ../
+dpkg -i libbcg729-*.deb
+
+# rtpengine
+sudo apt-get install -y debhelper default-libmysqlclient-dev gperf libavcodec-dev libavfilter-dev libavformat-dev libavutil-dev
+sudo apt-get install -y libbencode-perl libcrypt-openssl-rsa-perl libcrypt-rijndael-perl libdigest-crc-perl libdigest-hmac-perl libevent-dev
+sudo apt-get install -y libhiredis-dev libio-multiplex-perl libio-socket-inet6-perl libiptc-dev libjson-glib-dev libmosquitto-dev libnet-interface-perl
+sudo apt-get install -y libsocket6-perl libspandsp-dev libswresample-dev libsystemd-dev libwebsockets-dev libxmlrpc-core-c3-dev libxtables-dev
+sudo apt-get install -y iptables-dev markdown
+sudo apt install -y -t bionic-backports debhelper
+sudo apt install -y -t bionic-backports init-system-helpers
+if [ -d /usr/local/src/rtpengine ] ; then sudo rm -rf /usr/local/src/rtpengine ; fi
+git clone https://github.com/sipwise/rtpengine /usr/local/src/rtpengine
+cd /usr/local/src/rtpengine && sudo dpkg-checkbuilddeps 
+dpkg-buildpackage
+cd ../
+sudo dpkg -i ngcp-rtpengine-daemon_*.deb ngcp-rtpengine-iptables_*.deb ngcp-rtpengine-kernel-dkms_*.deb 
+#
 
 # libzrtp - big in the asterisk world
 if [ -d /usr/local/src/libzrtp ] ; then sudo rm -rf /usr/local/src/libzrtp ; fi
@@ -179,8 +219,6 @@ cd /usr/local/src/re && sudo make install && sudo ldconfig
 cd /usr/local/src/rem && sudo make install && sudo ldconfig 
 # Build baresip (Note: both re and rem are dependencies)
 cd /usr/local/src/baresip && sudo make RELEASE=1 && sudo make RELEASE=1 install
-# ldconfig - just for kicks
-# sudo ldconfig
 
 # Get some decent config files for baresip
 curl https://raw.githubusercontent.com/webstean/stuff/master/baresip/accounts -o ~/.baresip/accounts
