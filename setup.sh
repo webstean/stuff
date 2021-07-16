@@ -117,21 +117,41 @@ git clone https://github.com/letsencrypt/letsencrypt /usr/local/src/letsencrypt
 # test
 # sudo certbot renew --dry-run
 
+# sound support
+# This contains (among other utilities) the alsamixer and amixer utilities.
+# amixer is a shell command to change audio settings,
+# while alsamixer provides a more intuitive ncurses based interface for audio device configuration.
+# should automatically find usb sound card devices
+# speaker-test -c 2
+sudo apt-get install -y alsa-utils package
+# aplay -L
+
+# build dependencies
+sudo apt-get install -y build-essential pkg-config intltool libtool autoconf
+
 # openssl
 if [ -d /usr/local/src/openssl ] ; then sudo rm -rf /usr/local/src/openssl ; fi
-sudo git clone https://github.com/openssl/openssl /usr/local/src/openssl && sudo chmod 755 /usr/local/src/libzrtp
+sudo git clone https://github.com/openssl/openssl /usr/local/src/openssl && sudo chmod 755 /usr/local/src/openssl
+# Install & Build openssl
+cd /usr/local/src/openssl && sudo ./config 
+sudo make install && sudo ldconfig
 
-# sngrep
-sudo apt-get install autoconf libpcap-dev ncurses-dev libgnutl*-dev libgcrypt*-dev -y
+# sngrep - depends on openssl
+sudo apt-get install -y autoconf libpcap-dev ncurses-dev # libgnutl*-dev libgcrypt*-dev
 if [ -d /usr/local/src/sngrep ] ; then sudo rm -rf /usr/local/src/sngrep ; fi
 sudo git clone https://github.com/irontec/sngrep /usr/local/src/sngrep && sudo chmod 755 /usr/local/src/sngrep
-# configure: error:  GnuTLS and OpenSSL can not be enabled at the same time 
-# cd /usr/local/src/sngrep && ./bootstrap.sh && ./configure --with-openssl --enable-eep && make && sudo make install
-cd /usr/local/src/sngrep && ./bootstrap.sh && ./configure --with-gnutls  --enable-eep && make && sudo make install
+# info:  GnuTLS and OpenSSL can not be enabled at the same time 
+cd /usr/local/src/sngrep && sudo ./bootstrap.sh && sudo ./configure --with-openssl --enable-eep --enable-unicode && sudo make install
+# cd /usr/local/src/sngrep && ./bootstrap.sh && ./configure --with-gnutls  --enable-eep && make --enable-unicode && sudo make install
+# allow sngrep to run by non-root
+sudo setcap 'CAP_NET_RAW+eip' /usr/local/bin/sngrep
+# /etc/sngreprc for options
 
-# libzrtp
+# libzrtp - big in the asterisk world
 if [ -d /usr/local/src/libzrtp ] ; then sudo rm -rf /usr/local/src/libzrtp ; fi
 sudo git clone https://github.com/juha-h/libzrtp /usr/local/src/libzrtp && sudo chmod 755 /usr/local/src/libzrtp
+# Install & Build libzrtp
+### cd /usr/local/src/libzrtp && ./bootstrap.sh && ./configure CFLAGS="-O0 -g3 -W -Wall -DBUILD_WITH_CFUNC -DBUILD_DEFAULT_CACHE -DBUILD_DEFAULT_TIMER" && make && sudo make install && sudo ldconfig
 
 # baresip
 if [ -d /usr/local/src/re ] ; then sudo rm -rf /usr/local/src/re ; fi
@@ -141,8 +161,8 @@ sudo git clone https://github.com/baresip/re /usr/local/src/re && sudo chmod 755
 sudo git clone https://github.com/baresip/rem  /usr/local/src/rem && sudo chmod 755 /usr/local/src/rem
 sudo git clone https://github.com/baresip/baresip /usr/local/src/baresip && sudo chmod 755 /usr/local/src/baresip
 
-# BARESIP: An example of multi-repository C project that is updated regularly
-sudo apt-get install -y pkg-config alsa-utils libasound2-dev libpulse-dev
+# BARESIP: An example of a largish github project that is updated regularly
+sudo apt-get install -y alsa-utils libasound2-dev libpulse-dev
 sudo apt-get install -y gstreamer1.0-alsa gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-tools gstreamer1.0-x 
 sudo apt-get install -y libgstreamer-plugins-base1.0-0 libgstreamer-plugins-base1.0-dev libgstreamer1.0-0 libgstreamer1.0-dev
 sudo apt-get install -y build-essential pkg-config intltool libtool libsndfile1-dev libjson-c-dev libopus-dev
@@ -150,10 +170,6 @@ sudo apt-get install -y libsndfile1-dev libspandsp-dev libgtk2.0-dev libjack-jac
 # Video Codecs
 sudo apt-get install -y libavcodec-dev libavutil-dev libcairo2-dev
 
-# Install & Build libzrtp
-### cd /usr/local/src/libzrtp && ./bootstrap.sh && ./configure CFLAGS="-O0 -g3 -W -Wall -DBUILD_WITH_CFUNC -DBUILD_DEFAULT_CACHE -DBUILD_DEFAULT_TIMER" && make && sudo make install && sudo ldconfig
-# Install & Build openssl
-### cd /usr/local/src/openssl && ./config && make && sudo make install && sudo ldconfig
 # Install & Build re
 # Build as Release (no SIP debugging)
 # cd /usr/local/src/re && make RELEASE=1 && sudo make RELEASE=1 install && sudo ldconfig
@@ -164,7 +180,7 @@ cd /usr/local/src/rem && sudo make install && sudo ldconfig
 # Build baresip (Note: both re and rem are dependencies)
 cd /usr/local/src/baresip && sudo make RELEASE=1 && sudo make RELEASE=1 install
 # ldconfig - just for kicks
-sudo ldconfig
+# sudo ldconfig
 
 # Get some decent config files for baresip
 curl https://raw.githubusercontent.com/webstean/stuff/master/baresip/accounts -o ~/.baresip/accounts
