@@ -1,4 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+# Debug this script if in debug mode
+(( $DEBUG == 1 )) && set -x
 
 # Setup WSL Linux for use Visual Studio Code (VS Code)
 # See: https://code.visualstudio.com/docs/remote/linux
