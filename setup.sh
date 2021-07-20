@@ -71,6 +71,13 @@ git config --global user.email "webstean@gmail.com"
 # cached credentials for 4 hours
 git config --global credential.help cache =timeout=14400 
 git config --list
+# root
+sudo git config --global color.ui true
+sudo git config --global user.name "Andrew Webster"
+sudo git config --global user.email "webstean@gmail.com"
+# cached credentials for 4 hours
+sudo git config --global credential.help cache =timeout=14400 
+sudo git config --list
 
 # Generate an SSH Certificate
 ${INSTALL_CMD} openssh-client
@@ -100,7 +107,13 @@ cat /etc/ssl/certs/example.crt /etc/ssl/certs/example.key > /etc/ssl/certs/examp
 
 mkdir -p /usr/local/src
 
-git clone https://github.com/letsencrypt/letsencrypt /usr/local/src/letsencrypt
+#certbot
+#${INSTALL_CMD}
+sudo apt-get install -y snap
+sudo snap install core && sudo snap refresh core
+sudo snap install --classic certbot
+sudo ln -s /snap/bin/certbot /usr/bin/certbot
+sudo -H /usr/bin/certbot certonly --standalone -d sbc.lordsomerscamp.org.au -d sbc.lordsomerscamp.com -d sbc.lordsomerscamp.com.au -d sbc.webstean.com
 
 #./letsencrypt-auto --help
 # sudo certbot certificates
@@ -108,7 +121,7 @@ git clone https://github.com/letsencrypt/letsencrypt /usr/local/src/letsencrypt
 #if [ -d /etc/apache2 ] ; then
 #    sudo -H /usr/local/src/letsencrypt/letsencrypt-auto certonly --apache -d example.com -d www.example.com
 #else
-#    sudo -H /usr/local/src/letsencrypt/letsencrypt-auto certonly --standalone -d example.com -d www.example.com
+#    sudo -H /usr/local/src/letsencrypt/certbot/certbot certonly --standalone -d sbc.lordsomerscamp.org.au -d sbc.lordsomerscamp.com -d sbc.lordsomerscamp.com.au -d sbc.webstean.com
 #fi
 
 # WILDCARD: This need a DNS record
@@ -162,9 +175,10 @@ sudo setcap 'CAP_NET_RAW+eip' /usr/local/bin/sngrep
 # /etc/sngreprc for options
 
 # bcf729 - rtpengine dependency
+sudo apt install -y dpkg-dev autotools-dev dh-autoreconf pkg-config unzip
 VER=1.0.4
 if [ -d /usr/local/src/bcg729-deb ] ; then sudo rm -rf /usr/local/src/bcg729-deb ; fi
-mkdir -p /usr/local/src/bcg729-deb && cd /usr/local/src/bcg729-deb
+sudo mkdir -p /usr/local/src/bcg729-deb && sudo chmod +x /usr/local/src/bcg729-deb && cd /usr/local/src/bcg729-deb
 curl https://codeload.github.com/BelledonneCommunications/bcg729/tar.gz/$VER >bcg729_$VER.orig.tar.gz
 tar zxf bcg729_$VER.orig.tar.gz 
 cd bcg729-$VER 
@@ -178,13 +192,13 @@ sudo apt-get install -y debhelper default-libmysqlclient-dev gperf libavcodec-de
 sudo apt-get install -y libbencode-perl libcrypt-openssl-rsa-perl libcrypt-rijndael-perl libdigest-crc-perl libdigest-hmac-perl libevent-dev
 sudo apt-get install -y libhiredis-dev libio-multiplex-perl libio-socket-inet6-perl libiptc-dev libjson-glib-dev libmosquitto-dev libnet-interface-perl
 sudo apt-get install -y libsocket6-perl libspandsp-dev libswresample-dev libsystemd-dev libwebsockets-dev libxmlrpc-core-c3-dev libxtables-dev
-sudo apt-get install -y iptables-dev markdown
-sudo apt install -y -t bionic-backports debhelper
-sudo apt install -y -t bionic-backports init-system-helpers
+sudo apt-get install -y markdown libpcap-dev libghc-curl-dev
+sudo apt install -y -t focal-backports iptables-dev 
+sudo apt install -y -t focal-backports debhelper
+sudo apt install -y -t focal-backports init-system-helpers
 if [ -d /usr/local/src/rtpengine ] ; then sudo rm -rf /usr/local/src/rtpengine ; fi
 git clone https://github.com/sipwise/rtpengine /usr/local/src/rtpengine
-cd /usr/local/src/rtpengine && sudo dpkg-checkbuilddeps 
-dpkg-buildpackage
+cd /usr/local/src/rtpengine && sudo dpkg-checkbuilddeps && dpkg-buildpackage
 cd ../
 sudo dpkg -i ngcp-rtpengine-daemon_*.deb ngcp-rtpengine-iptables_*.deb ngcp-rtpengine-kernel-dkms_*.deb 
 #
