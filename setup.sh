@@ -139,8 +139,7 @@ mkdir -p /usr/lcoal/src && sudo chmod 755 /usr/local/src
 if [ -d /usr/local/src/openssl ] ; then sudo rm -rf /usr/local/src/openssl ; fi
 sudo git clone https://github.com/openssl/openssl /usr/local/src/openssl && sudo chmod 755 /usr/local/src/openssl
 # Install & Build openssl
-cd /usr/local/src/openssl && sudo ./config 
-sudo make install && sudo ldconfig
+cd /usr/local/src/openssl && sudo ./config && sudo make install && sudo ldconfig
 # fix for libssl.so.3: cannot open
 cp /usr/local/lib64/libcrypto.so.3 /usr/local/lib/
 cp /usr/local/lib64/libcrypto.a /usr/local/lib/
