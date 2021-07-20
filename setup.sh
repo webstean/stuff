@@ -198,10 +198,11 @@ sudo apt-get install -y markdown libpcap-dev libghc-curl-dev
 sudo apt install -y -t focal-backports iptables-dev 
 sudo apt install -y -t focal-backports debhelper
 sudo apt install -y -t focal-backports init-system-helpers
+sudo apt install -y dkms
 if [ -d /usr/local/src/rtpengine ] ; then sudo rm -rf /usr/local/src/rtpengine ; fi
 BRANCH=mr8.5.5.1
 git clone -b ${BRANCH} https://github.com/sipwise/rtpengine /usr/local/src/rtpengine
-cd /usr/local/src/rtpengine && sudo dpkg-checkbuilddeps && dpkg-buildpackage
+cd /usr/local/src/rtpengine && sudo dpkg-checkbuilddeps && sudo dpkg-buildpackage
 cd ../
 sudo dpkg -i ngcp-rtpengine-daemon_*.deb ngcp-rtpengine-iptables_*.deb ngcp-rtpengine-kernel-dkms_*.deb 
 #
