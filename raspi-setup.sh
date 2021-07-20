@@ -27,7 +27,7 @@ sudo ufw status verbose
 sudo ufw status
 ### Note: ufw won't be enabled until you enabled it
 # install firewall tarpits etc..
-sudo apt-get install -y xtables-addons-common
+sudo apt-get install -y xtables-addons-common iptables-persistent
 
 # Turn off Swapping - to preserve the SD card
 sudo dphys-swapfile swapoff
