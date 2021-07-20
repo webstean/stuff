@@ -70,6 +70,7 @@ git config --global user.name "Andrew Webster"
 git config --global user.email "webstean@gmail.com"
 # cached credentials for 4 hours
 git config --global credential.help cache =timeout=14400 
+git config --global advice.detachedHead false
 git config --list
 # root
 sudo git config --global color.ui true
@@ -77,6 +78,7 @@ sudo git config --global user.name "Andrew Webster"
 sudo git config --global user.email "webstean@gmail.com"
 # cached credentials for 4 hours
 sudo git config --global credential.help cache =timeout=14400 
+sudo git config --global advice.detachedHead false
 sudo git config --list
 
 # Generate an SSH Certificate
@@ -197,7 +199,8 @@ sudo apt install -y -t focal-backports iptables-dev
 sudo apt install -y -t focal-backports debhelper
 sudo apt install -y -t focal-backports init-system-helpers
 if [ -d /usr/local/src/rtpengine ] ; then sudo rm -rf /usr/local/src/rtpengine ; fi
-git clone https://github.com/sipwise/rtpengine /usr/local/src/rtpengine
+BRANCH=mr8.5.5.1
+git clone -b ${BRANCH} https://github.com/sipwise/rtpengine /usr/local/src/rtpengine
 cd /usr/local/src/rtpengine && sudo dpkg-checkbuilddeps && dpkg-buildpackage
 cd ../
 sudo dpkg -i ngcp-rtpengine-daemon_*.deb ngcp-rtpengine-iptables_*.deb ngcp-rtpengine-kernel-dkms_*.deb 
