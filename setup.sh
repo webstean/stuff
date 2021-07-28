@@ -29,6 +29,10 @@ fi
 # Enable sudo for all users
 if ! (sudo id | grep -q root) ; then 
     bash -c "echo '%sudo ALL=(ALL:ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo"
+    # AAD
+    bash -c "echo '%aad_admins ALL=(ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo"
+    # AD DS
+    bash -c "%AAD\ DC\ Administrators@lordsomerscamp.org.au ALL=(ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo"
 fi
 
 # Proxy Support
@@ -55,12 +59,17 @@ fi
 # Proxy exceptions
 # sudo sh -c 'echo # NO_PROXY=localhost,127.0.0.1,::1,192.168.0.0/16,10.0.0.0/8 >> /etc/profile.d/proxy.sh'
 
-# Set Timezone
+# Set Timezone - includes keeping the machine to the right time but not sure how?
 sudo timedatectl set-timezone Australia/Melbourne
-timedatectl
+timedatectl status 
 
 # Set Locale
-sudo update-locale LANG=en_AU.UTF-8 LANGUAGE= LC_MESSAGES= LC_COLLATE= LC_CTYPE=
+sudo apt-get install -y locales-all
+sudo locale-gen "en_AU.UTF-8"
+# sudo update-locale LANG="en_AU.UTF-8" LANGUAGE="en_AU:en" 
+# sudo update-locale LANG=en_AU.UTF-8 LANGUAGE= LC_MESSAGES= LC_COLLATE= LC_CTYPE=
+sudo update-locale LANG=en_AU.UTF-8 LANGUAGE=en_AU:en LC_MESSAGES=en_AU.UTF-8 LC_COLLATE= LC_CTYPE=
+locale
 # need reboot to show up properly - it will update /etc/default/locale
 
 # Ensure git is install and then configure it 
@@ -84,10 +93,13 @@ sudo git config --list
 # Generate an SSH Certificate
 ${INSTALL_CMD} openssh-client
 cat /dev/zero | ssh-keygen -q -N "" -C "webstean@gmail.com"
+# ssh setup
+# from host ssh-copy-id pi@raspberrypi.local - to enable promptless logon
+
 
 # Install dependencies for reference GIT Repos
-mkdir ~/git
-git clone https://github.com/oracle/docker-images ~/git/oracle-docker-images
+sudo mkdir -p /usr/local/oracle && sudo chown $USER /usr/local/oracle && chmod 755 /usr/local/oracle 
+git clone https://github.com/oracle/docker-images /usr/local/oracle/oracle-docker-images
 
 # BARESIP: An example of multi-repository C project that is updated regularly
 ${INSTALL_CMD} pkg-config alsa-utils libasound2-dev libpulse-dev
@@ -148,11 +160,13 @@ sudo apt-get install -y alsa-utils package
 sudo apt-get install -y build-essential pkg-config intltool libtool autoconf
 
 if [ -d /usr/local/src ] ; then sudo rm -rf /usr/local/src ; fi
-mkdir -p /usr/lcoal/src && sudo chmod 755 /usr/local/src
+mkdir -p /usr/local/src && sudo chown $USER /usr/local/src && chmod 755 /usr/local/src 
 
-# openssl
+# openssl - setup
 if [ -d /usr/local/src/openssl ] ; then sudo rm -rf /usr/local/src/openssl ; fi
-sudo git clone https://github.com/openssl/openssl /usr/local/src/openssl && sudo chmod 755 /usr/local/src/openssl
+mkdir -p /usr/local/src/openssl && sudo chown $USER /usr/local/src/openssl && chmod 755 /usr/local/src/openssl 
+git clone https://github.com/openssl/openssl /usr/local/src/openssl
+
 # Install & Build openssl
 cd /usr/local/src/openssl && sudo ./config && sudo make install && sudo ldconfig
 # fix for libssl.so.3: cannot open
@@ -355,9 +369,44 @@ ${INSTALL_CMD} docker docker.io
 # Turn on Docker Build kit
 sudo sh -c 'echo export DOCKER_BUILDKIT="1" >> /etc/profile.d/docker.sh'
 
+# Allow pi user to run docker commands - need to logout before become effective
+sudo usermod -aG docker pi
+
+# Test docker
+sudo docker pull hello-world && sudo docker run hello-world
+
+# Install docker-compose (btw: included with MAC desktop version)
+sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose && sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+# Install docker-compose completion
+sudo curl -L https://raw.githubusercontent.com/docker/compose/1.29.2/contrib/completion/bash/docker-compose -o /etc/bash_completion.d/docker-compose
+
+# run Azure CLI as a container
+sudo git clone https://github.com/gtrifonov/raspberry-pi-alpine-azure-cli.git
+cd .\raspberry-pi-alpine-azure-cli
+sudo docker build . -t azure-cli
+sudo docker run -d -it --rm --name azure-cli azure-cli
+
 # Alpine
 ${INSTALL_CMD} musl-dev libaio-dev libnsl-dev
 sudo ldconfig
+
+# Enable Linux features for Docker/k3s
+if ! (grep "cgroup_enable=memory cgroup_memory=1 swapaccount=1" /boot/cmdline.txt ) ; then
+    echo Updating /boot/cmdline with cgroup - doesnt work - needs to be fixed
+    sudo bash -c "echo -n 'cgroup_enable=memory cgroup_memory=1 swapaccount=1' >>/boot/cmdline.txt"
+    sudo bash -c "sed '${s/$/cgroup_enable=memory cgroup_memory=1 swapaccount=1/}' /boot/cmdline.txt >/boot/cmdline.txt"
+fi
+
+# k3s - master
+sudo iptables -F
+sudo update-alternatives --set iptables /usr/sbin/iptables-legacy
+sudo update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
+sudo reboot
+
+curl -sfL https://get.k3s.io | sh -
+sudo systemctl status k3s
+
 
 # Install Oracle Database Instant Client via permanent OTN link
 # Dependencies for Oracle Client
@@ -371,13 +420,11 @@ wget https://download.oracle.com/otn_software/linux/instantclient/instantclient-
 
 if [   -d /opt/oracle ] ; then sudo rm -rf /opt/oracle ; fi 
 if [ ! -d /opt/oracle ] ; then sudo mkdir -p /opt/oracle ; fi 
-sudo chmod 755 /opt
-sudo chmod 755 /opt/oracle
+sudo chmod -r 755 /opt
 sudo chown $USER /opt/oracle
 sudo unzip ${tmpdir}/instantclient-basic*.zip -d /opt/oracle
 sudo unzip ${tmpdir}/instantclient-sqlplus*.zip -d /opt/oracle
 sudo unzip ${tmpdir}/instantclient-tools*.zip -d /opt/oracle
-
 
 # rm instantclient-basic*.zip
 set -- /opt/oracle/instantclient*
@@ -420,9 +467,6 @@ fi
 #AD_USER=webstean@$AD_DOMAIN
 #sudo realm discover $AD_DOMAIN && kinit contosoadmin@$AD_DOMAIN && sudo realm join --verbose $AD_DOMAIN -U '$AD_USER' --install=/
 
-# Grant the 'AAD DC Administrators' group sudo privileges
-# sudo bash -c "%AAD\ DC\ Administrators@lordsomerscamp.org.au ALL=(ALL) NOPASSWD:ALL"
-
 # Install AWS CLI
 cd ~
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
@@ -430,7 +474,8 @@ unzip awscliv2.zip
 sudo ~/./aws/install
 
 # Install Azure CLI
-curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash && az version
+# need to AAD logon working
 
 # Install Google Cloud (GCP) CLI
 cd ~ && curl https://sdk.cloud.google.com > install.sh

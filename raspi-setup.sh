@@ -71,12 +71,6 @@ wget https://gist.githubusercontent.com/maxme/d5f000c84a4313aa531288c35c3a8887/r
 chmod +x raspberry-power-supply-check.sh
 # sudo ./raspberry-power-supply-check.sh
 
-# Enable Linux features for Docker
-if ! (grep "cgroup_enable=memory cgroup_memory=1 swapaccount=1" /boot/cmdline.txt ) ; then
-    bash -c "echo -n 'cgroup_enable=memory cgroup_memory=1 swapaccount=1' >>/boot/cmdline.txt"
-    sed '${s/$/cgroup_enable=memory cgroup_memory=1 swapaccount=1/}' /boot/cmdline.txt >/boot/cmdline.txt
-fi
-
 # Install IOTstack
 sudo bash -c '[ $(egrep -c "^allowinterfaces eth0,wlan0" /etc/dhcpcd.conf) -eq 0 ] && echo "allowinterfaces eth0,wlan0" >> /etc/dhcpcd.conf'
 sudo apt install -y git curl
