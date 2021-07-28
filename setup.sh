@@ -406,7 +406,43 @@ sudo reboot
 
 curl -sfL https://get.k3s.io | sh -
 sudo systemctl status k3s
+# "fix" file permissions for development / devops
+if [ -f /etc/rancher/k3s/k3s.yaml ] ; sudo chmod 555 /etc/rancher/k3s/k3s.yaml ; fi
+if [ -f /var/lib/rancher/k3s/server/token ] ; sudo chmod 555 /var/lib/rancher/k3s/server/token ; fi
+echo waiting 30 seconds....
+sleep 30
+sudo k3s kubectl get node
+# list of pods running locally
+sudo crictl pods
+k3s check-config
 
+# for kubectl - if installed, eg 'kubecl get pods --all-namespaces'
+sudo sh -c 'echo "# Note: By default /etc/rancher/k3s/k3s.yaml is only readable by root" > /etc/profile.d/kubeconfig.sh'
+sudo sh -c 'echo "if [ -f /etc/rancher/k3s/k3s.yaml ] ; export KUBECONFIG=/etc/rancher/k3s/k3s.yaml ; fi" >> /etc/profile.d/kubeconfig.sh'
+sudo sh -c 'echo "# Note: By default /var/lib/rancher/k3s/server/token is only readable by root" >> /etc/profile.d/kubeconfig.sh'
+sudo sh -c 'echo "if [ -f /var/lib/rancher/k3s/server/token ] ; export K3S_TOKEN=`cat /var/lib/rancher/k3s/server/token`" >> /etc/profile.d/kubeconfig.sh'
+sudo sh -c 'echo "# Hostname for k3s" >> /etc/profile.d/kubeconfig.sh'
+sudo sh -c 'echo "# export K3S_URL=https://somehost.com:6443 " >> /etc/profile.d/kubeconfig.sh'
+
+# Certificate
+# CERT_PRIV   : Private Key
+# CERT_FULL   : Full chanin of certificate
+# CERT_CA     : Certificate Authority List
+# CERT_VERIFY : Verify Certtificate (Boolean)
+
+# S3 Buckets
+# S3-BUCKET_NAME
+# S3-ACCESS-KEY
+# S3-SECRET-KEY
+
+# DATASOURCE
+#????
+
+# Load Testing, example
+# hey -z 5m -c 2 -q 10 http://url.com/api
+# for 5 minutes, 2 conccurent requests, no more 10 requests per second
+
+# openfaas - serverless open source
 
 # Install Oracle Database Instant Client via permanent OTN link
 # Dependencies for Oracle Client
