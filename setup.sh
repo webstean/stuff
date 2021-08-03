@@ -93,11 +93,12 @@ sudo git config --list
 # Generate an SSH Certificate
 ${INSTALL_CMD} openssh-client
 cat /dev/zero | 
-ssh-keygen -t rsa -b 4096 -C "webstean@gmail.com" -N "" -f ~/.ssh/id_rsa
+ssh-keygen -t rsa -b 4096 -C "webstean@gmail.com" -N '' -f ~/.ssh/id_rsa <<< $'\ny'
 
 # github compatible
 cat /dev/zero |
-ssh-keygen -t ed25519 -C "webstean@gmail.com"-N "" -f ~/.ssh/id_ed25519
+ssh-keygen -t ed25519 -C "webstean@gmail.com"-N '' -f ~/.ssh/id_ed25519 <<< $'\ny'
+
 
 # Handle SSH Agent - at logon
 sudo sh -c 'echo "# ssh-agent.sh - start ssh agent" > /etc/profile.d/ssh-agent.sh'
