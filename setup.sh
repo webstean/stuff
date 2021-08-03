@@ -98,7 +98,7 @@ cat /dev/zero | ssh-keygen -q -N "" -C "webstean@gmail.com"
 
 
 # Install dependencies for reference GIT Repos
-sudo mkdir -p /usr/local/oracle && sudo chown $USER /usr/local/oracle && chmod 755 /usr/local/oracle 
+sudo mkdir -p /usr/local/oracle && sudo chown ${USER} /usr/local/oracle && chmod 755 /usr/local/oracle 
 git clone https://github.com/oracle/docker-images /usr/local/oracle/oracle-docker-images
 
 # BARESIP: An example of multi-repository C project that is updated regularly
@@ -153,22 +153,21 @@ sudo -H /usr/bin/certbot certonly --standalone -d sbc.lordsomerscamp.org.au -d s
 # while alsamixer provides a more intuitive ncurses based interface for audio device configuration.
 # should automatically find usb sound card devices
 # speaker-test -c 2
-sudo apt-get install -y alsa-utils package
+sudo apt-get install -y alsa-utils 
 # aplay -L
 
 # build dependencies
 sudo apt-get install -y build-essential pkg-config intltool libtool autoconf
 
 if [ -d /usr/local/src ] ; then sudo rm -rf /usr/local/src ; fi
-mkdir -p /usr/local/src && sudo chown $USER /usr/local/src && chmod 755 /usr/local/src 
+sudo mkdir -p /usr/local/src && sudo chown ${USER} /usr/local/src && chmod 744 /usr/local/src 
 
 # openssl - setup
 if [ -d /usr/local/src/openssl ] ; then sudo rm -rf /usr/local/src/openssl ; fi
-mkdir -p /usr/local/src/openssl && sudo chown $USER /usr/local/src/openssl && chmod 755 /usr/local/src/openssl 
 git clone https://github.com/openssl/openssl /usr/local/src/openssl
 
 # Install & Build openssl
-cd /usr/local/src/openssl && sudo ./config && sudo make install && sudo ldconfig
+cd /usr/local/src/openssl && ./config && sudo make install
 # fix for libssl.so.3: cannot open
 cp /usr/local/lib64/libcrypto.so.3 /usr/local/lib/
 cp /usr/local/lib64/libcrypto.a /usr/local/lib/
@@ -457,7 +456,7 @@ wget https://download.oracle.com/otn_software/linux/instantclient/instantclient-
 if [   -d /opt/oracle ] ; then sudo rm -rf /opt/oracle ; fi 
 if [ ! -d /opt/oracle ] ; then sudo mkdir -p /opt/oracle ; fi 
 sudo chmod -r 755 /opt
-sudo chown $USER /opt/oracle
+sudo chown ${USER} /opt/oracle
 sudo unzip ${tmpdir}/instantclient-basic*.zip -d /opt/oracle
 sudo unzip ${tmpdir}/instantclient-sqlplus*.zip -d /opt/oracle
 sudo unzip ${tmpdir}/instantclient-tools*.zip -d /opt/oracle
