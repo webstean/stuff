@@ -32,7 +32,7 @@ if ! (sudo id | grep -q root) ; then
     # AAD
     bash -c "echo '%aad_admins ALL=(ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo"
     # AD DS
-    bash -c "%AAD\ DC\ Administrators@lordsomerscamp.org.au ALL=(ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo"
+    bash -c "echo %AAD\ DC\ Administrators@lordsomerscamp.org.au ALL=(ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo"
 fi
 
 # Proxy Support
@@ -92,10 +92,44 @@ sudo git config --list
 
 # Generate an SSH Certificate
 ${INSTALL_CMD} openssh-client
-cat /dev/zero | ssh-keygen -q -N "" -C "webstean@gmail.com"
+cat /dev/zero | 
+ssh-keygen -t rsa -b 4096 -C "webstean@gmail.com" -N "" -f ~/.ssh/id_rsa
+
+# github compatible
+cat /dev/zero |
+ssh-keygen -t ed25519 -C "webstean@gmail.com"-N "" -f ~/.ssh/id_ed25519
+
+# Handle SSH Agent - at logon
+sudo sh -c 'echo "# ssh-agent.sh - start ssh agent" > /etc/profile.d/ssh-agent.sh'
+sudo sh -c 'echo "# The ssh-agent is a helper program that keeps track of user identity keys and their passphrases. " >> /etc/profile.d/ssh-agent.sh'
+sudo sh -c 'echo "# The agent can then use the keys to log into other servers without having the user type in a " >> /etc/profile.d/ssh-agent.sh'
+sudo sh -c 'echo "# password or passphrase again. This implements a form of single sign-on (SSO)." >> /etc/profile.d/ssh-agent.sh'
+sudo sh -c 'echo "" >>/etc/profile.d/ssh-agent.sh'
+sudo sh -c 'echo "env=~/.ssh/agent.env" >> /etc/profile.d/ssh-agent.sh'
+sudo sh -c 'echo "" >>/etc/profile.d/ssh-agent.sh'
+sudo sh -c 'echo "agent_load_env () { test -f \"\$env\" && . \"\$env\" >| /dev/null ; }" >>/etc/profile.d/ssh-agent.sh'
+sudo sh -c 'echo "" >>/etc/profile.d/ssh-agent.sh'
+sudo sh -c 'echo "agent_start () { ">>/etc/profile.d/ssh-agent.sh'
+sudo sh -c 'echo "    (umask 077; ssh-agent >| \"\$env\")" >>/etc/profile.d/ssh-agent.sh'
+sudo sh -c 'echo "    . "\$env" >| /dev/null" >>/etc/profile.d/ssh-agent.sh'
+sudo sh -c 'echo "}" >>/etc/profile.d/ssh-agent.sh'
+sudo sh -c 'echo "" >>/etc/profile.d/ssh-agent.sh'
+sudo sh -c 'echo "agent_load_env" >>/etc/profile.d/ssh-agent.sh'
+sudo sh -c 'echo "# agent_run_state: 0=agent running w/ key; 1=agent w/o key; 2=agent not running" >>/etc/profile.d/ssh-agent.sh'
+sudo sh -c 'echo "agent_run_state=\$(ssh-add -l >| /dev/null 2>&1; echo \$?)" >>/etc/profile.d/ssh-agent.sh'
+sudo sh -c 'echo "" >>/etc/profile.d/ssh-agent.sh'
+sudo sh -c 'echo "if [ ! \"\$SSH_AUTH_SOCK\" ] || [ \$agent_run_state = 2 ]; then" >>/etc/profile.d/ssh-agent.sh'
+sudo sh -c 'echo "        agent_start" >>/etc/profile.d/ssh-agent.sh'
+sudo sh -c 'echo "        ssh-add" >>/etc/profile.d/ssh-agent.sh'
+sudo sh -c 'echo "elif [ \"\$SSH_AUTH_SOCK\" ] && [ \$agent_run_state = 1 ]; then ">>/etc/profile.d/ssh-agent.sh'
+sudo sh -c 'echo "        ssh-add" >>/etc/profile.d/ssh-agent.sh'
+sudo sh -c 'echo "fi" >>/etc/profile.d/ssh-agent.sh'
+sudo sh -c 'echo "" >>/etc/profile.d/ssh-agent.sh'
+sudo sh -c 'echo "unset env" >>/etc/profile.d/ssh-agent.sh'
+sudo sh -c 'echo "" >>/etc/profile.d/ssh-agent.sh'
+
 # ssh setup
 # from host ssh-copy-id pi@raspberrypi.local - to enable promptless logon
-
 
 # Install dependencies for reference GIT Repos
 sudo mkdir -p /usr/local/oracle && sudo chown ${USER} /usr/local/oracle && chmod 755 /usr/local/oracle 
@@ -113,11 +147,6 @@ ${INSTALL_CMD} libsndfile1-dev libspandsp-dev libgtk2.0-dev libjack-jackd2-dev
 # Video Codecs
 ${INSTALL_CMD} libavcodec-dev libavutil-dev libcairo2-dev
 # ${INSTALL_CMD} libavdevice-dev libavformat-dev mpg123-dev 
-
-# Create an example certificate
-openssl req -newkey rsa:4096 -x509 -sha256 -days 3650 -nodes -out /etc/ssl/certs/example.crt -keyout /etc/ssl/certs/example.key \
-    -subj "/C=AU/ST=Victoria/L=Melbourne/O=webstean/OU=IT/CN=webstean.com"
-cat /etc/ssl/certs/example.crt /etc/ssl/certs/example.key > /etc/ssl/certs/example.pem
 
 mkdir -p /usr/local/src
 
@@ -167,21 +196,21 @@ if [ -d /usr/local/src/openssl ] ; then sudo rm -rf /usr/local/src/openssl ; fi
 git clone https://github.com/openssl/openssl /usr/local/src/openssl
 
 # Install & Build openssl
-cd /usr/local/src/openssl && ./config && sudo make install
+# install - includes the documentaiton, install_sw does not
+cd /usr/local/src/openssl && ./config && sudo make install_sw
 # fix for libssl.so.3: cannot open
-cp /usr/local/lib64/libcrypto.so.3 /usr/local/lib/
-cp /usr/local/lib64/libcrypto.a /usr/local/lib/
-cp /usr/local/lib64/libssl.so.3 /usr/local/lib
+#cp /usr/local/lib64/libcrypto.so.3 /usr/local/lib/
+#cp /usr/local/lib64/libcrypto.a /usr/local/lib/
+#cp /usr/local/lib64/libssl.so.3 /usr/local/lib
 # fix for libssl.so.3: cannot open
 #ln -s /usr/local/lib64/libcrypto.so.3 /usr/local/lib64/libcrypto.so
 #ln -s /usr/local/lib64/libssl.so.3 /usr/local/lib64/libssl.so
-sudo ldconfig
-openssl version -a
+sudo ldconfig && openssl version -a
 
 # sngrep - depends on openssl
 sudo apt-get install -y autoconf libpcap-dev ncurses-dev # libgnutl*-dev libgcrypt*-dev
 if [ -d /usr/local/src/sngrep ] ; then sudo rm -rf /usr/local/src/sngrep ; fi
-sudo git clone https://github.com/irontec/sngrep /usr/local/src/sngrep && sudo chmod 755 /usr/local/src/sngrep
+git clone https://github.com/irontec/sngrep /usr/local/src/sngrep
 # info:  GnuTLS and OpenSSL can not be enabled at the same time 
 cd /usr/local/src/sngrep && sudo ./bootstrap.sh && sudo ./configure --with-openssl --enable-eep --enable-unicode && sudo make install
 # cd /usr/local/src/sngrep && ./bootstrap.sh && ./configure --with-gnutls  --enable-eep && make --enable-unicode && sudo make install
@@ -191,9 +220,9 @@ sudo setcap 'CAP_NET_RAW+eip' /usr/local/bin/sngrep
 
 # bcf729 - rtpengine dependency
 sudo apt install -y dpkg-dev autotools-dev dh-autoreconf pkg-config unzip
-VER=1.0.4
+export VER=1.0.4
 if [ -d /usr/local/src/bcg729-deb ] ; then sudo rm -rf /usr/local/src/bcg729-deb ; fi
-sudo mkdir -p /usr/local/src/bcg729-deb && sudo chmod +x /usr/local/src/bcg729-deb && cd /usr/local/src/bcg729-deb
+mkdir -p /usr/local/src/bcg729-deb && sudo chown ${USER} /usr/local/src/bcg729-deb && cd /usr/local/src/bcg729-deb
 curl https://codeload.github.com/BelledonneCommunications/bcg729/tar.gz/$VER >bcg729_$VER.orig.tar.gz
 tar zxf bcg729_$VER.orig.tar.gz 
 cd bcg729-$VER 
@@ -214,6 +243,7 @@ sudo apt install -y -t focal-backports init-system-helpers
 sudo apt install -y dkms
 if [ -d /usr/local/src/rtpengine ] ; then sudo rm -rf /usr/local/src/rtpengine ; fi
 BRANCH=mr8.5.5.1
+BRANCH=mr8.5.5.1
 git clone -b ${BRANCH} https://github.com/sipwise/rtpengine /usr/local/src/rtpengine
 cd /usr/local/src/rtpengine && sudo dpkg-checkbuilddeps && sudo dpkg-buildpackage
 cd ../
@@ -221,18 +251,19 @@ sudo dpkg -i ngcp-rtpengine-daemon_*.deb ngcp-rtpengine-iptables_*.deb ngcp-rtpe
 #
 
 # libzrtp - big in the asterisk world
-if [ -d /usr/local/src/libzrtp ] ; then sudo rm -rf /usr/local/src/libzrtp ; fi
-sudo git clone https://github.com/juha-h/libzrtp /usr/local/src/libzrtp && sudo chmod 755 /usr/local/src/libzrtp
+if [ -d /usr/local/src/libzrtp ] ; then rm -rf /usr/local/src/libzrtp ; fi
+git clone https://github.com/juha-h/libzrtp /usr/local/src/libzrtp
 # Install & Build libzrtp
 ### cd /usr/local/src/libzrtp && ./bootstrap.sh && ./configure CFLAGS="-O0 -g3 -W -Wall -DBUILD_WITH_CFUNC -DBUILD_DEFAULT_CACHE -DBUILD_DEFAULT_TIMER" && make && sudo make install && sudo ldconfig
 
+
 # baresip
-if [ -d /usr/local/src/re ] ; then sudo rm -rf /usr/local/src/re ; fi
-if [ -d /usr/local/src/rem ] ; then sudo rm -rf /usr/local/src/rem ; fi
-if [ -d /usr/local/src/baresip ] ; then sudo rm -rf /usr/local/src/baresip ; fi
-sudo git clone https://github.com/baresip/re /usr/local/src/re && sudo chmod 755 /usr/local/src/re
-sudo git clone https://github.com/baresip/rem  /usr/local/src/rem && sudo chmod 755 /usr/local/src/rem
-sudo git clone https://github.com/baresip/baresip /usr/local/src/baresip && sudo chmod 755 /usr/local/src/baresip
+if [ -d /usr/local/src/re ] ; then rm -rf /usr/local/src/re ; fi
+if [ -d /usr/local/src/rem ] ; then rm -rf /usr/local/src/rem ; fi
+if [ -d /usr/local/src/baresip ] ; then rm -rf /usr/local/src/baresip ; fi
+sudo git clone https://github.com/baresip/re /usr/local/src/re
+sudo git clone https://github.com/baresip/rem  /usr/local/src/rem
+sudo git clone https://github.com/baresip/baresip /usr/local/src/baresip
 
 # BARESIP: An example of a largish github project that is updated regularly
 sudo apt-get install -y alsa-utils libasound2-dev libpulse-dev
@@ -253,14 +284,16 @@ cd /usr/local/src/rem && sudo make install && sudo ldconfig
 # Build baresip (Note: both re and rem are dependencies)
 cd /usr/local/src/baresip && sudo make RELEASE=1 && sudo make RELEASE=1 install
 
+# Create an example certificate - for baresip
+sudo openssl req -newkey rsa:4096 -x509 -sha256 -days 3650 -nodes -out /etc/ssl/certs/example.crt -keyout /etc/ssl/certs/example.key \
+    -subj "/C=AU/ST=Victoria/L=Melbourne/O=webstean/OU=IT/CN=webstean.com"
+sudo sh -c 'cat /etc/ssl/certs/example.crt /etc/ssl/certs/example.key > /etc/ssl/certs/example.pem'
+
 # Get some decent config files for baresip
 curl https://raw.githubusercontent.com/webstean/stuff/master/baresip/accounts -o ~/.baresip/accounts
 curl https://raw.githubusercontent.com/webstean/stuff/master/baresip/config -o ~/.baresip/config
 curl https://raw.githubusercontent.com/webstean/stuff/master/baresip/contacts -o ~/.baresip/contacts
 baresip -t 28
-
-# Grep for SIP Network Sessions
-# sudo apt-get install -y sngrep
 
 # Run Baresip set the SIP account
 #CMD baresip -d -f $HOME/.baresip && sleep 2 && curl http://127.0.0.1:8000/raw/?Rsip:root:root@127.0.0.1 && sleep 5 && curl http://127.0.0.1:8000/raw/?dbaresip@conference.sip2sip.info && sleep 60 && curl http://127.0.0.1:8000/raw/?bq
