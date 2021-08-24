@@ -544,7 +544,15 @@ sudo ~/./aws/install
 
 # Install Azure CLI
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash && az version
-# need to AAD logon working
+az config set auto-upgrade.enable=yes # automatic upgrade enabled
+az config set auto-upgrade.prompt=no  # dont prompt
+
+## on MAC
+# brew update && brew install azure-cli
+# brew tap homebrew/autoupdate
+
+# need to AAD logon working with
+# az login
 
 # Install Google Cloud (GCP) CLI
 cd ~ && curl https://sdk.cloud.google.com > install.sh
