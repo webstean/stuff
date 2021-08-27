@@ -536,13 +536,13 @@ fi
 #AD_USER=webstean@$AD_DOMAIN
 #sudo realm discover $AD_DOMAIN && kinit contosoadmin@$AD_DOMAIN && sudo realm join --verbose $AD_DOMAIN -U '$AD_USER' --install=/
 
-# Install AWS CLI
+# Install AWS CLI (Linux)
 cd ~
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip
 sudo ~/./aws/install
 
-# Install Azure CLI
+# Install Azure CLI (Mac)
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash && az version
 az config set auto-upgrade.enable=yes # automatic upgrade enabled
 az config set auto-upgrade.prompt=no  # dont prompt
@@ -551,8 +551,11 @@ az config set auto-upgrade.prompt=no  # dont prompt
 # brew update && brew install azure-cli
 # brew tap homebrew/autoupdate
 
-# need to AAD logon working with
+## need to AAD logon working with
+## interactively via browser
 # az login
+
+## 
 
 # Install Google Cloud (GCP) CLI
 cd ~ && curl https://sdk.cloud.google.com > install.sh
