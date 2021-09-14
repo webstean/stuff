@@ -541,6 +541,13 @@ cd ~
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip
 sudo ~/./aws/install
+az bicep install
+# automatic upgrade enabled
+az config set auto-upgrade.enable=yes 
+ # dont prompt
+az config set auto-upgrade.prompt=no 
+az version
+az bicep version
 
 # Install Azure CLI (Mac)
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash && az version
