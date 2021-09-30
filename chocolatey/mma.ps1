@@ -13,9 +13,10 @@ $mma.AddCloudWorkspace($workspaceId, $workspaceKey)
 $mma.ReloadConfiguration()
 
 # install sysmon
+choco install sysmon -y
 choco install wget -y
 wget https://raw.githubusercontent.com/SwiftOnSecurity/sysmon-config/master/sysmonconfig-export.xml -o 'C:\Program Files\Microsoft Monitoring Agent\sysmonconfig-export.xml'
 sysmon.exe -accepteula -i 'C:\Program Files\Microsoft Monitoring Agent\sysmonconfig-export.xml'
 
 # update sysmon 
-sysmon.exe -c 'C:\Program Files\Microsoft Monitoring Agent\sysmonconfig-export.xml'
+# sysmon.exe -c 'C:\Program Files\Microsoft Monitoring Agent\sysmonconfig-export.xml'
