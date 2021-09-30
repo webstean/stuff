@@ -15,6 +15,7 @@ $mma.ReloadConfiguration()
 # install sysmon
 choco install sysmon -y
 choco install wget -y
+refreshenv
 wget https://raw.githubusercontent.com/SwiftOnSecurity/sysmon-config/master/sysmonconfig-export.xml -o 'C:\Program Files\Microsoft Monitoring Agent\sysmonconfig-export.xml'
 sysmon.exe -accepteula -i 'C:\Program Files\Microsoft Monitoring Agent\sysmonconfig-export.xml'
 
