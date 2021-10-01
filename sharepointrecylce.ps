@@ -1,0 +1,16 @@
+
+Install-Module -Name PnP.PowerShell
+Install-Module SharePointPnPPowerShellOnline
+
+Connect-SPOService -url https://lscph-admin.sharepoint.com
+Connect-PnPOnline -url https://lscph.sharepoint.com/sites/DreamTeam/ -UseWebLogin
+ 
+$items = Get-PnPRecycleBinItem
+
+(Get-PnPRecycleBinItem).count
+
+foreach($item in $items) {
+  Restore-PnpRecycleBinItem -Identity $item -Force
+}
+
+
