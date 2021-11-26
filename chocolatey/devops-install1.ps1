@@ -8,10 +8,12 @@ choco list --download-cache
 $localprograms = choco list --localonly
 if ($localprograms -like "*vscode*")
 {
+    choco upgrade vscode -y
     choco upgrade git -y
 }
 Else
 {
+    choco install vscode -y
     choco install git -y
 }
 
@@ -30,17 +32,15 @@ choco install putty -y
 choco install powershell-core --install-arguments='"ADD_FILE_CONTEXT_MENU_RUNPOWERSHELL=1 ADD_EXPLORER_CONTEXT_MENU_OPENPOWERSHELL=1 REGISTER_MANIFEST=1 ENABLE_PSREMOTING=1"'
 
 # DEV
-choco install yeoman 
-choco install brackets
-choco install fiddler4
-choco install nodejs.install
-choco install github 
-choco install linqpad4 
-choco install baretail
-choco install wamp-server
+choco install fiddler -y
+choco install baretail -y
+# github desktop
+choco install github -y
+
+# Programming
+choco install nodejs.install -y
 
 #### VS Code Extensions
-choco install vscode -y
 choco install onedarkpro-vscode -y
 choco install azureaccount-vscode -y
 choco install vscode-azure-deploy -y
@@ -49,7 +49,7 @@ choco install vscode-powershell -y
 choco install vscode-settingssync -y
 
 #### Windows Admin / Azure Migration
-choco install windows-admin-center -y 
+choco install windows-admin-center /port: 443 -y 
 
 ##### Golang
 choco install golang -y
