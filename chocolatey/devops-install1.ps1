@@ -26,6 +26,9 @@ choco install ilspy -y
 choco install filezilla -y  
 choco install putty -y 
 
+### Powershell v7
+choco install powershell-core --install-arguments='"ADD_FILE_CONTEXT_MENU_RUNPOWERSHELL=1 ADD_EXPLORER_CONTEXT_MENU_OPENPOWERSHELL=1 REGISTER_MANIFEST=1 ENABLE_PSREMOTING=1"'
+
 # DEV
 choco install yeoman 
 choco install brackets
