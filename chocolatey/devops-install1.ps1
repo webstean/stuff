@@ -27,6 +27,7 @@ choco install powertoys -y
 choco install ilspy -y 
 choco install filezilla -y  
 choco install putty -y 
+choco install zoomit -y
 
 ### Powershell v7
 choco install powershell-core --install-arguments='"ADD_FILE_CONTEXT_MENU_RUNPOWERSHELL=1 ADD_EXPLORER_CONTEXT_MENU_OPENPOWERSHELL=1 REGISTER_MANIFEST=1 ENABLE_PSREMOTING=1"'
