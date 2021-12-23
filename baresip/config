@@ -178,8 +178,8 @@ module			alsa.so
 #------------------------------------------------------------------------------
 # Temporary Modules (loaded then unloaded)
 
-module_tmp		uuid.so
-module_tmp		account.so
+# module_tmp		uuid.so
+# module_tmp		account.so
 
 
 #------------------------------------------------------------------------------
