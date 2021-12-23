@@ -291,6 +291,7 @@ sudo openssl req -newkey rsa:4096 -x509 -sha256 -days 3650 -nodes -out /etc/ssl/
 sudo sh -c 'cat /etc/ssl/certs/example.crt /etc/ssl/certs/example.key > /etc/ssl/certs/example.pem'
 
 # Get some decent config files for baresip
+mkdir -p ~/.baresip
 curl https://raw.githubusercontent.com/webstean/stuff/master/baresip/accounts -o ~/.baresip/accounts
 curl https://raw.githubusercontent.com/webstean/stuff/master/baresip/config -o ~/.baresip/config
 curl https://raw.githubusercontent.com/webstean/stuff/master/baresip/contacts -o ~/.baresip/contacts
