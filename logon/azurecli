@@ -14,6 +14,12 @@ See: https://docs.microsoft.com/en-us/cli/azure/azure-cli-configuration
 
 az config set defaults.group=myRG --local
 
+
+# az support tickets communications create --ticket-name VM012 \
+#    --communication-name "VM Delay" \
+#    --communication-body "Delaying VM fixes due to scheduling on our end." \
+#    --communication-subject "Delaying VM fixes due to scheduling on our end."
+
 [core]
 # Can be one of json, jsonc, tsv, or table.
 output=table
