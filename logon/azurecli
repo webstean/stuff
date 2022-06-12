@@ -8,3 +8,37 @@ az config set logging.enable_log_file=true
 az config set logging.log_dir=~/az-logs
 
 az config set defaults.location=westus2 defaults.group=MyResourceGroup
+
+See: https://docs.microsoft.com/en-us/cli/azure/azure-cli-configuration
+
+
+az config set defaults.group=myRG --local
+
+[core]
+# Can be one of json, jsonc, tsv, or table.
+output=table
+location	string	The default location to use for all commands.
+web	string	The default app name to use for az webapp commands.
+vm	string	The default VM name to use for az vm commands.
+vmss	string	The default virtual machine scale set (VMSS) name to use for az vmss commands.
+acr	string	The default container registry name to use for az acr commands.
+disable_confirm_prompt=off
+collect_telemetry=yes
+only_show_errors=yes
+no_color=no
+
+[logging]
+enable_log_file=yes
+log_dir=/az-logs
+
+[defaults]
+#Th efault resource group to use for all commands.
+location=
+web=
+vm=
+vmss=
+acr=
+
+
+
+. This bypasses the issue of a third-party library where the terminal's color cannot revert back after a stdout redirection.
