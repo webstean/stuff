@@ -24,7 +24,9 @@ enable_log_file=yes
 log_dir=/az-logs
 
 [defaults]
-#Th efault resource group to use for all commands.
+# See https://docs.microsoft.com/en-us/cli/azure/param-persist-howto
+# for further information
+#The efault resource group to use for all commands.
 location=
 
 # The default app name to use for az webapp commands.
