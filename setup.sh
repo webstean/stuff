@@ -26,7 +26,7 @@ if [ -f /sbin/apk ] ; then
     apk add sudo
 fi
 
-# Enable sudo for all users
+# Enable sudo for all users - by modifying /etc/sudoers
 if ! (sudo id | grep -q root) ; then 
     bash -c "echo '%sudo ALL=(ALL:ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo"
     # AAD
