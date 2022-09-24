@@ -56,8 +56,8 @@ sudo sh -c 'echo "  export FTP_PROXY=http://\${webproxy}:\${port}"              
 sudo sh -c 'echo "  ## Proper Proxy"                                                   >> /etc/profile.d/web-proxy.sh'
 sudo sh -c 'echo "  #USERN=UserName"                                                   >> /etc/profile.d/web-proxy.sh'
 sudo sh -c 'echo "  #@ME=Password"                                                     >> /etc/profile.d/web-proxy.sh'
-sudo sh -c 'echo "  #export {HTTP,HTTPS,FTP}_PROXY=http://proxy.support.com\\${USERN}\\${@ME}:${port}"  >> /etc/profile.d/web-proxy.sh'
-sudo sh -c 'echo "}"                                                                 >> /etc/profile.d/web-proxy.sh'
+sudo sh -c 'echo "  #export HTTP_PROXY=http://USERN:@ME@${webproxy}:${port}/"          >> /etc/profile.d/web-proxy.sh'
+sudo sh -c 'echo "}"                                                                   >> /etc/profile.d/web-proxy.sh'
 
 # Set Timezone - includes keeping the machine to the right time but not sure how?
 sudo timedatectl set-timezone Australia/Melbourne
