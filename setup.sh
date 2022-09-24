@@ -64,7 +64,7 @@ sudo timedatectl set-timezone Australia/Melbourne
 timedatectl status 
 
 # Set Locale
-sudo apt-get install -y locales-all
+# sudo apt-get install -y locales-all
 sudo locale-gen "en_AU.UTF-8"
 # sudo update-locale LANG="en_AU.UTF-8" LANGUAGE="en_AU:en" 
 # sudo update-locale LANG=en_AU.UTF-8 LANGUAGE= LC_MESSAGES= LC_COLLATE= LC_CTYPE=
