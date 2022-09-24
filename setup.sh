@@ -43,17 +43,21 @@ sudo sh -c "echo export PATH=$1:'\$PATH'    >> /etc/profile.d/instant-oracle.sh"
 
 # Environent Variables
 # Squid default port is 3128, but many setup the proxy on port 80,8000,8080
-sudo sh -c 'echo "## Web Proxy Setup"                                                >  /etc/profile.d/web-proxy.sh'
-sudo sh -C 'echo "port=3128"                                                         >> /etc/profile.d/web-proxy.sh'
-sudo sh -c 'echo "## Proxy Exceptions"                                               >> /etc/profile.d/web-proxy.sh'
-sudo sh -c 'echo export NO_PROXY=localhost,127.0.0.1,::1,192.168.0.0/16,10.0.0.0/8   >> /etc/profile.d/web-proxy.sh'
-sudo sh -c 'echo "## Anonymous Proxy"                                                >> /etc/profile.d/web-proxy.sh'
-sudo sh -c 'echo export HTTP_PROXY=http://192.168.1.4:\${port}                       >> /etc/profile.d/web-proxy.sh'
-sudo sh -c 'echo export HTTPS_PROXY=http://192.168.1.4:\${port}                      >> /etc/profile.d/web-proxy.sh'
-sudo sh -c 'echo "## Proper Proxy"                                                   >> /etc/profile.d/web-proxy.sh'
-sudo sh -C 'echo "# USERN=UserName"                                                  >> /etc/profile.d/web-proxy.sh'
-sudo sh -C 'echo "# @ME=Password"                                                    >> /etc/profile.d/web-proxy.sh'
-sudo sh -c 'echo export {HTTP,HTTPS,FTP}_PROXY=http://proxy.support.com\\${USERN}\\${@ME}:port  >> /etc/profile.d/web-proxy.sh'
+sudo sh -c 'echo "## Web Proxy Setup - edit as required"                               >  /etc/profile.d/web-proxy.sh'
+sudo sh -c 'echo "web-proxy() {"                                                       >> /etc/profile.d/web-proxy.sh'
+sudo sh -c 'echo "  port=3128"                                                         >> /etc/profile.d/web-proxy.sh'
+sudo sh -c 'echo "  webproxy=proxy.com.au"                                             >> /etc/profile.d/web-proxy.sh'
+sudo sh -c 'echo "  ## Proxy Exceptions"                                               >> /etc/profile.d/web-proxy.sh'
+sudo sh -c 'echo "  export NO_PROXY=localhost,127.0.0.1,::1,192.168.0.0/16,10.0.0.0/8" >> /etc/profile.d/web-proxy.sh'
+sudo sh -c 'echo "  ## Anonymous Proxy"                                                >> /etc/profile.d/web-proxy.sh'
+sudo sh -c 'echo "  export HTTP_PROXY=http://\${webproxy}:\${port}"                    >> /etc/profile.d/web-proxy.sh'
+sudo sh -c 'echo "  export HTTPS_PROXY=http://\${webproxy}:\${port}"                   >> /etc/profile.d/web-proxy.sh'
+sudo sh -c 'echo "  export FTP_PROXY=http://\${webproxy}:\${port}"                     >> /etc/profile.d/web-proxy.sh'
+sudo sh -c 'echo "  ## Proper Proxy"                                                   >> /etc/profile.d/web-proxy.sh'
+sudo sh -c 'echo "  #USERN=UserName"                                                   >> /etc/profile.d/web-proxy.sh'
+sudo sh -c 'echo "  #@ME=Password"                                                     >> /etc/profile.d/web-proxy.sh'
+sudo sh -c 'echo "  #export {HTTP,HTTPS,FTP}_PROXY=http://proxy.support.com\\${USERN}\\${@ME}:${port}"  >> /etc/profile.d/web-proxy.sh'
+sudo sh -c 'echo "}"                                                                 >> /etc/profile.d/web-proxy.sh'
 
 # Set Timezone - includes keeping the machine to the right time but not sure how?
 sudo timedatectl set-timezone Australia/Melbourne
