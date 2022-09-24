@@ -8,3 +8,4 @@ wsl --setdefault Ubuntu-20.04
 wsl --status
 
 @rem winget install --id Canonical.Ubuntu
+@rem winget uninstall --id Canonical.Ubuntu
