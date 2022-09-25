@@ -3,6 +3,7 @@
 wsl --install
 wsl --set-default-version 2
 wsl --update
+wsl --list --online
 wsl --install Ubuntu-20.04 
 wsl --setdefault Ubuntu-20.04 
 wsl --status
