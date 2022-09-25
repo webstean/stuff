@@ -1,5 +1,9 @@
 @echo off
 
+winget install --id Microsoft.Powershell --source winget  --accept-package-agreements --accept-source-agreements
+
+Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux 
+
 wsl --install
 wsl --set-default-version 2
 wsl --update
