@@ -68,9 +68,10 @@ timedatectl status
 sudo locale-gen "en_AU.UTF-8"
 # sudo update-locale LANG="en_AU.UTF-8" LANGUAGE="en_AU:en" 
 # sudo update-locale LANG=en_AU.UTF-8 LANGUAGE= LC_MESSAGES= LC_COLLATE= LC_CTYPE=
-sudo update-locale LANG=en_AU.UTF-8 LANGUAGE=en_AU:en LC_MESSAGES=en_AU.UTF-8 LC_COLLATE= LC_CTYPE=
+sudo update-locale LANG=en_AU.UTF-8 LANGUAGE=en_AU:en LC_MESSAGES=en_AU.UTF-8 LC_COLLATE= LC_CTYPE= LC_ALL=C
+# restart shell to correct variables
+eval "$(exec /usr/bin/env -i "${SHELL}" -l -c "export")"
 locale
-# need reboot to show up properly - it will update /etc/default/locale
 
 # Ensure git is install and then configure it 
 ${INSTALL_CMD} git
@@ -597,23 +598,6 @@ Last, restart the sysstat service:
 
 $ sudo service sysstat restart
 
-
-# Solution: Xwindows Display
-sudo bash -c 'cat << EOF > /etc/profile.d/display.sh
-# WSL 1 - Easy 
-if grep -qE "(Microsoft|WSL)" /proc/version &>/dev/null; then
-    if [ "$(umask)" = "0000" ]; then
-        umask 0022
-    fi
-    export DISPLAY=:0
-fi
-# WSL 2 - Complicated during to Virtual Network
-if grep -q "microsoft" /proc/version &>/dev/null; then
-    # Requires: https://sourceforge.net/projects/vcxsrv/ (or alternative)
-    export DISPLAY=\$(ip route list | sed -n -e "s/^default.*[[:space:]]\([[:digit:]]\+\.[[:digit:]]\+\.[[:digit:]]\+\.[[:digit:]]\+\).*/\1/p"):0
-fi
-export LIBGL_ALWAYS_INDIRECT=1
-EOF'
 
 # sudo bash -c 'cat << EOF > /etc/systemd/system/pulseaudio.service
 # [Unit]
