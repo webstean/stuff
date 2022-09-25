@@ -28,3 +28,8 @@ apt-get install -y pavucontrol-qt
 
 wget https://jsoncompare.org/LearningContainer/SampleFiles/Video/MP4/sample-mp4-file.mp4
 
+export PULSE_SERVER=/mnt/wslg/PulseServer
+export PULSE_SERVER=/mnt/wslg/PulseAudioRDPSink
+export WAYLAND_DISPLAY=wayland-0
+export DISPLAY=:0
+
