@@ -51,7 +51,7 @@ sudo sh -c 'echo "  export HTTP_PROXY=http://\${webproxy}:\${port}"             
 sudo sh -c 'echo "  export HTTPS_PROXY=http://\${webproxy}:\${port}"                   >> /etc/profile.d/web-proxy.sh'
 sudo sh -c 'echo "  export FTP_PROXY=http://\${webproxy}:\${port}"                     >> /etc/profile.d/web-proxy.sh'
 sudo sh -c 'echo "  return;                                                            >> /etc/profile.d/web-proxy.sh'
-sudo sh -c 'echo "## Proper Proxy"                                                     >> /etc/profile.d/web-proxy.sh'
+sudo sh -c 'echo "  ## Proper Proxy"                                                     >> /etc/profile.d/web-proxy.sh'
 sudo sh -c 'echo "  USERN=UserName"                                                    >> /etc/profile.d/web-proxy.sh'
 sudo sh -c 'echo "  @ME=Password"                                                      >> /etc/profile.d/web-proxy.sh'
 sudo sh -c 'echo "  export HTTP_PROXY=http://\${USERN}:\${@ME}\${webproxy}:\${port}/"  >> /etc/profile.d/web-proxy.sh'
