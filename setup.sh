@@ -27,7 +27,8 @@ if [ -f /sbin/apk ] ; then
 fi
 
 # Enable sudo for all users - by modifying /etc/sudoers
-if ! (sudo id | grep -q root) ; then 
+if ! (grep NOPASSWD:ALL /etc/sudoers ) ; then 
+    # Everyone
     bash -c "echo '%sudo ALL=(ALL:ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo"
     # AAD
     bash -c "echo '%aad_admins ALL=(ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo"
@@ -36,10 +37,6 @@ if ! (sudo id | grep -q root) ; then
 fi
 
 # Proxy Support
-
-sudo sh -c "echo export LD_LIBRARY_PATH=$1  >> /etc/profile.d/instant-oracle.sh"
-sudo sh -c "echo export PATH=$1:'\$PATH'    >> /etc/profile.d/instant-oracle.sh"
-
 
 # Environent Variables
 # Squid default port is 3128, but many setup the proxy on port 80,8000,8080
@@ -53,10 +50,13 @@ sudo sh -c 'echo "  ## Anonymous Proxy"                                         
 sudo sh -c 'echo "  export HTTP_PROXY=http://\${webproxy}:\${port}"                    >> /etc/profile.d/web-proxy.sh'
 sudo sh -c 'echo "  export HTTPS_PROXY=http://\${webproxy}:\${port}"                   >> /etc/profile.d/web-proxy.sh'
 sudo sh -c 'echo "  export FTP_PROXY=http://\${webproxy}:\${port}"                     >> /etc/profile.d/web-proxy.sh'
-sudo sh -c 'echo "  ## Proper Proxy"                                                   >> /etc/profile.d/web-proxy.sh'
-sudo sh -c 'echo "  #USERN=UserName"                                                   >> /etc/profile.d/web-proxy.sh'
-sudo sh -c 'echo "  #@ME=Password"                                                     >> /etc/profile.d/web-proxy.sh'
-sudo sh -c 'echo "  #export HTTP_PROXY=http://USERN:@ME@${webproxy}:${port}/"          >> /etc/profile.d/web-proxy.sh'
+sudo sh -c 'echo "  return;                                                            >> /etc/profile.d/web-proxy.sh'
+sudo sh -c 'echo "## Proper Proxy"                                                     >> /etc/profile.d/web-proxy.sh'
+sudo sh -c 'echo "  USERN=UserName"                                                    >> /etc/profile.d/web-proxy.sh'
+sudo sh -c 'echo "  @ME=Password"                                                      >> /etc/profile.d/web-proxy.sh'
+sudo sh -c 'echo "  export HTTP_PROXY=http://\${USERN}:\${@ME}\${webproxy}:\${port}/"  >> /etc/profile.d/web-proxy.sh'
+sudo sh -c 'echo "  export HTTPS_PROXY=http://\${USERN}:\${@ME}\${webproxy}:\${port}/" >> /etc/profile.d/web-proxy.sh'
+sudo sh -c 'echo "  export FTP_PROXY=http://\${USERN}:\${@ME}\${webproxy}:\${port}/"   >> /etc/profile.d/web-proxy.sh'
 sudo sh -c 'echo "}"                                                                   >> /etc/profile.d/web-proxy.sh'
 
 # Set Timezone - includes keeping the machine to the right time but not sure how?
