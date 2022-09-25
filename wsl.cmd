@@ -23,3 +23,8 @@ sudo ldconfig
 
 @rem winget install --id Canonical.Ubuntu
 @rem winget uninstall --id Canonical.Ubuntu
+
+apt-get install -y pavucontrol-qt
+
+wget https://jsoncompare.org/LearningContainer/SampleFiles/Video/MP4/sample-mp4-file.mp4
+
