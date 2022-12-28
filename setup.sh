@@ -73,6 +73,10 @@ sudo update-locale LANG=en_AU.UTF-8 LANGUAGE=en_AU:en LC_MESSAGES=en_AU.UTF-8 LC
 eval "$(exec /usr/bin/env -i "${SHELL}" -l -c "export")"
 locale
 
+# Get distribution upto date
+sudo apt-get update
+sudo apt-get dist-upgrade
+
 # Ensure git is install and then configure it 
 ${INSTALL_CMD} git
 git config --global color.ui true
@@ -99,7 +103,6 @@ ssh-keygen -t rsa -b 4096 -C "webstean@gmail.com" -N '' -f ~/.ssh/id_rsa <<< $'\
 # github compatible
 cat /dev/zero |
 ssh-keygen -t ed25519 -C "webstean@gmail.com"-N '' -f ~/.ssh/id_ed25519 <<< $'\ny'
-
 
 # Handle SSH Agent - at logon
 sudo sh -c 'echo "# ssh-agent.sh - start ssh agent" > /etc/profile.d/ssh-agent.sh'
@@ -309,6 +312,10 @@ git clone --depth 1 https://github.com/junegunn/fzf.git ~/git/fzf
 # Install Python
 ${INSTALL_CMD} python
 ${INSTALL_CMD} python-dev py-pip build-base 
+
+# Install NodeJs
+curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash
+sudo apt-get -y install nodejs
 
 # asdf prereqs
 ${INSTALL_CMD} dirmngr gpg curl
