@@ -1,5 +1,6 @@
-# Azure Arc Agent -won't work on WSL VM as they dont run systemd
-if [[ ! $(grep Microsoft /proc/version) ]]; then
+# Azure Arc Agent -don't bother installing on WSL
+
+if [[ ! $(grep -i WSL /proc/sys/kernel/osrelease) ]]; then
     cd ~
     wget https://aka.ms/azcmagent -O ~/Install_linux_azcmagent.sh
     bash ~/Install_linux_azcmagent.sh
