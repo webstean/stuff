@@ -58,8 +58,10 @@ sudo sh -c 'echo "  export HTTP_PROXY=http://\${USERN}:\${@ME}\${webproxy}:\${po
 sudo sh -c 'echo "  export HTTPS_PROXY=http://\${USERN}:\${@ME}\${webproxy}:\${port}/" >> /etc/profile.d/web-proxy.sh'
 sudo sh -c 'echo "  export FTP_PROXY=http://\${USERN}:\${@ME}\${webproxy}:\${port}/"   >> /etc/profile.d/web-proxy.sh'
 sudo sh -c 'echo "}"                                                                   >> /etc/profile.d/web-proxy.sh'
+sudo sh -c 'echo "# web-proxy()"                                                       >> /etc/profile.d/web-proxy.sh'
 
 # Set Timezone - includes keeping the machine to the right time but not sure how?
+# WSL Error: System has not been booted with systemd as init system (PID 1). Can't operate.
 sudo timedatectl set-timezone Australia/Melbourne
 timedatectl status 
 
@@ -82,19 +84,10 @@ git config --global user.email "webstean@gmail.com"
 git config --global credential.help cache =timeout=14400 
 git config --global advice.detachedHead false
 git config --list
-# root
-sudo git config --global color.ui true
-sudo git config --global user.name "Andrew Webster"
-sudo git config --global user.email "webstean@gmail.com"
-# cached credentials for 4 hours
-sudo git config --global credential.help cache =timeout=14400 
-sudo git config --global advice.detachedHead false
-sudo git config --list
 
 # Generate an SSH Certificate
 ${INSTALL_CMD} openssh-client
-cat /dev/zero | 
-ssh-keygen -t rsa -b 4096 -C "webstean@gmail.com" -N '' -f ~/.ssh/id_rsa <<< $'\ny'
+cat /dev/zero | ssh-keygen -t rsa -b 4096 -C "webstean@gmail.com" -N '' -f ~/.ssh/id_rsa <<< $'\ny'
 
 # github compatible
 cat /dev/zero |
@@ -133,7 +126,7 @@ sudo sh -c 'echo "" >>/etc/profile.d/ssh-agent.sh'
 # ssh setup
 # from host ssh-copy-id pi@raspberrypi.local - to enable promptless logon
 
-# Install dependencies for reference GIT Repos
+# Install oracle dependencies
 sudo mkdir -p /usr/local/oracle && sudo chown ${USER} /usr/local/oracle && chmod 755 /usr/local/oracle 
 git clone https://github.com/oracle/docker-images /usr/local/oracle/oracle-docker-images
 
@@ -149,8 +142,6 @@ ${INSTALL_CMD} libsndfile1-dev libspandsp-dev libgtk2.0-dev libjack-jackd2-dev
 # Video Codecs
 ${INSTALL_CMD} libavcodec-dev libavutil-dev libcairo2-dev
 # ${INSTALL_CMD} libavdevice-dev libavformat-dev mpg123-dev 
-
-mkdir -p /usr/local/src
 
 #certbot
 #${INSTALL_CMD}
@@ -188,11 +179,9 @@ sudo apt-get install -y alsa-utils
 # aplay -L
 
 # build dependencies
-sudo apt-get install -y build-essential pkg-config intltool libtool autoconf
-
 if [ -d /usr/local/src ] ; then sudo rm -rf /usr/local/src ; fi
 sudo mkdir -p /usr/local/src && sudo chown ${USER} /usr/local/src && chmod 744 /usr/local/src 
-
+sudo apt-get install -y build-essential pkg-config intltool libtool autoconf
 # openssl - setup
 if [ -d /usr/local/src/openssl ] ; then sudo rm -rf /usr/local/src/openssl ; fi
 git clone https://github.com/openssl/openssl /usr/local/src/openssl
