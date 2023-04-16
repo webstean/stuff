@@ -46,9 +46,35 @@ if [ -f /sbin/apk ] ; then
     ${INSTALL_CMD} libnsl libaio musl-dev autconfig
 fi
 
+# Add Microsoft Repos
+if [ -f /usr/bin/apt ] ; then
+    # Import the public repository GPG keys
+    curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+
+    # Register the Microsoft Ubuntu repository
+    repo=https://packages.microsoft.com/$(lsb_release -s -i)/$(lsb_release -sr)/prod
+    # convert to lowercase
+    repo=${repo,,}
+    echo $repo
+    sudo apt-add-repository $repo
+    
+    # Update the list of products
+    sudo apt-get update
+    
+    # Install Microsoft tools
+    sudo apt-get install -y azure-functions-core-tools
+    sudo apt-get install -y mssql-tools sqlcmd
+    sudo apt-get install -y powershell
+    sudo apt-get install -y unixodbc-bin
+    
+    # cleanup
+    sudo apt autoremove
+fi
+
 ## Global environmment variables (editable)
 sudo sh -c "echo # export AW1=AW1       >  /etc/profile.d/global-variables.sh"
-sudo sh -c "echo # export AW2=AW2       >>  /etc/profile.d/global-variables.sh"
+# Turn off Microsoft telemetry for Azure Function Tools
+sudo sh -c "echo # export FUNCTIONS_CORE_TOOLS_TELEMETRY_OPTOUT=1       >>  /etc/profile.d/global-variables.sh"
 
 # Environent Variables for proxy support
 # Squid default port is 3128, but many setup the proxy on port 80,8000,8080
@@ -243,7 +269,7 @@ if [[ $(grep -i WSL /proc/sys/kernel/osrelease) ]]; then
     sudo sh -c 'echo systemd=true               >>  /etc/wsl.conf'
     
     sudo sh -c 'echo [automount]                >>  /etc/wsl.conf'
-    sudo sh -c 'echo root = \/                  >>  /etc/wsl.conf'
+    sudo sh -c 'echo root = \/mnt               >>  /etc/wsl.conf'
     sudo sh -c 'echo options = "metadata"       >>  /etc/wsl.conf'
 
     sudo sh -c 'echo [interop]                  >>  /etc/wsl.conf'
