@@ -74,6 +74,7 @@ sudo sh -c 'echo "# web-proxy()"                                                
 
 # Set Timezone - includes keeping the machine to the right time but not sure how?
 # WSL Error: System has not been booted with systemd as init system (PID 1). Can't operate.
+#          : unless you edit /etc/wsl.conf to enable systemd
 sudo timedatectl set-timezone Australia/Melbourne
 timedatectl status 
 
@@ -219,9 +220,29 @@ sudo sh -c 'echo [ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"   
 sudo sh -c 'echo "# Alias to provide distribution name"                 >> /etc/profile.d/bash.sh'
 sudi sh -c 'alias distribution=$(. /etc/os-release;echo $ID$VERSION_ID) >> /etc/profile.d/bash.sh'
 
-## if WSL, set some settings
-if [ -f /etc/wsl.conf ] ; then
-    sudo sh -c 'echo [automount]                >   /etc/wsl.conf'
+# Enable Linux features for Docker/k3s
+if ! (grep "cgroup_enable=memory cgroup_memory=1 swapaccount=1" /boot/cmdline.txt ) ; then
+    echo Updating /boot/cmdline with cgroup - doesnt work - needs to be fixed
+    sudo bash -c "echo -n 'cgroup_enable=memory cgroup_memory=1 swapaccount=1' >>/boot/cmdline.txt"
+    sudo bash -c "sed '${s/$/cgroup_enable=memory cgroup_memory=1 swapaccount=1/}' /boot/cmdline.txt >/boot/cmdline.txt"
+fi
+
+## If WSL, install minimal X11
+if [[ $(grep -i WSL /proc/sys/kernel/osrelease) ]]; then
+    sudo apt-get install xscreensaver
+    sudo apt-get install x11-apps
+    echo $DISPLAY
+    # Start xeyes to show X11 working - hopefully (now just works with WSL 2 plus GUI)
+    xeyes &
+    # Install browser for sqlite
+    sudo apt-get install -y sqlitebrowser
+    sqlitebrowser &
+    ## Since this WSL set some settings
+    if [ -f /etc/wsl.conf ] ; then sudo rm -f /etc/wsl.conf ; fi
+    sudo sh -c 'echo [boot]                     >>  /etc/wsl.conf'
+    sudo sh -c 'echo systemd=true               >>  /etc/wsl.conf'
+    
+    sudo sh -c 'echo [automount]                >>  /etc/wsl.conf'
     sudo sh -c 'echo root = \/                  >>  /etc/wsl.conf'
     sudo sh -c 'echo options = "metadata"       >>  /etc/wsl.conf'
 
@@ -234,24 +255,7 @@ if [ -f /etc/wsl.conf ] ; then
     sudo sh -c 'echo generateHosts = false      >>  /etc/wsl.conf'
 fi
 
-# Enable Linux features for Docker/k3s
-if ! (grep "cgroup_enable=memory cgroup_memory=1 swapaccount=1" /boot/cmdline.txt ) ; then
-    echo Updating /boot/cmdline with cgroup - doesnt work - needs to be fixed
-    sudo bash -c "echo -n 'cgroup_enable=memory cgroup_memory=1 swapaccount=1' >>/boot/cmdline.txt"
-    sudo bash -c "sed '${s/$/cgroup_enable=memory cgroup_memory=1 swapaccount=1/}' /boot/cmdline.txt >/boot/cmdline.txt"
-fi
 
-## If WSL, install minimal X11
-if [[ $(grep -i Microsoft /proc/version) ]]; then
-    sudo apt-get install xscreensaver
-    sudo apt-get install x11-apps
-    echo $DISPLAY
-    # Start xeyes to show X11 working - hopefully (now just works with WSL 2 plus GUI)
-    xeyes &
-    # Install browser for sqlite
-    sudo apt-get install -y sqlitebrowser
-    sqlitebrowser &
-fi
 
 # Run Oracle XE config if found
 #if [ -f /etc/init.d/oracle-xe* ] ; then
