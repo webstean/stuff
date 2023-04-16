@@ -489,6 +489,21 @@ oh-my-posh notice
 ## Eg:-
 ## eval "$(oh-my-posh init `oh-my-posh get shell` -c dracula.omp.json`)"
 
+## Generate
+## https://textkool.com/en/ascii-art-generator
+# any ` need to changed \`
+sudo cat >> /etc/issue <<EOF
+                     _                   
+     /\             | |                  
+    /  \   _ __   __| |_ __ _____      __
+   / /\ \ | '_ \ / _\` | '__/ _ \ \ /\ / /
+  / ____ \| | | | (_| | | |  __/\ V  V / 
+ /_/    \_\_| |_|\__,_|_|  \___| \_/\_/  
+                                         
+EOF
+                                         
+
+
 # apt clean  up
 if [ -f /usr/bin/apt ] ; then
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
