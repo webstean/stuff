@@ -25,7 +25,7 @@ func azure_manage_identity() bool {
   // Create a new managed identity credential
   cred, err := auth.NewManagedIdentityCredential("")
   if err != nil {
-    fmt.Println("Failed to create a new managed identity credential:", err)
+    fmt.Println("Failed to create Azure managed identity credential:", err)
     return false
   }
   // managed identity
