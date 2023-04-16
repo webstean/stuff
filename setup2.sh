@@ -398,7 +398,7 @@ cd ~
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip
 sudo ~/./aws/install
-
+rm awscliv2.zip
 
 # Install Azure CLI
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash && az version
@@ -482,8 +482,12 @@ rm ~/.poshthemes/themes.zip
 # oh-my-posh font install Meslo
 oh-my-posh get shell
 # eval "$(oh-my-posh init bash)"
-
-
+eval "$(oh-my-posh init `oh-my-posh get shell`)"
+oh-my-posh notice
+## themes can be found in ~/.poshthemes/ for example: dracula.omp.json
+## oh-my-posh init `oh-my-posh get shell` -c dracula.omp.json
+## Eg:-
+## eval "$(oh-my-posh init `oh-my-posh get shell` -c dracula.omp.json`)"
 
 # apt clean  up
 if [ -f /usr/bin/apt ] ; then
