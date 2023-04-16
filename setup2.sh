@@ -119,13 +119,16 @@ sudo unzip ${tmpdir}/instantclient-tools*.zip -d /opt/oracle
 # rm instantclient-basic*.zip
 set -- /opt/oracle/instantclient*
 export LD_LIBRARY_PATH=$1
-sudo sh -c "echo echo # Oracle Instant Client Setup >  /etc/profile.d/instant-oracle.sh"
+if [ -f /etc/profile.d/instant-oracle.sh ] ; then
+    sudo rm /etc/profile.d/instant-oracle.sh 
+fi
+sudo sh -c "echo # Oracle Instant Client Setup >  /etc/profile.d/instant-oracle.sh"
 sudo sh -c "echo oracle-instantclient\(\) {        >>  /etc/profile.d/instant-oracle.sh"
 sudo sh -c "echo export LD_LIBRARY_PATH=$1  >> /etc/profile.d/instant-oracle.sh"
 sudo sh -c "echo export PATH=$1:'\$PATH'    >> /etc/profile.d/instant-oracle.sh"
 sudo sh -c "echo }                          >>  /etc/profile.d/instant-oracle.sh"
-sudo sh -c "echo if [ -f /opt/oracle/somedirecto ] \;>>  /etc/profile.d/instant-oracle.sh"
-sudo sh -c "echo   echo \"Oracle Client found!\"     >>  /etc/profile.d/instant-oracle.sh"
+sudo sh -c "echo if [ -f /opt/oracle/somedirecto ] \; then >>  /etc/profile.d/instant-oracle.sh"
+sudo sh -c "echo   echo \"Oracle Database Client found!\"     >>  /etc/profile.d/instant-oracle.sh"
 sudo sh -c "echo   oracle-instantclient              >>  /etc/profile.d/instant-oracle.sh"
 sudo sh -c "echo fi                                  >>  /etc/profile.d/instant-oracle.sh"
 
@@ -155,6 +158,9 @@ sudo sh -c 'echo "# The agent can then use the keys to log into other servers wi
 sudo sh -c 'echo "# password or passphrase again. This implements a form of single sign-on (SSO)." >> /etc/profile.d/ssh-agent.sh'
 sudo sh -c 'echo "" >>/etc/profile.d/ssh-agent.sh'
 sudo sh -c 'echo "env=~/.ssh/agent.env" >> /etc/profile.d/ssh-agent.sh'
+sudo sh -c 'echo "if ! [ -f \$env ] ; then " >> /etc/profile.d/ssh-agent.sh'
+sudo sh -c 'echo "   return 0 " >> /etc/profile.d/ssh-agent.sh'
+sudo sh -c 'echo "fi ">> /etc/profile.d/ssh-agent.sh'
 sudo sh -c 'echo "" >>/etc/profile.d/ssh-agent.sh'
 sudo sh -c 'echo "agent_load_env () { test -f \"\$env\" && . \"\$env\" >| /dev/null ; }" >>/etc/profile.d/ssh-agent.sh'
 sudo sh -c 'echo "" >>/etc/profile.d/ssh-agent.sh'
@@ -491,8 +497,9 @@ oh-my-posh notice
 
 ## Generate
 ## https://textkool.com/en/ascii-art-generator
-# any ` need to changed \`
-sudo cat >> /etc/issue <<EOF
+## note: any ` needs to be escaped with \
+if [ -f  ~/.logo  ] ; then rm -f ~/.logo ; fi
+cat >> ~/.logo <<EOF
                      _                   
      /\             | |                  
     /  \   _ __   __| |_ __ _____      __
@@ -501,9 +508,11 @@ sudo cat >> /etc/issue <<EOF
  /_/    \_\_| |_|\__,_|_|  \___| \_/\_/  
                                          
 EOF
-                                         
-
-
+if [ -f  /etc/profile.d/logo.sh  ] ; then sudo rm -f /etc/profile.d/logo.sh ; fi
+sudo sh -c 'echo if [ -f  \~/.logo ] \; then >>  /etc/profile.d/logo.sh'
+sudo sh -c 'echo    cat \~/.logo >>  /etc/profile.d/logo.sh'
+sudo sh -c 'echo fi >>  /etc/profile.d/logo.sh'
+                                       
 # apt clean  up
 if [ -f /usr/bin/apt ] ; then
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
