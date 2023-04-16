@@ -71,6 +71,10 @@ if [ -f /usr/bin/apt ] ; then
     sudo apt-get install -y powershell
     sudo apt-get install -y unixodbc-bin
     
+    if [ -f /etc/profile.d/microsoft-powershell.sh ] ; then sudo rm -f /etc/profile.d/microsoft-powershell.sh ; fi
+    if (which pwsh) ; then 
+        sudo sh -c 'echo   echo \"Powershell \(pwsh\) found!\"     >>  /etc/profile.d/microsoft-powershell.sh'
+    fi
     # cleanup
     sudo apt autoremove
 fi
@@ -154,9 +158,9 @@ oracleinstantclientinstall() {
     sudo sh -c "echo oracle-instantclient\(\) {        >>  /etc/profile.d/instant-oracle.sh"
     sudo sh -c "echo export LD_LIBRARY_PATH=$1  >> /etc/profile.d/instant-oracle.sh"
     sudo sh -c "echo export PATH=$1:'\$PATH'    >> /etc/profile.d/instant-oracle.sh"
-    sudo sh -c "echo }                          >>  /etc/profile.d/instant-oracle.sh"
-    sudo sh -c "echo if [ -d /opt/oracle/instantclient\* ] \; then >>  /etc/profile.d/instant-oracle.sh"
-    sudo sh -c "echo   echo \"Oracle Database Client found!\"     >>  /etc/profile.d/instant-oracle.sh"
+    sudo sh -c "echo }                          >> /etc/profile.d/instant-oracle.sh"
+    sudo sh -c "echo if [ -d /opt/oracle/instantclient\* ] \; then >> /etc/profile.d/instant-oracle.sh"
+    sudo sh -c 'echo   echo \"Oracle Database Client (sqlplus) found!\"     >>  /etc/profile.d/instant-oracle.sh'
     sudo sh -c "echo   oracle-instantclient              >>  /etc/profile.d/instant-oracle.sh"
     sudo sh -c "echo fi                                  >>  /etc/profile.d/instant-oracle.sh"
 
@@ -291,8 +295,6 @@ if [[ $(grep -i WSL /proc/sys/kernel/osrelease) ]]; then
     sudo sh -c 'echo generateHosts = false      >>  /etc/wsl.conf'
 fi
 
-
-
 # Run Oracle XE config if found
 #if [ -f /etc/init.d/oracle-xe* ] ; then
 #    /etc/init.d/oracle-xe-18c configure
@@ -338,7 +340,13 @@ nvm install node
 ## install Active Long Term Support (LTS)
 # nvm install --lts
 nvm ls
-
+if [ -f /etc/profile.d/nodejs.sh ] ; then sudo rm -f /etc/profile.d/nodejs.sh ; fi
+if (which node) ; then 
+    sudo sh -c 'echo if \(which node\) \; then           >>  /etc/profile.d/nodejs.sh'
+    sudo sh -c 'echo   echo \"Node JS \(node\) found -  use nvm to manage!\"  >>  /etc/profile.d/nodejs.sh'
+    sudo sh -c 'echo fi >>  /etc/profile.d/nodejs.sh'
+fi
+    
 # Install Terraform.
 # curl "https://releases.hashicorp.com/terraform/0.12.26/terraform_0.12.26_linux_amd64.zip" -o "terraform.zip" \
 #  && unzip terraform.zip && chmod +x terraform \
@@ -455,6 +463,16 @@ az config set auto-upgrade.prompt=no  --only-show-errors # dont prompt
 az bicep install
 az version
 az bicep version
+if [ -f  /etc/profile.d/azurecli.sh  ] ; then sudo rm -f /etc/profile.d/azurecli.sh ; fi
+sudo sh -c 'echo echo \"Azure CLI \(az\) found!\"     >>  /etc/profile.d/azurecli.sh'
+sudo sh -c 'echo # az account show --output table >>  /etc/profile.d/azurecli.sh'
+   
+# Install GoLang - current user
+wget -q -O - https://git.io/vQhTU | bash
+if [ -f  /etc/profile.d/golang.sh  ] ; then sudo rm -f /etc/profile.d/golang.sh ; fi
+sudo sh -c 'echo if \(which go\) \; then           >>  /etc/profile.d/golang.sh'
+sudo sh -c 'echo echo \"Golang \(go\) found!\"     >>  /etc/profile.d/golang.sh'
+sudo sh -c 'echo fi                                >>  /etc/profile.d/golang.sh'
 
 ## need to AAD logon working with
 ## interactively via browser
@@ -547,11 +565,13 @@ cat >> ~/.logo <<EOF
   / ____ \| | | | (_| | | |  __/\ V  V / 
  /_/    \_\_| |_|\__,_|_|  \___| \_/\_/  
                                          
+ Development Environment
+ 
 EOF
-if [ -f  /etc/profile.d/logo.sh  ] ; then sudo rm -f /etc/profile.d/logo.sh ; fi
-sudo sh -c 'echo if [ -f  \~/.logo ] \; then >>  /etc/profile.d/logo.sh'
-sudo sh -c 'echo    cat \~/.logo >>  /etc/profile.d/logo.sh'
-sudo sh -c 'echo fi >>  /etc/profile.d/logo.sh'
+if [ -f  /etc/profile.d/zlogo.sh  ] ; then sudo rm -f /etc/profile.d/zlogo.sh ; fi
+sudo sh -c 'echo if [ -f  \~/.logo ] \; then >>  /etc/profile.d/zlogo.sh'
+sudo sh -c 'echo    cat \~/.logo >>  /etc/profile.d/zlogo.sh'
+sudo sh -c 'echo fi >>  /etc/profile.d/zlogo.sh'
                                        
 # apt clean  up
 if [ -f /usr/bin/apt ] ; then
