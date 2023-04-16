@@ -44,7 +44,9 @@ if [ -f /sbin/apk ] ; then
     ${INSTALL_CMD} libnsl libaio musl-dev autconfig
 fi
 
-
+## Global environmment variables (editable)
+sudo sh -c "echo # export AW1=AW1       >  /etc/profile.d/global-variables.sh"
+sudo sh -c "echo # export AW2=AW2       >>  /etc/profile.d/global-variables.sh"
 
 # Environent Variables for proxy support
 # Squid default port is 3128, but many setup the proxy on port 80,8000,8080
@@ -73,11 +75,8 @@ sudo sh -c 'echo "# web-proxy()"                                                
 sudo timedatectl set-timezone Australia/Melbourne
 timedatectl status 
 
-# Set Locale
-# sudo apt-get install -y locales-all
+# Set AU Locale
 sudo locale-gen "en_AU.UTF-8"
-# sudo update-locale LANG="en_AU.UTF-8" LANGUAGE="en_AU:en" 
-# sudo update-locale LANG=en_AU.UTF-8 LANGUAGE= LC_MESSAGES= LC_COLLATE= LC_CTYPE=
 sudo update-locale LANG=en_AU.UTF-8 LANGUAGE=en_AU:en LC_MESSAGES=en_AU.UTF-8 LC_COLLATE= LC_CTYPE= LC_ALL=C
 # restart shell to correct variables
 eval "$(exec /usr/bin/env -i "${SHELL}" -l -c "export")"
@@ -137,10 +136,6 @@ sudo apt-get install -y sqlite3 libsqlite3-dev
 # create database
 # sqlite test.db
 
-# sqlite3 is the cli, sqlitebrowser is the GUI
-# but needs XWindows
-# ${INSTALL_CMD} sqlitebrowser
-
 # Generate an SSH Certificate
 ${INSTALL_CMD} openssh-client
 cat /dev/zero | ssh-keygen -t rsa -b 4096 -C "webstean@gmail.com" -N '' -f ~/.ssh/id_rsa <<< $'\ny'
@@ -182,7 +177,7 @@ sudo sh -c 'echo "" >>/etc/profile.d/ssh-agent.sh'
 sudo sh -c 'echo "# ssh setup" >>/etc/profile.d/ssh-agent.sh'
 sudo sh -c 'echo "# # from host ssh-copy-id pi@raspberrypi.local - to enable promptless logon" >>/etc/profile.d/ssh-agent.sh'
 
-# for kubectl - if installed, eg 'kubecl get pods --all-namespaces'
+## for kubectl - if installed, eg 'kubecl get pods --all-namespaces'
 sudo sh -c 'echo "# Note: By default /etc/rancher/k3s/k3s.yaml is only readable by root" > /etc/profile.d/kubeconfig.sh'
 sudo sh -c 'echo "if [ -f /etc/rancher/k3s/k3s.yaml ] ; export KUBECONFIG=/etc/rancher/k3s/k3s.yaml ; fi" >> /etc/profile.d/kubeconfig.sh'
 sudo sh -c 'echo "# Note: By default /var/lib/rancher/k3s/server/token is only readable by root" >> /etc/profile.d/kubeconfig.sh'
@@ -190,7 +185,7 @@ sudo sh -c 'echo "if [ -f /var/lib/rancher/k3s/server/token ] ; export K3S_TOKEN
 sudo sh -c 'echo "# Hostname for k3s" >> /etc/profile.d/kubeconfig.sh'
 sudo sh -c 'echo "# export K3S_URL=https://somehost.com:6443 " >> /etc/profile.d/kubeconfig.sh'
 
-# get some decent stuff working for all bash users
+## get some decent stuff working for all bash users
 sudo sh -c 'echo "# Ensure \$LINES and \$COLUMNS always get updated."   >  /etc/profile.d/bash.sh'
 sudo sh -c 'echo shopt -s checkwinsize                                 >>  /etc/profile.d/bash.sh'
 
@@ -216,7 +211,7 @@ sudo sh -c 'echo [ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"   
 sudo sh -c 'echo "# Alias to provide distribution name"                 >> /etc/profile.d/bash.sh'
 sudi sh -c 'alias distribution=$(. /etc/os-release;echo $ID$VERSION_ID) >> /etc/profile.d/bash.sh'
 
-# if WSL, set some settings
+## if WSL, set some settings
 if [ -f /etc/wsl.conf ] ; then
     sudo sh -c 'echo [automount]                >   /etc/wsl.conf'
     sudo sh -c 'echo root = \/                  >>  /etc/wsl.conf'
@@ -238,12 +233,16 @@ if ! (grep "cgroup_enable=memory cgroup_memory=1 swapaccount=1" /boot/cmdline.tx
     sudo bash -c "sed '${s/$/cgroup_enable=memory cgroup_memory=1 swapaccount=1/}' /boot/cmdline.txt >/boot/cmdline.txt"
 fi
 
-# Minimal X11
-sudo apt-get install xscreensaver
-sudo apt-get install x11-apps
-echo $DISPLAY
-# Start xeyes to show X11 working - hopefully (now just works with WSL 2 plus GUI)
-xeyes &
+## If WSL, install minimal X11
+if [[ $(grep -i Microsoft /proc/version) ]]; then
+    sudo apt-get install xscreensaver
+    sudo apt-get install x11-apps
+    echo $DISPLAY
+    # Start xeyes to show X11 working - hopefully (now just works with WSL 2 plus GUI)
+    xeyes &
+    # Install browser for sqlite
+    sudo apt-get install -y sqlitebrowser
+fi
 
 # Run Oracle XE config if found
 #if [ -f /etc/init.d/oracle-xe* ] ; then
