@@ -15,7 +15,9 @@
 # - Raspbian (Raspberry Pi)
 # - Alpine - note, MS Code only has limited remoted support for Alpine
 
-if [[ $(id -u) -ne 0 ]] ; then echo "Please run as root" ; exit 1 ; fi
+# if [[ $(id -u) -ne 0 ]] ; then echo "Please run as root" ; exit 1 ; fi
+if [[ $(id -u) -eq 0 ]] ; then echo "Please DO NOT run as root" ; exit 1 ; fi
+
 
 if [ -z "$SHELL" ] ; then
     export SHELL=/bin/sh
@@ -242,6 +244,7 @@ if [[ $(grep -i Microsoft /proc/version) ]]; then
     xeyes &
     # Install browser for sqlite
     sudo apt-get install -y sqlitebrowser
+    sqlitebrowser &
 fi
 
 # Run Oracle XE config if found
@@ -466,6 +469,21 @@ $ sudo service sysstat restart
 # openssl x509 -req -days 3650 -in server.csr -signkey server.key -out server.crt     
 
 # apt install pulseaudio
+
+## Oh-My-Posh - Colourful Commandline Prompt
+sudo wget https://github.com/JanDeDobbeleer/oh-my-posh/releases/latest/download/posh-linux-amd64 -O /usr/local/bin/oh-my-posh
+sudo chmod +x /usr/local/bin/oh-my-posh
+mkdir ~/.poshthemes
+wget https://github.com/JanDeDobbeleer/oh-my-posh/releases/latest/download/themes.zip -O ~/.poshthemes/themes.zip
+unzip ~/.poshthemes/themes.zip -d ~/.poshthemes
+chmod u+rw ~/.poshthemes/*.omp.*
+rm ~/.poshthemes/themes.zip
+# oh-my-posh font install "Meslo LGM NF"
+# oh-my-posh font install Meslo
+oh-my-posh get shell
+# eval "$(oh-my-posh init bash)"
+
+
 
 # apt clean  up
 if [ -f /usr/bin/apt ] ; then
