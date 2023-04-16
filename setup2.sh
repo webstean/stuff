@@ -36,9 +36,17 @@ if ! (grep NOPASSWD:ALL /etc/sudoers ) ; then
     bash -c "echo '%AAD\ DC\ Administrators@lordsomerscamp.org.au ALL=(ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo"
 fi
 
-# Proxy Support
+# Alpine Libraries for Oracle client
+if [ -f /sbin/apk ] ; then
+    # enable Edge repositories - hopefully this will go away eventually
+    echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
+    apk update
+    ${INSTALL_CMD} libnsl libaio musl-dev autconfig
+fi
 
-# Environent Variables
+
+
+# Environent Variables for proxy support
 # Squid default port is 3128, but many setup the proxy on port 80,8000,8080
 sudo sh -c 'echo "## Web Proxy Setup - edit as required"                               >  /etc/profile.d/web-proxy.sh'
 sudo sh -c 'echo "web-proxy() {"                                                       >> /etc/profile.d/web-proxy.sh'
@@ -208,6 +216,21 @@ sudo sh -c 'echo [ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"   
 sudo sh -c 'echo "# Alias to provide distribution name"                 >> /etc/profile.d/bash.sh'
 sudi sh -c 'alias distribution=$(. /etc/os-release;echo $ID$VERSION_ID) >> /etc/profile.d/bash.sh'
 
+# if WSL, set some settings
+if [ -f /etc/wsl.conf ] ; then
+    sudo sh -c 'echo [automount]                >   /etc/wsl.conf'
+    sudo sh -c 'echo root = \/                  >>  /etc/wsl.conf'
+    sudo sh -c 'echo options = "metadata"       >>  /etc/wsl.conf'
+
+    sudo sh -c 'echo [interop]                  >>  /etc/wsl.conf'
+    sudo sh -c 'echo enabled = true             >>  /etc/wsl.conf'
+    sudo sh -c 'echo appendWindowsPath = true   >>  /etc/wsl.conf'
+
+    sudo sh -c 'echo [network]                  >>  /etc/wsl.conf'
+    sudo sh -c 'echo generateResolvConf = false >>  /etc/wsl.conf'
+    sudo sh -c 'echo generateHosts = false      >>  /etc/wsl.conf'
+fi
+
 # Enable Linux features for Docker/k3s
 if ! (grep "cgroup_enable=memory cgroup_memory=1 swapaccount=1" /boot/cmdline.txt ) ; then
     echo Updating /boot/cmdline with cgroup - doesnt work - needs to be fixed
@@ -218,6 +241,9 @@ fi
 # Minimal X11
 sudo apt-get install xscreensaver
 sudo apt-get install x11-apps
+echo $DISPLAY
+# Start xeyes to show X11 working - hopefully (now just works with WSL 2 plus GUI)
+xeyes &
 
 # Run Oracle XE config if found
 #if [ -f /etc/init.d/oracle-xe* ] ; then
@@ -365,35 +391,22 @@ k3s check-config
 
 # Eg. $ sqlplus scott/tiger@//myhost.example.com:1521/myservice
 
-# Alpine Libraries for Oracle client
-if [ -f /sbin/apk ] ; then
-    # enable Edge repositories - hopefully this will go away eventually
-    echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
-    apk update
-    ${INSTALL_CMD} libnsl libaio musl-dev autconfig
-fi
-
 # Install AWS CLI (Linux)
 cd ~
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip
 sudo ~/./aws/install
-az bicep install
-# automatic upgrade enabled
-az config set auto-upgrade.enable=yes 
- # dont prompt
-az config set auto-upgrade.prompt=no 
-az version
-az bicep version
+
 
 # Install Azure CLI
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash && az version
-az config set auto-upgrade.enable=yes # automatic upgrade enabled
-az config set auto-upgrade.prompt=no  # dont prompt
-
-## on MAC
-# brew update && brew install azure-cli
-# brew tap homebrew/autoupdate
+# automatic upgrade enabled
+az config set auto-upgrade.enable=yes --only-show-errors  # automatic upgrade enabled
+# dont prompt
+az config set auto-upgrade.prompt=no  --only-show-errors # dont prompt
+az bicep install
+az version
+az bicep version
 
 ## need to AAD logon working with
 ## interactively via browser
@@ -453,38 +466,7 @@ $ sudo service sysstat restart
 # openssl req -new -key server.key -out server.csr -subj "/C=AU/ST=Victoria/L=Melbourne/O=webstean/OU=IT/CN=webstean.com"
 # openssl x509 -req -days 3650 -in server.csr -signkey server.key -out server.crt     
 
-sudo bash -c 'cat << EOF > /etc/profile.d/pulsewsl.sh
-# Pulse Audio
-# To hear audio under WSL2 the Linux pulseaudio needs to point to the Pulse Daemon/Service
-# -- running on Windows
-# See: https://www.freedesktop.org/wiki/Software/PulseAudio/Ports/Windows/Support/
-export PULSE_SERVER=tcp:\$(ip route list | sed -n -e "s/^default.*[[:space:]]\([[:digit:]]\+\.[[:digit:]]\+\.[[:digit:]]\+\.[[:digit:]]\+\).*/\1/p")
-# export PULSE_SEREVER = unix:/tmp/pulse-socket
-# Run natively - when WSL can support ALSA directly
-# export PULSE_SERVER="unix:/var/run/pulse/native"
-# FYI: Pulse Server listens on port 4713/tcp
-EOF'
-
 # apt install pulseaudio
-
-# Install Jack (Audio)
-# apt-get install qjackctl
-
-# pulseaudio --start --log-target=syslog
-
-
-# configure WSL
-sudo sh -c 'echo [automount]                >   /etc/wsl.conf'
-sudo sh -c 'echo root = /                   >>  /etc/wsl.conf'
-sudo sh -c 'echo options = "metadata"       >>  /etc/wsl.conf'
-
-sudo sh -c 'echo [interop]                  >>  /etc/wsl.conf'
-sudo sh -c 'echo enabled = true             >>  /etc/wsl.conf'
-sudo sh -c 'echo appendWindowsPath = true   >>  /etc/wsl.conf'
-
-sudo sh -c 'echo [network]                  >>  /etc/wsl.conf'
-sudo sh -c 'echo generateResolvConf = false >>  /etc/wsl.conf'
-sudo sh -c 'echo generateHosts = false      >>  /etc/wsl.conf'
 
 # apt clean  up
 if [ -f /usr/bin/apt ] ; then
@@ -496,7 +478,3 @@ if [ -f /usr/bin/yum ] ; then
     yum clean all && rm -rf /tmp/* /var/tmp/*
 fi
 
-# yum clean  up
-if [ -f /sbin/apk ] ; then
-    apk cache clean
-fi
