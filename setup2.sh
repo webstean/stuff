@@ -46,7 +46,11 @@ if [ -f /sbin/apk ] ; then
     ${INSTALL_CMD} libnsl libaio musl-dev autconfig
 fi
 
-# Add Microsoft Repos
+if [   -d /opt ] ; then sudo rm -rf /opt ; fi 
+if [ ! -d /opt ] ; then sudo mkdir -p /opt ; chmod 755 /opt ; fi 
+sudo chmod 755 /opt
+
+# Add Microsoft Repos and Applications
 if [ -f /usr/bin/apt ] ; then
     # Import the public repository GPG keys
     curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
@@ -135,9 +139,7 @@ oracleinstantclientinstall() {
     wget https://download.oracle.com/otn_software/linux/instantclient/instantclient-tools-linuxx64.zip -nc --directory-prefix=${tmpdir}
 
     if [   -d /opt/oracle ] ; then sudo rm -rf /opt/oracle ; fi 
-    if [ ! -d /opt/oracle ] ; then sudo mkdir -p /opt/oracle ; fi 
-    sudo chmod -r 755 /opt
-    sudo chown ${USER} /opt/oracle
+    if [ ! -d /opt/oracle ] ; then sudo mkdir -p /opt/oracle ; chmod 755 /opt/oracle ; fi 
     sudo unzip ${tmpdir}/instantclient-basic*.zip -d /opt/oracle
     sudo unzip ${tmpdir}/instantclient-sqlplus*.zip -d /opt/oracle
     sudo unzip ${tmpdir}/instantclient-tools*.zip -d /opt/oracle
