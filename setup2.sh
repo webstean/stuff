@@ -28,6 +28,9 @@ if [ -f /sbin/apk ] ; then
     apk add sudo
 fi
 
+#3 ed
+
+
 # Enable sudo for all users - by modifying /etc/sudoers
 if ! (grep NOPASSWD:ALL /etc/sudoers ) ; then 
     # Everyone
@@ -52,8 +55,12 @@ sudo chmod 755 /opt
 
 # Add Microsoft Repos and Applications
 if [ -f /usr/bin/apt ] ; then
-    # Import the public repository GPG keys
+    # Import the public repository GPG keys (depreciated)
+    # Note: Instead of using this command a keyring should be placed directly in the 
+    # /etc/apt/trusted.gpg.d/ directory with a descriptive name and either "gpg" or "asc" 
+    # as file extension.
     curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+
 
     # Register the Microsoft Ubuntu repository
     repo=https://packages.microsoft.com/$(lsb_release -s -i)/$(lsb_release -sr)/prod
