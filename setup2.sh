@@ -55,8 +55,12 @@ sudo chmod 755 /opt
 
 # Add Microsoft Repos and Applications
 if [ -f /usr/bin/apt ] ; then
-    # Import the public repository GPG keys
+    # Import the public repository GPG keys (depreciated)
+    # Note: Instead of using this command a keyring should be placed directly in the 
+    # /etc/apt/trusted.gpg.d/ directory with a descriptive name and either "gpg" or "asc" 
+    # as file extension.
     curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+
 
     # Register the Microsoft Ubuntu repository
     repo=https://packages.microsoft.com/$(lsb_release -s -i)/$(lsb_release -sr)/prod
