@@ -28,6 +28,9 @@ if [ -f /sbin/apk ] ; then
     apk add sudo
 fi
 
+#3 ed
+
+
 # Enable sudo for all users - by modifying /etc/sudoers
 if ! (grep NOPASSWD:ALL /etc/sudoers ) ; then 
     # Everyone
