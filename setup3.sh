@@ -52,6 +52,9 @@ sudo chmod 755 /opt
 
 # Add Microsoft Repos and Applications
 if [ -f /usr/bin/apt ] ; then
+    # make sure prereqs are installs
+    sudo apt install -y apt-transport-https ca-certificates curl software-properties-common
+    
     # Import the public repository GPG keys (depreciated)
     # Note: Instead of using this command a keyring should be placed directly in the 
     # /etc/apt/trusted.gpg.d/ directory with a descriptive name and either "gpg" or "asc" 
@@ -63,7 +66,7 @@ if [ -f /usr/bin/apt ] ; then
     # convert to lowercase
     repo=${repo,,}
     echo $repo
-    sudo apt-add-repository $repo
+    sudo apt-add-repository --yes $repo
     
     # Update the list of products
     sudo apt-get update
@@ -83,6 +86,63 @@ if [ -f /usr/bin/apt ] ; then
     fi
     # cleanup
     sudo apt autoremove
+fi
+
+# Add Docker repo
+if [ -f /usr/bin/apt ] ; then
+
+    # make sure prereqs are installs
+    sudo apt install -y apt-transport-https ca-certificates curl software-properties-common
+    
+    # Import the public repository GPG keys (depreciated)
+    # Note: Instead of using this command a keyring should be placed directly in the 
+    # /etc/apt/trusted.gpg.d/ directory with a descriptive name and either "gpg" or "asc" 
+    # as file extension.
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+    
+    repo="deb [arch=amd64 ] https://download.docker.com/linux/$(lsb_release -is) $(lsb_release -cs) stable" 
+    # convert to lowercase
+    repo=${repo,,}
+    echo $repo
+    sudo apt-add-repository --yes $repo
+    
+    # nsure the Docker installation source is the Docker repository, not the Ubuntu repository. 
+    sudo apt-cache policy docker-ce
+    
+    # Update the list of products
+    sudo apt-get update 
+    
+    # install docker
+    sudo apt install docker-ce -y
+    sudo systemctl status docker
+    
+    # Turn on Docker Build kit
+    sudo sh -c 'echo export DOCKER_BUILDKIT="1" >> /etc/profile.d/docker.sh'
+
+    # Allow $USER to run docker commands - need to logout before become effective
+    sudo usermod -aG docker $USER
+
+    # Ensure dbus is running:
+    dbus_status=$(service dbus status)
+    if [[ $dbus_status = *"is not running"* ]]; then
+        sudo service dbus --full-restart
+    fi
+    
+    # Test docker
+    sudo docker pull hello-world && sudo docker run hello-world
+
+    # Install docker-compose (btw: included with MAC desktop version)
+    sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    sudo chmod +x /usr/local/bin/docker-compose && sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+
+    # Install docker-compose completion
+    sudo curl -L https://raw.githubusercontent.com/docker/compose/1.29.2/contrib/completion/bash/docker-compose -o /etc/bash_completion.d/docker-compose
+
+    # run Azure CLI as a container
+    sudo git clone https://github.com/gtrifonov/raspberry-pi-alpine-azure-cli.git
+    cd .\raspberry-pi-alpine-azure-cli
+    sudo docker build . -t azure-cli
+    sudo docker run -d -it --rm --name azure-cli azure-cli
 fi
 
 ## Global environmment variables (editable)
@@ -117,12 +177,10 @@ sudo sh -c 'echo "# web-proxy()"                                                
 #          : unless you edit /etc/wsl.conf to enable systemd
 sudo timedatectl set-timezone Australia/Melbourne
 timedatectl status 
-# locale should C.UTF-8
+# locale should be C.UTF-8
 
 ##sudo locale-gen "C.UTF-8"
 ##sudo update-locale LANG=C.UTF-8 LANGUAGE=C.UTF-8 LC_MESSAGES=C.UTF-8 LC_COLLATE= LC_CTYPE= LC_ALL=C
-
-
 
 # Ensure git is install and then configure it 
 # ${INSTALL_CMD} git
@@ -170,7 +228,8 @@ oracleinstantclientinstall() {
     sudo sh -c 'echo   echo \"Oracle Database Client \(sqlplus\) found!\"     >>  /etc/profile.d/instant-oracle.sh'
     sudo sh -c "echo   oracle-instantclient              >>  /etc/profile.d/instant-oracle.sh"
     sudo sh -c "echo fi                                  >>  /etc/profile.d/instant-oracle.sh"
-
+    sudo sh -c "echo # example: sqlplus scott/tiger@//myhost.example.com:1521/myservice >>  /etc/profile.d/instant-oracle.sh"
+ 
     return 0
 }
 
@@ -178,7 +237,6 @@ MACHINE_TYPE=`uname -m`
 if [ ${MACHINE_TYPE} == 'x86_64' ]; then
     oracleinstantclientinstall
 fi
-
 
 # build/development dependencies
 if [ -d /usr/local/src ] ; then sudo rm -rf /usr/local/src ; fi
@@ -188,16 +246,6 @@ sudo apt-get install -y build-essential pkg-config intltool libtool autoconf
 sudo apt-get install -y sqlite3 libsqlite3-dev
 # create database
 # sqlite test.db
-
-# Generate an SSH Certificate
-${INSTALL_CMD} openssh-client
-cat /dev/zero | ssh-keygen -t rsa -b 4096 -C "webstean@gmail.com" -N '' -f ~/.ssh/id_rsa <<< $'\ny'
-# Firewall Rules for SSH Server
-ufw allow ssh
-
-# github compatible
-cat /dev/zero |
-ssh-keygen -t ed25519 -C "webstean@gmail.com"-N '' -f ~/.ssh/id_ed25519 <<< $'\ny'
 
 # Handle SSH Agent - at logon
 sudo sh -c 'echo "# ssh-agent.sh - start ssh agent" > /etc/profile.d/ssh-agent.sh'
@@ -233,14 +281,6 @@ sudo sh -c 'echo "" >>/etc/profile.d/ssh-agent.sh'
 sudo sh -c 'echo "# ssh setup" >>/etc/profile.d/ssh-agent.sh'
 sudo sh -c 'echo "# # from host ssh-copy-id pi@raspberrypi.local - to enable promptless logon" >>/etc/profile.d/ssh-agent.sh'
 
-## for kubectl - if installed, eg 'kubecl get pods --all-namespaces'
-sudo sh -c 'echo "# Note: By default /etc/rancher/k3s/k3s.yaml is only readable by root" > /etc/profile.d/kubeconfig.sh'
-sudo sh -c 'echo "if [ -f /etc/rancher/k3s/k3s.yaml ] ; export KUBECONFIG=/etc/rancher/k3s/k3s.yaml ; fi" >> /etc/profile.d/kubeconfig.sh'
-sudo sh -c 'echo "# Note: By default /var/lib/rancher/k3s/server/token is only readable by root" >> /etc/profile.d/kubeconfig.sh'
-sudo sh -c 'echo "if [ -f /var/lib/rancher/k3s/server/token ] ; export K3S_TOKEN=`cat /var/lib/rancher/k3s/server/token`" >> /etc/profile.d/kubeconfig.sh'
-sudo sh -c 'echo "# Hostname for k3s" >> /etc/profile.d/kubeconfig.sh'
-sudo sh -c 'echo "# export K3S_URL=https://somehost.com:6443 " >> /etc/profile.d/kubeconfig.sh'
-
 ## get some decent stuff working for all bash users
 sudo sh -c 'echo "# Ensure \$LINES and \$COLUMNS always get updated."   >  /etc/profile.d/bash.sh'
 sudo sh -c 'echo shopt -s checkwinsize                                 >>  /etc/profile.d/bash.sh'
@@ -267,14 +307,7 @@ sudo sh -c 'echo [ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"   
 sudo sh -c 'echo "# Alias to provide distribution name"                 >> /etc/profile.d/bash.sh'
 sudi sh -c 'alias distribution=$(. /etc/os-release;echo $ID$VERSION_ID) >> /etc/profile.d/bash.sh'
 
-# Enable Linux features for Docker/k3s
-if ! (grep "cgroup_enable=memory cgroup_memory=1 swapaccount=1" /boot/cmdline.txt ) ; then
-    echo Updating /boot/cmdline with cgroup - doesnt work - needs to be fixed
-    sudo bash -c "echo -n 'cgroup_enable=memory cgroup_memory=1 swapaccount=1' >>/boot/cmdline.txt"
-    sudo bash -c "sed '${s/$/cgroup_enable=memory cgroup_memory=1 swapaccount=1/}' /boot/cmdline.txt >/boot/cmdline.txt"
-fi
-
-## If WSL2, install minimal X11
+## If WSL2, install minimal X11 and set some WSL specific settings
 if [[ $(grep -i WSL2 /proc/sys/kernel/osrelease) ]]; then
     sudo apt-get install -y xscreensaver
     sudo apt-get install -y x11-apps
@@ -298,8 +331,8 @@ if [[ $(grep -i WSL2 /proc/sys/kernel/osrelease) ]]; then
     sudo sh -c 'echo appendWindowsPath = true   >>  /etc/wsl.conf'
 
     sudo sh -c 'echo [network]                  >>  /etc/wsl.conf'
-    sudo sh -c 'echo generateResolvConf = false >>  /etc/wsl.conf'
-    sudo sh -c 'echo generateHosts = false      >>  /etc/wsl.conf'
+    sudo sh -c 'echo generateResolvConf = true  >>  /etc/wsl.conf'
+    sudo sh -c 'echo generateHosts = true       >>  /etc/wsl.conf'
 fi
 
 # If java is installed, install maven
@@ -308,36 +341,10 @@ if (which java) ; then
     maven
 fi
 
-
-
 # Run Oracle XE config if found
 #if [ -f /etc/init.d/oracle-xe* ] ; then
 #    /etc/init.d/oracle-xe-18c configure
 #fi
-
-# Join an on-premise Active Directory domain
-# Ubuntu
-# sudo apt-get install krb5-user samba sssd sssd-tools libnss-sss libpam-sss ntp ntpdate realmd adcli
-# Centos/ReadHat/Oracle
-# sudo yum install -y realmd sssd krb5-workstation krb5-libs oddjob oddjob-mkhomedir samba-common-tools
-# ensure NTP is running and time is correct
-# Domain name needs to be upper case
-#AD_DOMAIN=AADDSCONTOSO.COM
-#AD_USER=webstean@$AD_DOMAIN
-#sudo realm discover $AD_DOMAIN && kinit contosoadmin@$AD_DOMAIN && sudo realm join --verbose $AD_DOMAIN -U '$AD_USER' --install=/
-
-# sound support
-# This contains (among other utilities) the alsamixer and amixer utilities.
-# amixer is a shell command to change audio settings,
-# while alsamixer provides a more intuitive ncurses based interface for audio device configuration.
-# should automatically find usb sound card devices
-# speaker-test -c 2
-sudo apt-get install -y alsa-utils 
-# aplay -L
-
-# Install Python
-${INSTALL_CMD} python
-${INSTALL_CMD} python-dev py-pip build-base 
 
 # Install Node through Node Version Manager (nvm)
 # https://github.com/nvm-sh/nvm
@@ -367,100 +374,9 @@ fi
 #  && unzip terraform.zip && chmod +x terraform \
 #  && sudo mv terraform ~/.local/bin && rm terraform.zip
 
-# Docker (it is a lotter better run docker inside WSL, than maintain inside Windows)
-# Add SSL support for APT repositories (required for Docker)
-${INSTALL_CMD} apt-transport-https ca-certificates curl software-properties-common
-# cleanup
-sudo apt-get purge docker lxc-docker docker-engine docker.io
-# add key
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg > ~/aw.txt
-sudo apt-key add ~/aw.txt
-if [ -f /usr/bin/apt ] ; then
-    # add apt repository for docker
-    ${INSTALL_CMD} software-properties-common
-    sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/$(lsb_release -is) $(lsb_release -cs) stable" 
-    # got with stable
-    # sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/$(lsb_release -is) $(lsb_release -cs) edge"
-    # sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/$(lsb_release -is) $(lsb_release -cs) nightly"
-fi
-# install docker
-# Ensure dbus is running:
-dbus_status=$(service dbus status)
-if [[ $dbus_status = *"is not running"* ]]; then
-    sudo service dbus --full-restart
-fi
-echo $dbus_status
-
-${INSTALL_CMD} docker docker.io
-# Turn on Docker Build kit
-sudo sh -c 'echo export DOCKER_BUILDKIT="1" >> /etc/profile.d/docker.sh'
-
-# Allow $USER to run docker commands - need to logout before become effective
-sudo usermod -aG docker $USER
-
-# Test docker
-sudo docker pull hello-world && sudo docker run hello-world
-
-# Install docker-compose (btw: included with MAC desktop version)
-sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose && sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
-# Install docker-compose completion
-sudo curl -L https://raw.githubusercontent.com/docker/compose/1.29.2/contrib/completion/bash/docker-compose -o /etc/bash_completion.d/docker-compose
-
-# run Azure CLI as a container
-sudo git clone https://github.com/gtrifonov/raspberry-pi-alpine-azure-cli.git
-cd .\raspberry-pi-alpine-azure-cli
-sudo docker build . -t azure-cli
-sudo docker run -d -it --rm --name azure-cli azure-cli
-
 # Alpine
 ${INSTALL_CMD} musl-dev libaio-dev libnsl-dev
 sudo ldconfig
-
-# k3s - master
-sudo iptables -F
-sudo update-alternatives --set iptables /usr/sbin/iptables-legacy
-sudo update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
-sudo reboot
-
-curl -sfL https://get.k3s.io | sudo sh -
-sudo systemctl status k3s
-# "fix" file permissions for development / devops
-if [ -f /etc/rancher/k3s/k3s.yaml ] ; sudo chmod 555 /etc/rancher/k3s/k3s.yaml ; fi
-if [ -f /var/lib/rancher/k3s/server/token ] ; sudo chmod 555 /var/lib/rancher/k3s/server/token ; fi
-echo waiting 30 seconds....
-sleep 30
-sudo k3s kubectl get node
-# list of pods running locally
-sudo crictl pods
-k3s check-config
-
-# Certificate
-# CERT_PRIV   : Private Key
-# CERT_FULL   : Full chanin of certificate
-# CERT_CA     : Certificate Authority List
-# CERT_VERIFY : Verify Certtificate (Boolean)
-
-# S3 Buckets
-# S3-BUCKET_NAME
-# S3-ACCESS-KEY
-# S3-SECRET-KEY
-
-# DATASOURCE
-#????
-
-# Load Testing, example
-# hey -z 5m -c 2 -q 10 http://url.com/api
-# for 5 minutes, 2 conccurent requests, no more 10 requests per second
-
-# openfaas - serverless open source
-
-
-# With the normal Oracle Client, oraenv script sets the ORACLE_HOME, ORACLE_BASE and LD_LIBRARY_PATH variables and
-# updates the PATH variable for Oracle
-# But, with the Instant Client you only need the LD_LIBRARY_PATH set. And BTW: The Instant Client cannot be patched (reinstall a newer version)
-
-# Eg. $ sqlplus scott/tiger@//myhost.example.com:1521/myservice
 
 # Install AWS CLI (Linux)
 cd ~
@@ -489,51 +405,28 @@ sudo sh -c 'echo if \(which go\) \; then           >>  /etc/profile.d/golang.sh'
 sudo sh -c 'echo echo \"Golang \(go\) found!\"     >>  /etc/profile.d/golang.sh'
 sudo sh -c 'echo fi                                >>  /etc/profile.d/golang.sh'
 
-## need to AAD logon working with
-## interactively via browser
-# az login
-
-## 
-
 ## Install Google Cloud (GCP) CLI
 #cd ~ && curl https://sdk.cloud.google.com > install.sh
 #chmod +x install.sh
 #bash install.sh --disable-prompts
 #~/google-cloud-sdk/install.sh --quiet
 
-# install sysstat and enable it
-sudo apt-get install sysstat
+## need to AAD logon working with
+## interactively via browser
+# az login
+
+## 
+
+# install and config sysstat
+sudo apt-get -y install sysstat
 
 $ sudo vi /etc/default/sysstat
 change ENABLED="false" to ENABLED="true"
 save the file
 Last, restart the sysstat service:
 
-$ sudo service sysstat restart
-
-
-# sudo bash -c 'cat << EOF > /etc/systemd/system/pulseaudio.service
-# [Unit]
-# Description=PulseAudio system server
-
-# [Service]
-# Type=notify
-# Exec=pulseaudio --daemonize=no --system --realtime --log-target=journal
-# #Exec=pulseaudio -p /usr/local/lib/pulse-10.0/modules/ -n -F /usr/local/etc/pulse/system.pa --system --disallow-exit=1 --disable-shm=1 --fail=1
-
-# [Install]
-# WantedBy=multi-user.target
-# EOF'
-
-# systemctl --system enable pulseaudio.service
-# systemctl --system start pulseaudio.service
-
-# sudo bash -c 'cat << EOF > /etc/pulse/client.conf
-# default-server = /var/run/pulse/native
-# autospawn = no
-# EOF'
-
-# System wide
+sudo systemctl enable sysstat
+sudo systemctl start sysstat
 
 # openssl req -x509 \
 #     -newkey rsa:2048 \
@@ -542,12 +435,6 @@ $ sudo service sysstat restart
 #     -days 36500 \
 #     -nodes \
 #     -subj "/C=AU/ST=Victoria/L=Melbourne/O=webstean/OU=IT/CN=webstean.com"
-
-# openssl genrsa -out server.key 2048
-# openssl req -new -key server.key -out server.csr -subj "/C=AU/ST=Victoria/L=Melbourne/O=webstean/OU=IT/CN=webstean.com"
-# openssl x509 -req -days 3650 -in server.csr -signkey server.key -out server.crt     
-
-# apt install pulseaudio
 
 ## Oh-My-Posh - Colourful Commandline Prompt
 sudo wget https://github.com/JanDeDobbeleer/oh-my-posh/releases/latest/download/posh-linux-amd64 -O /usr/local/bin/oh-my-posh
