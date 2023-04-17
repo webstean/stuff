@@ -29,7 +29,7 @@ if [ -f /sbin/apk ] ; then
 fi
 
 # Enable sudo for all users - by modifying /etc/sudoers
-if ! (grep NOPASSWD:ALL /etc/sudoers ) ; then 
+if ! (sudo grep NOPASSWD:ALL /etc/sudoers ) ; then 
     # Everyone
     bash -c "echo '%sudo ALL=(ALL:ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo"
     # AAD
@@ -65,12 +65,15 @@ if [ -f /usr/bin/apt ] ; then
     # Update the list of products
     sudo apt-get update
     
+    # Skip ELA prompt - I hope
+    echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections
+
     # Install Microsoft tools
     sudo apt-get install -y azure-functions-core-tools
     sudo apt-get install -y mssql-tools sqlcmd
     sudo apt-get install -y powershell
-    sudo apt-get install -y unixodbc-bin
-    
+    sudo apt-get install -y msopenjdk-17
+        
     if [ -f /etc/profile.d/microsoft-powershell.sh ] ; then sudo rm -f /etc/profile.d/microsoft-powershell.sh ; fi
     if (which pwsh) ; then 
         sudo sh -c 'echo   echo \"Powershell \(pwsh\) found!\"     >>  /etc/profile.d/microsoft-powershell.sh'
@@ -111,30 +114,31 @@ sudo sh -c 'echo "# web-proxy()"                                                
 #          : unless you edit /etc/wsl.conf to enable systemd
 sudo timedatectl set-timezone Australia/Melbourne
 timedatectl status 
+# locale should C.UTF-8
 
-# Set AU Locale
-sudo locale-gen "en_AU.UTF-8"
-sudo update-locale LANG=en_AU.UTF-8 LANGUAGE=en_AU:en LC_MESSAGES=en_AU.UTF-8 LC_COLLATE= LC_CTYPE= LC_ALL=C
-# restart shell to correct variables
-eval "$(exec /usr/bin/env -i "${SHELL}" -l -c "export")"
-locale
+##sudo locale-gen "C.UTF-8"
+##sudo update-locale LANG=C.UTF-8 LANGUAGE=C.UTF-8 LC_MESSAGES=C.UTF-8 LC_COLLATE= LC_CTYPE= LC_ALL=C
+
+
 
 # Ensure git is install and then configure it 
 # ${INSTALL_CMD} git
-if [ -x /usr/bin/git ] ; then
+if [ -x /usr/bin/git ]; then
     git config --global color.ui true
     git config --global user.name "Andrew Webster"
     git config --global user.email "webstean@gmail.com"
-    # cached credentials for 4 hours
-    git config --global credential.help cache =timeout=14400 
+    # cached credentials for 2 hours
+    git config --global credential.helper 'cache --timeout 7200'
     git config --global advice.detachedHead false
     git config --list
-}
+fi
 
 # Install Oracle Database Instant Client via permanent OTN link
 oracleinstantclientinstall() {
     # Dependencies for Oracle Client
-    ${INSTALL_CMD} libaio unzip
+    # apt-get install -y libaio 
+    apt-get install -y unzip
+    ## ${INSTALL_CMD} libaio unzip
     # Permanent Link (latest version) - Instant Client - Basic (x86 64 bit) - you need this for anything else to work
     # Note: there is no Instant Client for the ARM processor, Intel/AMD x86 only
     tmpdir=$(mktemp -d)
@@ -143,7 +147,7 @@ oracleinstantclientinstall() {
     wget https://download.oracle.com/otn_software/linux/instantclient/instantclient-tools-linuxx64.zip -nc --directory-prefix=${tmpdir}
 
     if [   -d /opt/oracle ] ; then sudo rm -rf /opt/oracle ; fi 
-    if [ ! -d /opt/oracle ] ; then sudo mkdir -p /opt/oracle ; chmod 755 /opt/oracle ; fi 
+    if [ ! -d /opt/oracle ] ; then sudo mkdir -p /opt/oracle ; sudo chmod 755 /opt/oracle ; fi 
     sudo unzip ${tmpdir}/instantclient-basic*.zip -d /opt/oracle
     sudo unzip ${tmpdir}/instantclient-sqlplus*.zip -d /opt/oracle
     sudo unzip ${tmpdir}/instantclient-tools*.zip -d /opt/oracle
@@ -160,7 +164,7 @@ oracleinstantclientinstall() {
     sudo sh -c "echo export PATH=$1:'\$PATH'    >> /etc/profile.d/instant-oracle.sh"
     sudo sh -c "echo }                          >> /etc/profile.d/instant-oracle.sh"
     sudo sh -c "echo if [ -d /opt/oracle/instantclient\* ] \; then >> /etc/profile.d/instant-oracle.sh"
-    sudo sh -c 'echo   echo \"Oracle Database Client (sqlplus) found!\"     >>  /etc/profile.d/instant-oracle.sh'
+    sudo sh -c 'echo   echo \"Oracle Database Client \(sqlplus\) found!\"     >>  /etc/profile.d/instant-oracle.sh'
     sudo sh -c "echo   oracle-instantclient              >>  /etc/profile.d/instant-oracle.sh"
     sudo sh -c "echo fi                                  >>  /etc/profile.d/instant-oracle.sh"
 
@@ -267,10 +271,10 @@ if ! (grep "cgroup_enable=memory cgroup_memory=1 swapaccount=1" /boot/cmdline.tx
     sudo bash -c "sed '${s/$/cgroup_enable=memory cgroup_memory=1 swapaccount=1/}' /boot/cmdline.txt >/boot/cmdline.txt"
 fi
 
-## If WSL, install minimal X11
-if [[ $(grep -i WSL /proc/sys/kernel/osrelease) ]]; then
-    sudo apt-get install xscreensaver
-    sudo apt-get install x11-apps
+## If WSL2, install minimal X11
+if [[ $(grep -i WSL2 /proc/sys/kernel/osrelease) ]]; then
+    sudo apt-get install -y xscreensaver
+    sudo apt-get install -y x11-apps
     echo $DISPLAY
     # Start xeyes to show X11 working - hopefully (now just works with WSL 2 plus GUI)
     xeyes &
@@ -294,6 +298,14 @@ if [[ $(grep -i WSL /proc/sys/kernel/osrelease) ]]; then
     sudo sh -c 'echo generateResolvConf = false >>  /etc/wsl.conf'
     sudo sh -c 'echo generateHosts = false      >>  /etc/wsl.conf'
 fi
+
+# If java is installed, install maven
+if (which java) ; then
+    sudo apt install -y maven
+    maven
+fi
+
+
 
 # Run Oracle XE config if found
 #if [ -f /etc/init.d/oracle-xe* ] ; then
@@ -408,7 +420,7 @@ sudo update-alternatives --set iptables /usr/sbin/iptables-legacy
 sudo update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
 sudo reboot
 
-curl -sfL https://get.k3s.io | sh -
+curl -sfL https://get.k3s.io | sudo sh -
 sudo systemctl status k3s
 # "fix" file permissions for development / devops
 if [ -f /etc/rancher/k3s/k3s.yaml ] ; sudo chmod 555 /etc/rancher/k3s/k3s.yaml ; fi
