@@ -18,10 +18,31 @@
 # if [[ $(id -u) -ne 0 ]] ; then echo "Please run as root" ; exit 1 ; fi
 if [[ $(id -u) -eq 0 ]] ; then echo "Please DO NOT run as root" ; exit 1 ; fi
 
-
+# Set SHELL varible, in case it not defined
 if [ -z "$SHELL" ] ; then
     export SHELL=/bin/sh
 fi
+
+# Determine package maanager for installing packages
+DNF_CMD=$(which dnf)
+YUM_CMD=$(which yum)
+APT_CMD=$(which apt-get)
+APK_CMD=$(which apk)
+# ${INSTALL_CMD} package
+
+if [[ ! -z $DNF_CMD ]]; then
+    INSTALL_CMD=dnf install -y
+elif [[ ! -z $YUM_CMD ]]; then
+    INSTALL_CMD=yum install -y
+elif [[ ! -z $APT_CMD ]]; then
+    INSTALL_CMD=apt-get yum install -y
+elif [[ ! -z $APK_CMD ]]; then
+    INSTALL_CMD=apk install -y
+else
+  echo "error: can't find a package manager"
+  exit 1;
+fi
+echo "Packagage Manager: ${INSTALL_CMD}"
 
 # Alpine apt - sudo won't be there by default on Alpine
 if [ -f /sbin/apk ] ; then  
@@ -46,6 +67,7 @@ if [ -f /sbin/apk ] ; then
     ${INSTALL_CMD} libnsl libaio musl-dev autconfig
 fi
 
+# setup /opt for oracle/microsoft etc..
 if [   -d /opt ] ; then sudo rm -rf /opt ; fi 
 if [ ! -d /opt ] ; then sudo mkdir -p /opt ; chmod 755 /opt ; fi 
 sudo chmod 755 /opt
