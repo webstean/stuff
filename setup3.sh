@@ -23,32 +23,6 @@ if [ -z "$SHELL" ] ; then
     export SHELL=/bin/sh
 fi
 
-# Determine package maanager for installing packages
-DNF_CMD=$(which dnf)
-YUM_CMD=$(which yum)
-APT_CMD=$(which apt-get)
-APK_CMD=$(which apk)
-# ${INSTALL_CMD} package
-
-if [[ ! -z $DNF_CMD ]]; then
-    INSTALL_CMD=dnf install -y
-elif [[ ! -z $YUM_CMD ]]; then
-    INSTALL_CMD=yum install -y
-elif [[ ! -z $APT_CMD ]]; then
-    INSTALL_CMD=apt-get yum install -y
-elif [[ ! -z $APK_CMD ]]; then
-    INSTALL_CMD=apk install -y
-else
-  echo "error: can't find a package manager"
-  exit 1;
-fi
-echo "Packagage Manager: ${INSTALL_CMD}"
-
-# Alpine apt - sudo won't be there by default on Alpine
-if [ -f /sbin/apk ] ; then  
-    apk add sudo
-fi
-
 # Enable sudo for all users - by modifying /etc/sudoers
 if ! (sudo grep NOPASSWD:ALL /etc/sudoers ) ; then 
     # Everyone
@@ -57,6 +31,38 @@ if ! (sudo grep NOPASSWD:ALL /etc/sudoers ) ; then
     bash -c "echo '%aad_admins ALL=(ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo"
     # AD DS
     bash -c "echo '%AAD\ DC\ Administrators@lordsomerscamp.org.au ALL=(ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo"
+fi
+
+# Determine package manager for installing packages
+DNF_CMD=$(which dnf) > /dev/null 2>&1
+YUM_CMD=$(which yum) > /dev/null 2>&1
+APT_CMD=$(which apt-get) > /dev/null 2>&1
+APK_CMD=$(which apk) > /dev/null 2>&1
+# ${INSTALL_CMD} package
+if [[ ! -z $DNF_CMD ]] ; then
+    INSTALL_CMD="sudo dnf install -y"
+    UPDATE_CMD="sudo dnf upgrade -y"
+elif [[ ! -z $YUM_CMD ]] ; then
+    INSTALL_CMD="sudo yum install -y"
+    UPDATE_CMD="sudo yum update"
+elif [[ ! -z $APT_CMD ]] ; then
+    INSTALL_CMD="sudo apt-get install -y"
+    UPDATE_CMD="sudo apt-get update -y"
+elif [[ ! -z $APK_CMD ]] ; then
+    INSTALL_CMD="sudo apk add -y"
+    UPDATE_CMD="sudo apk apk update"
+else
+  echo "error: can't find a package manager"
+  exit 1;
+fi
+echo "Package Manager (Install): ${INSTALL_CMD}"
+echo "Package Manager (Update) : ${UPDATE_CMD}"
+
+# Any specifics packages for specific distributions
+# Alpine apt - sudo won't be there by default on Alpine
+if [ -f /sbin/apk ] ; then  
+    ${INSTALL_CMD} sudo
+    ${INSTALL_CMD} musl-dev libaio-dev libnsl-dev
 fi
 
 # Alpine Libraries for Oracle client
@@ -75,7 +81,7 @@ sudo chmod 755 /opt
 # Add Microsoft Repos and Applications
 if [ -f /usr/bin/apt ] ; then
     # make sure prereqs are installs
-    sudo apt install -y apt-transport-https ca-certificates curl software-properties-common
+    ${INSTALL_CMD} apt-transport-https ca-certificates curl software-properties-common
     
     # Import the public repository GPG keys (depreciated)
     # Note: Instead of using this command a keyring should be placed directly in the 
@@ -114,7 +120,7 @@ fi
 if [ -f /usr/bin/apt ] ; then
 
     # make sure prereqs are installs
-    sudo apt install -y apt-transport-https ca-certificates curl software-properties-common
+    ${INSTALL_CMD} apt-transport-https ca-certificates curl software-properties-common
     
     # Import the public repository GPG keys (depreciated)
     # Note: Instead of using this command a keyring should be placed directly in the 
@@ -205,7 +211,7 @@ timedatectl status
 ##sudo update-locale LANG=C.UTF-8 LANGUAGE=C.UTF-8 LC_MESSAGES=C.UTF-8 LC_COLLATE= LC_CTYPE= LC_ALL=C
 
 # Ensure git is install and then configure it 
-# ${INSTALL_CMD} git
+${INSTALL_CMD} git
 if [ -x /usr/bin/git ]; then
     git config --global color.ui true
     git config --global user.name "Andrew Webster"
@@ -219,9 +225,9 @@ fi
 # Install Oracle Database Instant Client via permanent OTN link
 oracleinstantclientinstall() {
     # Dependencies for Oracle Client
-    # apt-get install -y libaio 
-    apt-get install -y unzip
-    ## ${INSTALL_CMD} libaio unzip
+    ${INSTALL_CMD} libaio 
+    ${INSTALL_CMD} libaio2 
+    ${INSTALL_CMD} unzip
     # Permanent Link (latest version) - Instant Client - Basic (x86 64 bit) - you need this for anything else to work
     # Note: there is no Instant Client for the ARM processor, Intel/AMD x86 only
     tmpdir=$(mktemp -d)
@@ -247,7 +253,7 @@ oracleinstantclientinstall() {
     sudo sh -c "echo export PATH=$1:'\$PATH'    >> /etc/profile.d/instant-oracle.sh"
     sudo sh -c "echo }                          >> /etc/profile.d/instant-oracle.sh"
     sudo sh -c "echo if [ -d /opt/oracle/instantclient\* ] \; then >> /etc/profile.d/instant-oracle.sh"
-    sudo sh -c 'echo   echo \"Oracle Database Client \(sqlplus\) found!\"     >>  /etc/profile.d/instant-oracle.sh'
+    sudo sh -c 'echo   echo \"Oracle Database Instant Client \(sqlplus\) found!\"     >>  /etc/profile.d/instant-oracle.sh'
     sudo sh -c "echo   oracle-instantclient              >>  /etc/profile.d/instant-oracle.sh"
     sudo sh -c "echo fi                                  >>  /etc/profile.d/instant-oracle.sh"
     sudo sh -c "echo # example: sqlplus scott/tiger@//myhost.example.com:1521/myservice >>  /etc/profile.d/instant-oracle.sh"
@@ -257,15 +263,16 @@ oracleinstantclientinstall() {
 
 MACHINE_TYPE=`uname -m`
 if [ ${MACHINE_TYPE} == 'x86_64' ]; then
+    # only supported on x86 64bit
     oracleinstantclientinstall
 fi
 
 # build/development dependencies
 if [ -d /usr/local/src ] ; then sudo rm -rf /usr/local/src ; fi
 sudo mkdir -p /usr/local/src && sudo chown ${USER} /usr/local/src && chmod 744 /usr/local/src 
-sudo apt-get install -y build-essential pkg-config intltool libtool autoconf
+${INSTALL_CMD} build-essential pkg-config intltool libtool autoconf
 # sqllite
-sudo apt-get install -y sqlite3 libsqlite3-dev
+${INSTALL_CMD} sqlite3 libsqlite3-dev
 # create database
 # sqlite test.db
 
@@ -331,13 +338,13 @@ sudi sh -c 'alias distribution=$(. /etc/os-release;echo $ID$VERSION_ID) >> /etc/
 
 ## If WSL2, install minimal X11 and set some WSL specific settings
 if [[ $(grep -i WSL2 /proc/sys/kernel/osrelease) ]]; then
-    sudo apt-get install -y xscreensaver
-    sudo apt-get install -y x11-apps
+    ${INSTALL_CMD} xscreensaver
+    ${INSTALL_CMD} x11-apps
     echo $DISPLAY
     # Start xeyes to show X11 working - hopefully (now just works with WSL 2 plus GUI)
     xeyes &
     # Install browser for sqlite
-    sudo apt-get install -y sqlitebrowser
+    ${INSTALL_CMD} sqlitebrowser
     sqlitebrowser &
     ## Since this WSL set some settings
     if [ -f /etc/wsl.conf ] ; then sudo rm -f /etc/wsl.conf ; fi
@@ -357,10 +364,9 @@ if [[ $(grep -i WSL2 /proc/sys/kernel/osrelease) ]]; then
     sudo sh -c 'echo generateHosts = true       >>  /etc/wsl.conf'
 fi
 
-# If java is installed, install maven
+# if java is installed, install maven
 if (which java) ; then
-    sudo apt install -y maven
-    maven
+    ${INSTALL_CMD} maven
 fi
 
 # Run Oracle XE config if found
@@ -396,8 +402,6 @@ fi
 #  && unzip terraform.zip && chmod +x terraform \
 #  && sudo mv terraform ~/.local/bin && rm terraform.zip
 
-# Alpine
-${INSTALL_CMD} musl-dev libaio-dev libnsl-dev
 sudo ldconfig
 
 # Install AWS CLI (Linux)
@@ -407,7 +411,7 @@ unzip awscliv2.zip
 sudo ~/./aws/install
 rm awscliv2.zip
 
-# Install Azure CLI
+# Install Azure CLI (global)
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash && az version
 # automatic upgrade enabled
 az config set auto-upgrade.enable=yes --only-show-errors  # automatic upgrade enabled
@@ -437,18 +441,14 @@ sudo sh -c 'echo fi                                >>  /etc/profile.d/golang.sh'
 ## interactively via browser
 # az login
 
-## 
-
 # install and config sysstat
-sudo apt-get -y install sysstat
-
-$ sudo vi /etc/default/sysstat
-change ENABLED="false" to ENABLED="true"
-save the file
-Last, restart the sysstat service:
-
+$INSTALL_CMD sysstat
+sudo sh -c 'echo ENABLED="true" >  /etc/default/sysstat'
+sudo systemctl stop sysstat
 sudo systemctl enable sysstat
 sudo systemctl start sysstat
+sudo systemctl status sysstat
+sar -u
 
 # openssl req -x509 \
 #     -newkey rsa:2048 \
